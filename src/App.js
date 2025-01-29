@@ -840,33 +840,76 @@ const AcquisitionMetrics = () => {
         </div>
 
         {/* Metrics Table */}
-        <div className="mt-12 overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left">
-                <th className="pb-3">Channel</th>
-                <th className="pb-3">Sessions</th>
-                <th className="pb-3">New Users</th>
-                <th className="pb-3">Bounce Rate</th>
-                <th className="pb-3">Avg Session Duration</th>
-                <th className="pb-3">Conversion Rate</th>
+      <div className="overflow-x-auto mb-8">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left bg-gray-50">
+              <th className="px-4 py-2">Channel</th>
+              <th className="px-4 py-2">Sessions</th>
+              <th className="px-4 py-2">New Users</th>
+              <th className="px-4 py-2">Bounce Rate</th>
+              <th className="px-4 py-2">Avg Session Duration</th>
+              <th className="px-4 py-2">Conversion Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            {channelData.map((channel, index) => (
+              <tr key={index} className="border-t">
+                <td className="px-4 py-2">{channel.name}</td>
+                <td className="px-4 py-2">{channel.sessions.toLocaleString()}</td>
+                <td className="px-4 py-2">{channel.newUsers.toLocaleString()}</td>
+                <td className="px-4 py-2">{channel.bounceRate}%</td>
+                <td className="px-4 py-2">{channel.avgSession} min</td>
+                <td className="px-4 py-2">{channel.convRate}%</td>
               </tr>
-            </thead>
-            <tbody>
-              {channelData.map((channel, index) => (
-                <tr key={index} className="border-t">
-                  <td className="py-2">{channel.name}</td>
-                  <td className="py-2">{channel.sessions.toLocaleString()}</td>
-                  <td className="py-2">{channel.newUsers.toLocaleString()}</td>
-                  <td className="py-2">{channel.bounceRate}%</td>
-                  <td className="py-2">{channel.avgSession} min</td>
-                  <td className="py-2">{channel.convRate}%</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Insights Section */}
+      <div className="mt-8 border-t pt-6">
+        <h3 className="text-lg font-semibold mb-4">Key Insights</h3>
+        <div className="grid grid-cols-3 gap-6">
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+            <div className="flex items-center mb-2">
+              <span className="text-xl mr-2">📊</span>
+              <h4 className="font-medium">Channel Performance</h4>
+            </div>
+            <p className="text-sm text-gray-600">Direct traffic leads with highest sessions (8.5K) and new users (7.2K), suggesting strong brand awareness and organic growth.</p>
+          </div>
+
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+            <div className="flex items-center mb-2">
+              <span className="text-xl mr-2">⚡</span>
+              <h4 className="font-medium">Engagement Quality</h4>
+            </div>
+            <p className="text-sm text-gray-600">SEO drives longest sessions (2.4 min) and highest conversion rate (2.25%), indicating quality traffic despite lower volume.</p>
+          </div>
+
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+            <div className="flex items-center mb-2">
+              <span className="text-xl mr-2">🎯</span>
+              <h4 className="font-medium">Optimization Areas</h4>
+            </div>
+            <p className="text-sm text-gray-600">High bounce rates across channels (75-82%) suggest opportunity for landing page and user experience improvements.</p>
+          </div>
+        </div>
+
+        <div className="mt-4 bg-blue-50 p-4 rounded-lg">
+          <h4 className="font-medium mb-2 flex items-center">
+            <span className="text-xl mr-2">💡</span>
+            Recommendations
+          </h4>
+          <ul className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+            <li>• Investigate SEO success factors for potential application to other channels</li>
+            <li>• Focus on bounce rate optimization across all channels</li>
+            <li>• Leverage direct traffic insights for PPC campaign optimization</li>
+            <li>• Consider A/B testing landing pages to improve conversion rates</li>
+          </ul>
         </div>
       </div>
+    </div>
     </div>
   );
 };
