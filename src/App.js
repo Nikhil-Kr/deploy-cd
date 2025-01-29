@@ -244,7 +244,7 @@ const ProjectShowcase = () => {
 
   const slides = [
     {
-      title: "Professional Accomplishment",
+      title: "Churn Model Enhancement",
       content: (
         <div className="space-y-6">
           <div className="bg-blue-50 p-6 rounded-lg">
@@ -549,30 +549,6 @@ const ProjectShowcase = () => {
   );
 };
 
-/*const AgendaSlide = () => (
-  <div className="h-screen bg-blue-500 flex flex-col p-16">
-    <h1 className="text-white text-5xl font-bold mb-16">Agenda</h1>
-    <ul className="space-y-12">
-      <li className="text-white text-3xl flex items-center gap-4">
-        <div className="w-2 h-2 bg-white rounded-full" />
-        Personal and Professional Overview
-      </li>
-      <li className="text-white text-3xl flex items-center gap-4">
-        <div className="w-2 h-2 bg-white rounded-full" />
-        Professional Accomplishment
-      </li>
-      <li className="text-white text-3xl flex items-center gap-4">
-        <div className="w-2 h-2 bg-white rounded-full" />
-        Craft Demo
-      </li>
-      <li className="text-white text-3xl flex items-center gap-4">
-        <div className="w-2 h-2 bg-white rounded-full" />
-        Q&A
-      </li>
-    </ul>
-  </div>
-);*/
-
 const AgendaSlide = () => (
   <div className="h-screen bg-blue-600 flex flex-col p-16">
     <h1 className="text-white text-5xl font-bold mb-16">Agenda</h1>
@@ -600,7 +576,7 @@ const AgendaSlide = () => (
 
 const Presentation = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const totalSlides = 18;
+  const totalSlides = 26;
 
   /*const DividerSlide = () => (
   <div className="h-screen bg-blue-500 flex flex-col justify-center items-center">
@@ -612,6 +588,60 @@ const DividerSlide = () => (
   <div className="h-screen bg-blue-700 flex flex-col justify-center items-center">
     <h1 className="text-gray-100 text-6xl font-bold mb-8">Craft Demo</h1>
     <h2 className="text-gray-200 text-4xl">Netflix Case Study</h2>
+  </div>
+);
+
+const OverviewSlide = () => (
+  <div className="h-screen bg-blue-700 flex flex-col justify-center items-center">
+    <h1 className="text-gray-100 text-6xl font-bold mb-8">Overview of Netflix's Customer Base</h1>
+    <h2 className="text-gray-200 text-4xl">Key Insights and Data Highlights</h2>
+  </div>
+);
+
+const CustomerSegmentsSlide = () => (
+  <div className="h-screen bg-blue-700 flex flex-col justify-center items-center">
+    <h1 className="text-gray-100 text-6xl font-bold mb-8">Defining Key Customer Segments</h1>
+    <h2 className="text-gray-200 text-4xl">Characteristics and Behaviors</h2>
+  </div>
+);
+
+const GrowthInitiativeSlide = () => (
+  <div className="h-screen bg-blue-700 flex flex-col justify-center items-center">
+    <h1 className="text-gray-100 text-6xl font-bold mb-8">Strategic Growth Initiative</h1>
+    <h2 className="text-gray-200 text-4xl">Experimental Learning Plan</h2>
+  </div>
+);
+
+const HiddenInsightsSlide = () => (
+  <div className="h-screen bg-blue-700 flex flex-col justify-center items-center">
+    <h1 className="text-gray-100 text-6xl font-bold mb-8">Unveiling Hidden Insights</h1>
+    <h2 className="text-gray-200 text-4xl">Surprising Findings from Data Exploration</h2>
+  </div>
+);
+
+const DataStrategySlide = () => (
+  <div className="h-screen bg-blue-700 flex flex-col justify-center items-center">
+    <h1 className="text-gray-100 text-6xl font-bold mb-8">Enhancing Data Strategy</h1>
+    <h2 className="text-gray-200 text-4xl">Recommended Additional Data Points</h2>
+  </div>
+);
+
+const RetentionPredictionSlide = () => (
+  <div className="h-screen bg-blue-700 flex flex-col justify-center items-center">
+    <h1 className="text-gray-100 text-6xl font-bold mb-8">Predicting Customer Retention</h1>
+    <h2 className="text-gray-200 text-4xl">Analytical Techniques and Evaluation</h2>
+  </div>
+);
+
+const PersonalProfessionalOverviewSlide = () => (
+  <div className="h-screen bg-blue-700 flex flex-col justify-center items-center">
+    <h1 className="text-gray-100 text-6xl font-bold mb-8">Personal & Professional Overview</h1>
+  </div>
+);
+
+const ProfessionalAccomplishmentSlide = () => (
+  <div className="h-screen bg-blue-700 flex flex-col justify-center items-center">
+    <h1 className="text-gray-100 text-6xl font-bold mb-8">Professional Accomplishments</h1>
   </div>
 );
 
@@ -3028,19 +3058,27 @@ const GroupedBusinessAssumptionsSlide = () => {
 const slides = [
     <TitleSlide key="title" />,
     <AgendaSlide key="agenda" />,
+    <PersonalProfessionalOverviewSlide key="overview"/>,
     <AboutMe key="about" />,
+    <ProfessionalAccomplishmentSlide key="accomplishment"/>,
     <ProjectShowcase key="project" />,
     <DividerSlide key="divider" />,
     <GroupedBusinessAssumptionsSlide key="grouped-assumptions" />,
+    <OverviewSlide key="overview"/>,
     <NetflixPlans key="netflix" />,
     <AcquisitionMetrics key="metrics" />,
     <ConversionFlow key="conversion" />,
     <DataStructureSlides key="data-structure" />,
+    <CustomerSegmentsSlide key="customer-segments"/>,
     <SegmentAnalysis key="segments" />,
+    <GrowthInitiativeSlide key="growth-initiatives"/>,
     <FunnelExperiments key="funnel-experiments" />,
+    <HiddenInsightsSlide key="hidden-insights"/>,
     <ViewingInsights key="viewing" />,
     <CouponInsight key="coupon" />,
+    <DataStrategySlide key="data-strategy"/>,
     <DataNeeds key="data-needs" />,
+    <RetentionPredictionSlide key="retention-prediction" />,
     <ChurnModel key="churn-model" />,
     <QASlide key="qa" />,
     <ThankYouSlide key="thank-you" />
