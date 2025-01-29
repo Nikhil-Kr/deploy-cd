@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/Nikhil-Kr/deploy-cd.git/static/css/main.1c0488b4.css",
+    "main.js": "/Nikhil-Kr/deploy-cd.git/static/js/main.aebabf41.js",
+    "static/js/488.7a876c9d.chunk.js": "/Nikhil-Kr/deploy-cd.git/static/js/488.7a876c9d.chunk.js",
+    "index.html": "/Nikhil-Kr/deploy-cd.git/index.html",
+    "main.1c0488b4.css.map": "/Nikhil-Kr/deploy-cd.git/static/css/main.1c0488b4.css.map",
+    "main.aebabf41.js.map": "/Nikhil-Kr/deploy-cd.git/static/js/main.aebabf41.js.map",
+    "488.7a876c9d.chunk.js.map": "/Nikhil-Kr/deploy-cd.git/static/js/488.7a876c9d.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.1c0488b4.css",
+    "static/js/main.aebabf41.js"
+  ]
+}
