@@ -2,10 +2,9 @@
   "name": "my-app",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://github.com/Nikhil49Kr/deploy-cd",
+  "homepage": "https://github.com/Nikhil-Kr/deploy-cd.git",
   "dependencies": {
     "cra-template": "1.2.0",
-    "gh-pages": "^6.3.0",
     "lucide-react": "^0.474.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -41,6 +40,7 @@
   },
   "devDependencies": {
     "autoprefixer": "^9.8.8",
+    "gh-pages": "^6.3.0",
     "postcss": "^8.5.1",
     "postcss-flexbugs-fixes": "^5.0.2",
     "postcss-preset-env": "^10.1.3",
