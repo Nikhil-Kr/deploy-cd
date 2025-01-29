@@ -34,7 +34,7 @@ const AboutMe = () => {
       achievement: '67% ↑ in creator applications through targeted campaigns',
       location: '🇺🇸',
       color: '#4CAF50',
-      logo: '/images/Google.png'
+      logo: '/deploy-cd/images/Google.png'
     },
     {
       year: '2022-2023',
@@ -43,7 +43,7 @@ const AboutMe = () => {
       achievement: 'Contributed to FedML open-source framework',
       location: '🇺🇸',
       color: '#2E86C1',
-      logo: '/images/SAP.jpg'
+      logo: '/deploy-cd/images/SAP.jpg'
     },
     {
       year: '2016-2021',
@@ -55,7 +55,7 @@ const AboutMe = () => {
       ],
       location: '🇮🇳',
       color: '#FF0000',
-      logo: '/images/Adobe.png'
+      logo: '/deploy-cd/images/Adobe.png'
     }
   ];
 
@@ -65,7 +65,7 @@ const AboutMe = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="flex flex-col items-center">
             <img
-              src="/images/ProfPic.jpeg"
+              src="/deploy-cd/images/ProfPic.jpeg"
               alt="Nikhil Kumar"
               className="rounded-full w-32 h-32 object-cover mb-3 shadow-lg"
             />
