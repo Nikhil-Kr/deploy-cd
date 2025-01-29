@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/Nikhil-Kr/deploy-cd.git/static/css/main.1c0488b4.css",
-    "main.js": "/Nikhil-Kr/deploy-cd.git/static/js/main.aebabf41.js",
-    "static/js/488.7a876c9d.chunk.js": "/Nikhil-Kr/deploy-cd.git/static/js/488.7a876c9d.chunk.js",
-    "index.html": "/Nikhil-Kr/deploy-cd.git/index.html",
-    "main.1c0488b4.css.map": "/Nikhil-Kr/deploy-cd.git/static/css/main.1c0488b4.css.map",
-    "main.aebabf41.js.map": "/Nikhil-Kr/deploy-cd.git/static/js/main.aebabf41.js.map",
-    "488.7a876c9d.chunk.js.map": "/Nikhil-Kr/deploy-cd.git/static/js/488.7a876c9d.chunk.js.map"
+    "main.css": "/deploy-cd/static/css/main.1c0488b4.css",
+    "main.js": "/deploy-cd/static/js/main.33804dfa.js",
+    "static/js/488.7a876c9d.chunk.js": "/deploy-cd/static/js/488.7a876c9d.chunk.js",
+    "index.html": "/deploy-cd/index.html",
+    "main.1c0488b4.css.map": "/deploy-cd/static/css/main.1c0488b4.css.map",
+    "main.33804dfa.js.map": "/deploy-cd/static/js/main.33804dfa.js.map",
+    "488.7a876c9d.chunk.js.map": "/deploy-cd/static/js/488.7a876c9d.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.1c0488b4.css",
-    "static/js/main.aebabf41.js"
+    "static/js/main.33804dfa.js"
   ]
 }
