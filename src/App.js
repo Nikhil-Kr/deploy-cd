@@ -586,8 +586,8 @@ const Presentation = () => {
 );*/
 const DividerSlide = () => (
   <div className="h-screen bg-blue-700 flex flex-col justify-center items-center">
-    <h1 className="text-gray-100 text-6xl font-bold mb-8">Craft Demo</h1>
-    <h2 className="text-gray-200 text-4xl">Netflix Case Study</h2>
+    <h1 className="text-gray-100 text-6xl font-bold mb-8">Netflix Customer Analysis</h1>
+    <h2 className="text-gray-200 text-4xl">Insights and Strategies</h2>
   </div>
 );
 
