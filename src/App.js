@@ -2443,99 +2443,128 @@ const FunnelExperiments = () => {
 
 
 const ViewingInsights = () => {
-  const hourlyData = [
-    { hour: '6AM', viewers: 100, avgDuration: 30 },
-    { hour: '9AM', viewers: 200, avgDuration: 45 },
-    { hour: '12PM', viewers: 400, avgDuration: 35 },
-    { hour: '3PM', viewers: 300, avgDuration: 40 },
-    { hour: '6PM', viewers: 600, avgDuration: 90 },
-    { hour: '9PM', viewers: 800, avgDuration: 120 },
-    { hour: '12AM', viewers: 500, avgDuration: 150 },
-    { hour: '3AM', viewers: 200, avgDuration: 140 }
+  // Actual data points from the dataset
+  const viewingData = [
+    {
+      movie: "The Ring",
+      genre: "Horror",
+      startTime: "17:22",
+      duration: 180,
+      watched: 7,
+      completion: 4
+    },
+    {
+      movie: "Die Hard",
+      genre: "Action",
+      startTime: "22:37",
+      duration: 176,
+      watched: 173,
+      completion: 98
+    },
+    {
+      movie: "Airplane!",
+      genre: "Comedy",
+      startTime: "01:45",
+      duration: 194,
+      watched: 194,
+      completion: 100
+    },
+    {
+      movie: "Up",
+      genre: "Kids",
+      startTime: "21:38",
+      duration: 200,
+      watched: 198,
+      completion: 99
+    }
   ];
 
-  const retentionData = [
-    { type: 'Late Night (10PM-4AM)', retention: 85 },
-    { type: 'Evening (6PM-10PM)', retention: 75 },
-    { type: 'Daytime (9AM-6PM)', retention: 65 },
-    { type: 'Morning (4AM-9AM)', retention: 70 }
+  // Time of day distribution from actual data points
+  const timeDistribution = [
+    { time: "00:00-06:00", count: 3, avgCompletion: 95 },
+    { time: "06:00-12:00", count: 2, avgCompletion: 70 },
+    { time: "12:00-18:00", count: 4, avgCompletion: 65 },
+    { time: "18:00-24:00", count: 8, avgCompletion: 85 }
   ];
 
   return (
-    <div className="min-h-screen bg-white flex items-center">
-      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8">
-        <h2 className="text-2xl font-bold mb-6">Viewing Time Patterns & Retention Impact</h2>
-        
-        <div className="grid grid-cols-2 gap-6 mb-8">
-          <div className="bg-blue-50 p-6 rounded-lg">
-            <h3 className="font-medium mb-4">Late Night Viewers</h3>
-            <ul className="space-y-2">
-              <li>• 2-3 hour average sessions</li>
-              <li>• Higher retention rates (85%)</li>
-              <li>• Peak engagement 10PM-2AM</li>
-              <li>• Primary entertainment source</li>
-            </ul>
-          </div>
-          <div className="bg-purple-50 p-6 rounded-lg">
-            <h3 className="font-medium mb-4">Daytime Viewers</h3>
-            <ul className="space-y-2">
-              <li>• 30-45 min average sessions</li>
-              <li>• Lower retention (65%)</li>
-              <li>• Lunch hour spikes</li>
-              <li>• Supplementary viewing</li>
-            </ul>
-          </div>
-        </div>
+    <div className="max-w-6xl mx-auto p-6">
+      <h2 className="text-2xl font-bold mb-6">Viewing Patterns: Time & Completion Analysis</h2>
+      
+      <div className="bg-slate-50 rounded-lg p-6 shadow-sm">
+        <div className="grid grid-cols-2 gap-8">
+          {/* Left Column: Visualizations */}
+          <div className="space-y-6">
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              <h3 className="text-lg font-medium mb-4">Movie Completion by Start Time</h3>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={timeDistribution}>
+                    <XAxis dataKey="time"/>
+                    <YAxis label={{ value: 'Avg. Completion %', angle: -90, position: 'insideLeft', dx: -20, dy: 40 }}/>
+                    <Tooltip/>
+                    <Line type="monotone" dataKey="avgCompletion" stroke="#3B82F6" strokeWidth={2}/>
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
 
-        <div className="h-64 mb-8">
-          <p className="font-medium mb-2">24-Hour Viewing Pattern</p>
-          <br/>
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={hourlyData}>
-              <XAxis dataKey="hour"/>
-              <YAxis/>
-              <Tooltip/>
-              <Area type="monotone" dataKey="viewers" fill="#3B82F6" stroke="#2563EB"/>
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-        <br/>
-        <br/>
-        <br/>
-        <div className="h-64 mb-8">
-          <p className="font-medium mb-2">Retention by Viewing Time</p>
-          <br/>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={retentionData}>
-              <XAxis dataKey="type"/>
-              <YAxis domain={[0, 100]}/>
-              <Tooltip/>
-              <Bar dataKey="retention" fill="#8B5CF6"/>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        <br/>
-        <br/>
-        <div className="bg-green-50 p-6 rounded-lg">
-          <h3 className="font-medium mb-4">Strategic Recommendations</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="font-medium">Late Night</p>
-              <br/>
-              <ul className="text-sm space-y-2">
-                <li>• Curate "Late Night" collections</li>
-                <li>• Promote binge-worthy series</li>
-                <li>• Focus on exclusive content</li>
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              <h3 className="text-lg font-medium mb-4">Actual Viewing Examples</h3>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={viewingData}>
+                    <XAxis dataKey="movie"/>
+                    <YAxis label={{ value: 'Completion %', angle: -90, position: 'insideLeft', dx: -20, dy: 40 }}/>
+                    <Tooltip/>
+                    <Bar dataKey="completion" fill="#8B5CF6"/>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Insights */}
+          <div className="space-y-6">
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <h3 className="font-medium text-gray-800 mb-2 flex items-center">
+                <span className="mr-2">💡</span>
+                Key Discovery
+              </h3>
+              <p className="text-gray-600">Significant pattern emerges in viewing completion rates based on start time, with late-night/early-morning viewers showing remarkably higher completion rates.</p>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <h3 className="font-medium text-gray-800 mb-2 flex items-center">
+                <span className="mr-2">📊</span>
+                Real Examples
+              </h3>
+              <ul className="space-y-2 text-gray-600">
+                <li>• Die Hard (22:37): 98% completion</li>
+                <li>• Airplane! (01:45): 100% completion</li>
+                <li>• The Ring (17:22): 4% completion</li>
               </ul>
             </div>
-            <div>
-              <p className="font-medium">Daytime</p>
-              <br/>
-              <ul className="text-sm space-y-2">
-                <li>• "Lunch Break" short content</li>
-                <li>• Mobile-optimized viewing</li>
-                <li>• Cross-time engagement hooks</li>
+
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <h3 className="font-medium text-gray-800 mb-2 flex items-center">
+                <span className="mr-2">🎯</span>
+                Business Implications
+              </h3>
+              <ul className="space-y-2 text-gray-600">
+                <li>• Night viewers show higher engagement</li>
+                <li>• Genre preferences vary by time of day</li>
+                <li>• Opportunity for time-based recommendations</li>
+                <li>• Content scheduling optimization potential</li>
               </ul>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <h3 className="font-medium text-gray-800 mb-2 flex items-center">
+                <span className="mr-2">ℹ️</span>
+                Data Context
+              </h3>
+              <p className="text-gray-600">Analysis based on sample viewing data. Pattern suggests viewing time might be a key factor in content completion and engagement.</p>
             </div>
           </div>
         </div>
@@ -2545,130 +2574,112 @@ const ViewingInsights = () => {
 };
 
 const CouponInsight = () => {
-  const churnData = [
-    { days: '15', couponChurn: 20, normalChurn: 15 },
-    { days: '30', couponChurn: 35, normalChurn: 25 },
-    { days: '45', couponChurn: 45, normalChurn: 30 },
-    { days: '60', couponChurn: 55, normalChurn: 35 }
+  // Data from the actual dataset
+  const channelPlanData = [
+    { 
+      channel: 'Direct',
+      both: 5,    // Count of 'Both' plans
+      streaming: 3, // Count of 'Streaming' plans
+      mail: 1,     // Count of 'Mail' plans
+      conversion: 85 // % who converted to paid
+    },
+    {
+      channel: 'PPC',
+      both: 2,
+      streaming: 4,
+      mail: 2,
+      conversion: 65
+    },
+    {
+      channel: 'SEO',
+      both: 1,
+      streaming: 3,
+      mail: 2,
+      conversion: 50
+    }
   ];
 
-  const planDistribution = [
-    { plan: 'Both', withCoupon: 65, withoutCoupon: 35 },
-    { plan: 'Streaming', withCoupon: 30, withoutCoupon: 55 },
-    { plan: 'Mail', withCoupon: 5, withoutCoupon: 10 }
-  ];
+  const COLORS = ['#3B82F6', '#8B5CF6', '#10B981'];
 
   return (
-    <div className="min-h-screen bg-white flex items-center">
-      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-lg p-8">
-        <h2 className="text-2xl font-bold mb-6">The Coupon Paradox</h2>
+    <div className="max-w-6xl mx-auto p-6">
+      <h2 className="text-2xl font-bold mb-6">Channel Performance: An Unexpected Pattern</h2>
+      
+      <div className="bg-slate-50 rounded-lg p-6 shadow-sm">
+        <div className="grid grid-cols-2 gap-8">
+          {/* Left Column: Visualizations */}
+          <div className="space-y-6">
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              <h3 className="text-lg font-medium mb-4">Plan Distribution by Channel</h3>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={channelPlanData}>
+                    <XAxis dataKey="channel"/>
+                    <YAxis label={{ value: 'Number of Users', angle: -90, position: 'insideLeft', dx: -20, dy: 40 }}/>
+                    <Tooltip/>
+                    <Bar dataKey="both" name="Both" stackId="a" fill="#3B82F6"/>
+                    <Bar dataKey="streaming" name="Streaming" stackId="a" fill="#8B5CF6"/>
+                    <Bar dataKey="mail" name="Mail" stackId="a" fill="#10B981"/>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
 
-        <div className="space-y-8 mb-8">
-          {/* Plan Selection Graph */}
-          <div>
-            <h3 className="font-medium mb-4">Plan Selection by Coupon Usage</h3>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={planDistribution} margin={{ top: 20, right: 30, left: 80, bottom: 30 }}>
-                  <XAxis dataKey="plan" />
-                  <YAxis 
-                    label={{ 
-                      value: '% of Users', 
-                      angle: -90, 
-                      position: 'insideLeft', 
-                      offset: -60,
-                      dy: 40
-                    }} 
-                    width={20}
-                  />
-                  <Tooltip />
-                  <Bar dataKey="withCoupon" fill="#3B82F6" name="With Coupon" />
-                  <Bar dataKey="withoutCoupon" fill="#8B5CF6" name="Without Coupon" />
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              <h3 className="text-lg font-medium mb-4">Trial to Paid Conversion</h3>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={channelPlanData}>
+                    <XAxis dataKey="channel"/>
+                    <YAxis label={{ value: 'Conversion Rate (%)', angle: -90, position: 'insideLeft', dx: -20, dy: 40 }}/>
+                    <Tooltip/>
+                    <Bar dataKey="conversion" fill="#3B82F6"/>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
 
-          {/* Churn Rate Graph */}
-          <div>
-            <h3 className="font-medium mb-4">60-Day Churn Comparison</h3>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={churnData} margin={{ top: 20, right: 30, left: 80, bottom: 30 }}>
-                  <XAxis 
-                    dataKey="days" 
-                    label={{ 
-                      value: 'Days Since Signup', 
-                      position: 'bottom', 
-                      offset: 10 
-                    }} 
-                  />
-                  <YAxis 
-                    label={{ 
-                      value: 'Churn Rate (%)', 
-                      angle: -90, 
-                      position: 'insideLeft', 
-                      offset: -60,
-                      dy: 40
-                    }} 
-                    width={20}
-                  />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="couponChurn" stroke="#EF4444" name="Coupon Users" strokeWidth={2} />
-                  <Line type="monotone" dataKey="normalChurn" stroke="#10B981" name="Non-Coupon Users" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
+          {/* Right Column: Insights */}
+          <div className="space-y-6">
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <h3 className="font-medium text-gray-800 mb-2 flex items-center">
+                <span className="mr-2">💡</span>
+                Surprising Discovery
+              </h3>
+              <p className="text-gray-600">Direct channel not only drives higher trial-to-paid conversion (85%) but also shows stronger premium 'Both' plan adoption.</p>
             </div>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-2 gap-8 mb-8">
-          <div className="bg-blue-50 p-6 rounded-lg">
-            <h3 className="font-medium mb-4">Key Findings</h3>
-            <ul className="space-y-3">
-              <li>• Coupon users prefer 'Both' plan (65% vs 35%)</li>
-              <li>• 20% higher 60-day churn rate</li>
-              <li>• Peak churn around discount expiration</li>
-              <li>• Value perception challenge</li>
-            </ul>
-          </div>
-          <div className="bg-green-50 p-6 rounded-lg">
-            <h3 className="font-medium mb-4">Business Implications</h3>
-            <ul className="space-y-3">
-              <li>• Revise coupon timing strategy</li>
-              <li>• Enhanced onboarding for coupon users</li>
-              <li>• Targeted engagement before discount ends</li>
-              <li>• Personalized content recommendations</li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="bg-purple-50 p-6 rounded-lg">
-          <h3 className="font-medium mb-4">Recommended Actions</h3>
-          <div className="grid grid-cols-3 gap-6">
-            <div>
-              <p className="font-medium mb-2">Short Term</p>
-              <ul className="text-sm space-y-2">
-                <li>• Pre-expiration engagement</li>
-                <li>• Curated content nudges</li>
-                <li>• Value highlight emails</li>
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <h3 className="font-medium text-gray-800 mb-2 flex items-center">
+                <span className="mr-2">📊</span>
+                Key Metrics
+              </h3>
+              <ul className="space-y-2 text-gray-600">
+                <li>• Direct: 85% conversion, 56% choose 'Both' plan</li>
+                <li>• PPC: 65% conversion, 25% choose 'Both' plan</li>
+                <li>• SEO: 50% conversion, 17% choose 'Both' plan</li>
               </ul>
             </div>
-            <div>
-              <p className="font-medium mb-2">Medium Term</p>
-              <ul className="text-sm space-y-2">
-                <li>• Optimize discount duration</li>
-                <li>• Test different timings</li>
-                <li>• Segment-based offers</li>
+
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <h3 className="font-medium text-gray-800 mb-2 flex items-center">
+                <span className="mr-2">🎯</span>
+                Business Implications
+              </h3>
+              <ul className="space-y-2 text-gray-600">
+                <li>• Direct channel users show higher intent</li>
+                <li>• PPC effective for streaming-only acquisition</li>
+                <li>• Opportunity to optimize SEO conversion</li>
               </ul>
             </div>
-            <div>
-              <p className="font-medium mb-2">Long Term</p>
-              <ul className="text-sm space-y-2">
-                <li>• Loyalty program development</li>
-                <li>• Predictive churn model</li>
-                <li>• Value-based pricing</li>
-              </ul>
+
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <h3 className="font-medium text-gray-800 mb-2 flex items-center">
+                <span className="mr-2">ℹ️</span>
+                Data Context
+              </h3>
+              <p className="text-gray-600">Analysis based on sample dataset. Pattern suggests channel-specific user behavior that could inform acquisition strategy.</p>
             </div>
           </div>
         </div>
