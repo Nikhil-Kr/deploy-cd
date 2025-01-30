@@ -4,8 +4,15 @@ import { MapPin, GraduationCap, Linkedin, ChevronLeft, ChevronRight, Users, Tv, 
   TrendingUp, 
   Play, 
   BarChart2, 
-  Globe } from 'lucide-react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,ReferenceLine,PieChart, Pie, Cell, AreaChart, Area, Funnel, FunnelChart } from 'recharts';
+  Globe,
+  Target, 
+  Beaker} from 'lucide-react';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,ReferenceLine,PieChart, Pie, Cell, AreaChart, Area, Funnel, FunnelChart
+  ,RadarChart, 
+  Radar, 
+  PolarGrid, 
+  PolarAngleAxis, 
+  PolarRadiusAxis } from 'recharts';
 
 const TitleSlide = () => (
   <div className="h-screen bg-blue-600 flex flex-col justify-center items-center relative px-8">
@@ -576,7 +583,7 @@ const AgendaSlide = () => (
 
 const Presentation = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const totalSlides = 26;
+  const totalSlides = 27;
 
   /*const DividerSlide = () => (
   <div className="h-screen bg-blue-500 flex flex-col justify-center items-center">
@@ -3055,6 +3062,448 @@ const GroupedBusinessAssumptionsSlide = () => {
   );
 };
 
+const EnhancedChurnAnalysis = () => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
+  // Model comparison data
+  const modelComparison = [
+    { 
+      model: 'Logistic Regression',
+      auc: 0.72,
+      precision: 0.68,
+      recall: 0.65,
+      f1: 0.66,
+      trainTime: 1.0,
+      interpretability: 0.9
+    },
+    {
+      model: 'Random Forest',
+      auc: 0.79,
+      precision: 0.75,
+      recall: 0.73,
+      f1: 0.74,
+      trainTime: 1.5,
+      interpretability: 0.7
+    },
+    {
+      model: 'Gradient Boosting',
+      auc: 0.85,
+      precision: 0.82,
+      recall: 0.80,
+      f1: 0.81,
+      trainTime: 2.0,
+      interpretability: 0.6
+    },
+    {
+      model: 'Neural Network',
+      auc: 0.83,
+      precision: 0.79,
+      recall: 0.77,
+      f1: 0.78,
+      trainTime: 3.0,
+      interpretability: 0.3
+    }
+  ];
+
+  // Feature importance data
+  const featureImportance = [
+    { name: 'Usage Frequency', value: 100, fill: '#3B82F6' },
+    { name: 'Content Diversity', value: 85, fill: '#8B5CF6' },
+    { name: 'Plan Type', value: 70, fill: '#10B981' },
+    { name: 'Channel', value: 60, fill: '#F59E0B' },
+    { name: 'Time Patterns', value: 55, fill: '#EF4444' },
+    { name: 'Historical', value: 45, fill: '#6366F1' }
+  ];
+
+  // Example predictions
+  const examplePredictions = [
+    { 
+      case: "High Risk",
+      features: [
+        { metric: "Monthly Usage", value: "2 hrs" },
+        { metric: "Content Types", value: "1 genre" },
+        { metric: "Plan", value: "Basic" },
+        { metric: "Churn Prob", value: "87%" }
+      ]
+    },
+    {
+      case: "Medium Risk",
+      features: [
+        { metric: "Monthly Usage", value: "8 hrs" },
+        { metric: "Content Types", value: "3 genres" },
+        { metric: "Plan", value: "Standard" },
+        { metric: "Churn Prob", value: "45%" }
+      ]
+    },
+    {
+      case: "Low Risk",
+      features: [
+        { metric: "Monthly Usage", value: "20 hrs" },
+        { metric: "Content Types", value: "5 genres" },
+        { metric: "Plan", value: "Premium" },
+        { metric: "Churn Prob", value: "12%" }
+      ]
+    }
+  ];
+
+  // Validation metrics over time
+  const validationMetrics = [
+    { month: 'Jan', auc: 0.82, precision: 0.79, recall: 0.76 },
+    { month: 'Feb', auc: 0.83, precision: 0.80, recall: 0.77 },
+    { month: 'Mar', auc: 0.84, precision: 0.81, recall: 0.78 },
+    { month: 'Apr', auc: 0.85, precision: 0.82, recall: 0.80 },
+    { month: 'May', auc: 0.85, precision: 0.82, recall: 0.80 },
+    { month: 'Jun', auc: 0.86, precision: 0.83, recall: 0.81 }
+  ];
+
+  const slides = [
+    // Slide 1: Model Comparison
+    {
+      title: "Model Selection: Gradient Boosting Trees",
+      content: (
+        <div className="space-y-6">
+          {/* Performance Metrics Comparison */}
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={modelComparison} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" domain={[0, 1]} />
+                <YAxis dataKey="model" type="category" width={120} />
+                <Tooltip />
+                <Legend />
+                <Bar name="AUC Score" dataKey="auc" fill="#3B82F6" />
+                <Bar name="Precision" dataKey="precision" fill="#8B5CF6" />
+                <Bar name="Recall" dataKey="recall" fill="#10B981" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Model Selection Matrix */}
+          <div className="bg-blue-50 p-6 rounded-lg">
+            <h3 className="font-medium mb-4">Why Gradient Boosting Trees?</h3>
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-medium mb-2 text-green-600">Advantages</h4>
+                <ul className="text-sm space-y-2">
+                  <li className="flex items-start">
+                    <span className="mr-2">✓</span>
+                    Highest AUC score (0.85)
+                  </li>
+                  <li className="flex items-start">
+                    <span className="mr-2">✓</span>
+                    Best precision-recall balance
+                  </li>
+                  <li className="flex items-start">
+                    <span className="mr-2">✓</span>
+                    Built-in feature importance
+                  </li>
+                  <li className="flex items-start">
+                    <span className="mr-2">✓</span>
+                    Handles non-linear relationships
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2 text-amber-600">Considerations</h4>
+                <ul className="text-sm space-y-2">
+                  <li className="flex items-start">
+                    <span className="mr-2">!</span>
+                    Requires careful tuning
+                  </li>
+                  <li className="flex items-start">
+                    <span className="mr-2">!</span>
+                    Higher training time
+                  </li>
+                  <li className="flex items-start">
+                    <span className="mr-2">!</span>
+                    More complex than linear models
+                  </li>
+                  <li className="flex items-start">
+                    <span className="mr-2">!</span>
+                    Needs monitoring for overfitting
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Training Time and Complexity */}
+          <div className="grid grid-cols-4 gap-4">
+            {modelComparison.map((model, idx) => (
+              <div key={idx} className={`p-4 rounded-lg ${
+                model.model === 'Gradient Boosting' 
+                  ? 'bg-green-50 border-2 border-green-200' 
+                  : 'bg-white'
+              }`}>
+                <h4 className="font-medium mb-2">{model.model}</h4>
+                <ul className="text-sm space-y-1">
+                  <li>Training Time: {model.trainTime}x baseline</li>
+                  <li>Interpretability: {(model.interpretability * 100).toFixed(0)}%</li>
+                  <li>F1 Score: {model.f1.toFixed(2)}</li>
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    },
+    // Slide 2: Validation Metrics
+    {
+      title: "Gradient Boosting Model: 6-Month Validation Results",
+      content: (
+        <div className="space-y-6">
+          {/* Model Context Banner */}
+          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-medium text-green-800">Selected Model: Gradient Boosting Trees</h3>
+                <p className="text-sm text-green-600">Monthly validation results on holdout test set</p>
+              </div>
+              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Production Model</span>
+            </div>
+          </div>
+
+          {/* Performance Trend */}
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={validationMetrics}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis domain={[0.7, 0.9]} />
+                <Tooltip />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  name="AUC Score" 
+                  dataKey="auc" 
+                  stroke="#3B82F6" 
+                  strokeWidth={2}
+                  dot={{ r: 5 }}
+                />
+                <Line 
+                  type="monotone" 
+                  name="Precision" 
+                  dataKey="precision" 
+                  stroke="#8B5CF6" 
+                  strokeWidth={2}
+                  dot={{ r: 5 }}
+                />
+                <Line 
+                  type="monotone" 
+                  name="Recall" 
+                  dataKey="recall" 
+                  stroke="#10B981" 
+                  strokeWidth={2}
+                  dot={{ r: 5 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Validation Details */}
+          <div className="grid grid-cols-2 gap-6">
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <h4 className="font-medium mb-3">Validation Process</h4>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                  Monthly retraining on rolling window
+                </li>
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                  20% holdout test set
+                </li>
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                  Stratified sampling by user segments
+                </li>
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                  Cross-validation with 5 folds
+                </li>
+              </ul>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h4 className="font-medium mb-2">Performance Stability</h4>
+                <ul className="text-sm space-y-1">
+                  <li>• AUC variance: ±0.02</li>
+                  <li>• No significant decay</li>
+                  <li>• Consistent across segments</li>
+                </ul>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <h4 className="font-medium mb-2">Latest Results</h4>
+                <ul className="text-sm space-y-1">
+                  <li>• AUC: 0.86 (+0.01)</li>
+                  <li>• Precision: 0.83 (+0.02)</li>
+                  <li>• Recall: 0.81 (+0.01)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    // Slide 3: Example Predictions
+    {
+      title: "Example User Predictions",
+      content: (
+        <div className="space-y-6">
+          <div className="grid grid-cols-3 gap-6">
+            <div className="p-6 rounded-lg bg-red-50 border border-red-200">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="p-3 bg-red-100 rounded-full">
+                  <Users className="w-8 h-8 text-red-600" />
+                </div>
+                <div>
+                  <h4 className="font-medium text-red-900">High Risk User</h4>
+                  <p className="text-sm text-red-600">87% Churn Probability</p>
+                </div>
+              </div>
+              <ul className="space-y-3">
+                <li className="flex justify-between items-center text-sm bg-white p-2 rounded">
+                  <span>Monthly Usage</span>
+                  <span className="font-medium text-red-600">2 hrs</span>
+                </li>
+                <li className="flex justify-between items-center text-sm bg-white p-2 rounded">
+                  <span>Content Types</span>
+                  <span className="font-medium text-red-600">1 genre</span>
+                </li>
+                <li className="flex justify-between items-center text-sm bg-white p-2 rounded">
+                  <span>Plan</span>
+                  <span className="font-medium text-red-600">Basic</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="p-6 rounded-lg bg-yellow-50 border border-yellow-200">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="p-3 bg-yellow-100 rounded-full">
+                  <Users className="w-8 h-8 text-yellow-600" />
+                </div>
+                <div>
+                  <h4 className="font-medium text-yellow-900">Medium Risk User</h4>
+                  <p className="text-sm text-yellow-600">45% Churn Probability</p>
+                </div>
+              </div>
+              <ul className="space-y-3">
+                <li className="flex justify-between items-center text-sm bg-white p-2 rounded">
+                  <span>Monthly Usage</span>
+                  <span className="font-medium text-yellow-600">8 hrs</span>
+                </li>
+                <li className="flex justify-between items-center text-sm bg-white p-2 rounded">
+                  <span>Content Types</span>
+                  <span className="font-medium text-yellow-600">3 genres</span>
+                </li>
+                <li className="flex justify-between items-center text-sm bg-white p-2 rounded">
+                  <span>Plan</span>
+                  <span className="font-medium text-yellow-600">Standard</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="p-6 rounded-lg bg-green-50 border border-green-200">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="p-3 bg-green-100 rounded-full">
+                  <Users className="w-8 h-8 text-green-600" />
+                </div>
+                <div>
+                  <h4 className="font-medium text-green-900">Low Risk User</h4>
+                  <p className="text-sm text-green-600">12% Churn Probability</p>
+                </div>
+              </div>
+              <ul className="space-y-3">
+                <li className="flex justify-between items-center text-sm bg-white p-2 rounded">
+                  <span>Monthly Usage</span>
+                  <span className="font-medium text-green-600">20 hrs</span>
+                </li>
+                <li className="flex justify-between items-center text-sm bg-white p-2 rounded">
+                  <span>Content Types</span>
+                  <span className="font-medium text-green-600">5 genres</span>
+                </li>
+                <li className="flex justify-between items-center text-sm bg-white p-2 rounded">
+                  <span>Plan</span>
+                  <span className="font-medium text-green-600">Premium</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Moved grid-cols-2 inside space-y-6 */}
+          <div className="grid grid-cols-2 gap-6 mt-6">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h4 className="font-medium mb-2">Key Risk Indicators</h4>
+              <ul className="text-sm space-y-2">
+                <li className="flex items-center space-x-2">
+                  <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                  <span>Monthly usage below 5 hours</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                  <span>Single genre viewing pattern</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                  <span>Basic plan without upgrades</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h4 className="font-medium mb-2">Retention Indicators</h4>
+              <ul className="text-sm space-y-2">
+                <li className="flex items-center space-x-2">
+                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  <span>High monthly engagement (15+ hrs)</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  <span>Diverse content consumption</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  <span>Premium plan subscription</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-white flex items-center">
+      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-lg p-8">
+        <h2 className="text-2xl font-bold mb-6">{slides[currentSlide].title}</h2>
+        {slides[currentSlide].content}
+        
+        <div className="flex justify-between items-center mt-8 pt-4 border-t">
+          <button
+            onClick={() => setCurrentSlide(Math.max(0, currentSlide - 1))}
+            disabled={currentSlide === 0}
+            className="p-2 disabled:opacity-50"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          <span className="text-sm text-gray-600">
+            {currentSlide + 1} of {slides.length}
+          </span>
+          <button
+            onClick={() => setCurrentSlide(Math.min(slides.length - 1, currentSlide + 1))}
+            disabled={currentSlide === slides.length - 1}
+            className="p-2 disabled:opacity-50"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const slides = [
     <TitleSlide key="title" />,
     <AgendaSlide key="agenda" />,
@@ -3080,6 +3529,7 @@ const slides = [
     <DataNeeds key="data-needs" />,
     <RetentionPredictionSlide key="retention-prediction" />,
     <ChurnModel key="churn-model" />,
+    <EnhancedChurnAnalysis key="churn-model-contd"/>,
     <QASlide key="qa" />,
     <ThankYouSlide key="thank-you" />
   ];
