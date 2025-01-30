@@ -7,7 +7,7 @@ import { MapPin, GraduationCap, Linkedin, ChevronLeft, ChevronRight, Users, Tv, 
   Globe,
   Target, 
   Beaker,
-  Smartphone, Monitor} from 'lucide-react';
+  Smartphone, Monitor,Search} from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,ReferenceLine,PieChart, Pie, Cell, AreaChart, Area, Funnel, FunnelChart
   ,RadarChart, 
   Radar, 
@@ -584,7 +584,7 @@ const AgendaSlide = () => (
 
 const Presentation = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const totalSlides = 28;
+  const totalSlides = 27;
 
   /*const DividerSlide = () => (
   <div className="h-screen bg-blue-500 flex flex-col justify-center items-center">
@@ -1154,7 +1154,7 @@ const ConversionFlow = () => {
   );
 };
 
-const DataStructureSlides = () => {
+/*const DataStructureSlides = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const customerColumns = [
@@ -1329,7 +1329,7 @@ const DataStructureSlides = () => {
       </div>
     </div>
   );
-};
+};*/
 
 const SegmentAnalysis = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -2964,98 +2964,114 @@ const ChurnModel = () => {
 };
 
 const GroupedBusinessAssumptionsSlide = () => {
-  const assumptionSections = [
-    {
-      icon: <Database className="w-8 h-8 text-blue-600" />,
-      title: "Data Assumptions",
-      details: [
-        "Representative dataset",
-        "Accurate field recordings",
-        "Synthetic data generation"
-      ]
-    },
-    {
-      icon: <TrendingUp className="w-8 h-8 text-green-600" />,
-      title: "Business Model",
-      details: [
-        "Consistent 30-day free trial",
-        "Standard churn definition",
-        "Typical SaaS metrics"
-      ]
-    },
-    {
-      icon: <Play className="w-8 h-8 text-purple-600" />,
-      title: "Usage & Engagement",
-      details: [
-        "Content consumption extrapolation",
-        "Simplified user behavior models",
-        "Standard viewing patterns"
-      ]
-    },
-    {
-      icon: <Globe className="w-8 h-8 text-teal-600" />,
-      title: "Market Context",
-      details: [
-        "Standard industry dynamics",
-        "Typical competitive landscape",
-        "Simplified market conditions"
-      ]
-    },
-    {
-      icon: <BarChart2 className="w-8 h-8 text-orange-600" />,
-      title: "Visualization",
-      details: [
-        "Approximated distributions",
-        "Projected churn curves",
-        "Pattern extrapolation"
-      ]
-    },
-    {
-      icon: <AlertTriangle className="w-8 h-8 text-red-600" />,
-      title: "Limitations",
-      details: [
-        "Synthetic data constraints",
-        "Potential over-simplification",
-        "Validation recommended"
-      ]
-    }
-  ];
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <div className="bg-white p-4 sm:p-6 md:p-8 rounded-lg shadow-xl w-full max-w-7xl">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center text-gray-700 mb-6 sm:mb-8">
-          Analysis Assumptions
-        </h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {assumptionSections.map((section, index) => (
-            <div 
-              key={index} 
-              className="bg-gray-50 p-4 sm:p-5 md:p-6 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-300 flex flex-col"
-            >
-              <div className="flex items-center mb-3 sm:mb-4">
-                <div className="w-12 flex justify-center mr-3 sm:mr-4">
-                  {section.icon}
-                </div>
-                <h2 className="text-lg sm:text-xl font-semibold text-gray-700">
-                  {section.title}
-                </h2>
-              </div>
-              <ul className="flex-grow pl-12 space-y-1 sm:space-y-2">
-                {section.details.map((detail, detailIndex) => (
-                  <li 
-                    key={detailIndex} 
-                    className="text-xs sm:text-sm text-gray-600 flex items-start"
-                  >
-                    <span className="mr-2 mt-1 text-xs">▶</span>
-                    <span>{detail}</span>
-                  </li>
-                ))}
+    <div className="min-h-screen bg-white p-8">
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-2xl font-bold mb-6">Data Foundation & Analysis Assumptions</h2>
+
+        {/* Available Dataset Section */}
+        <div className="bg-blue-50 p-6 rounded-lg mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Database className="w-6 h-6 text-blue-600" />
+            <h3 className="text-lg font-semibold">Available Dataset (18 customers, 17 viewing records)</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-8">
+            <div>
+              <h4 className="font-medium mb-2">Customer Table Fields:</h4>
+              <ul className="space-y-1 text-sm">
+                <li>• Customer_ID</li>
+                <li>• Customer_Name</li>
+                <li>• Plan (Streaming/Mail/Both)</li>
+                <li>• Signup_Date</li>
+                <li>• First_Charge_Date</li>
+                <li>• Cancel_Date</li>
+                <li>• Channel (PPC/SEO/Direct)</li>
               </ul>
             </div>
-          ))}
+            <div>
+              <h4 className="font-medium mb-2">Usage Table Fields:</h4>
+              <ul className="space-y-1 text-sm">
+                <li>• Customer_ID</li>
+                <li>• Movie_Name</li>
+                <li>• Movie_Genre</li>
+                <li>• Movie_Length</li>
+                <li>• Start_Time</li>
+                <li>• End_Time</li>
+              </ul>
+            </div>
+          </div>
         </div>
-        <div className="text-center mt-4 sm:mt-6 text-xs text-gray-500 italic">
+
+        {/* Main Grid */}
+        <div className="grid grid-cols-3 gap-6">
+          {/* Business Model */}
+          <div className="bg-green-50 p-6 rounded-lg">
+            <div className="flex items-center gap-2 mb-4">
+              <TrendingUp className="w-6 h-6 text-green-600" />
+              <h3 className="font-semibold">Direct Observations</h3>
+            </div>
+            <ul className="space-y-2 text-sm">
+              <li>• Plan distribution among sample</li>
+              <li>• Channel distribution</li>
+              <li>• Basic viewing time patterns</li>
+              <li>• Genre preferences in sample</li>
+              <li>• Content completion rates</li>
+              <li>• Trial-to-paid conversion examples</li>
+            </ul>
+          </div>
+
+          {/* Usage & Engagement */}
+          <div className="bg-purple-50 p-6 rounded-lg">
+            <div className="flex items-center gap-2 mb-4">
+              <Play className="w-6 h-6 text-purple-600" />
+              <h3 className="font-semibold">Extrapolated Insights</h3>
+            </div>
+            <ul className="space-y-2 text-sm">
+              <li>• Device usage percentages</li>
+              <li>• Household type distribution</li>
+              <li>• Detailed viewing patterns</li>
+              <li>• User demographics</li>
+              <li>• Conversion metrics at scale</li>
+            </ul>
+          </div>
+
+          {/* Market Context */}
+          <div className="bg-orange-50 p-6 rounded-lg">
+            <div className="flex items-center gap-2 mb-4">
+              <Globe className="w-6 h-6 text-orange-600" />
+              <h3 className="font-semibold">Basis for Extrapolation</h3>
+            </div>
+            <ul className="space-y-2 text-sm">
+              <li>• Industry reports and benchmarks</li>
+              <li>• Streaming service patterns</li>
+              <li>• Public Netflix quarterly reports</li>
+              <li>• Market research data</li>
+              <li>• Common user behavior patterns</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Limitations Section */}
+        <div className="bg-red-50 p-6 rounded-lg mt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <AlertTriangle className="w-6 h-6 text-red-600" />
+            <h3 className="font-semibold">Important Limitations & Disclaimers</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-6">
+            <ul className="space-y-2 text-sm">
+              <li>• Small sample size (18 customers) limits statistical significance</li>
+              <li>• Short time window may not capture seasonal patterns</li>
+              <li>• Missing demographic and device type data</li>
+            </ul>
+            <ul className="space-y-2 text-sm">
+              <li>• Limited visibility into user preferences</li>
+              <li>• Assumptions about viewing contexts</li>
+              <li>• Potential over-simplification of patterns</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="text-center mt-4 text-sm text-gray-500 italic">
           Disclaimer: Insights based on synthetic and limited sample data
         </div>
       </div>
@@ -3552,14 +3568,14 @@ const CustomerPatterns = () => {
                   cx="50%"
                   cy="50%"
                   outerRadius={80}
-                  label
+                  label={({ name, value }) => `${name} (${value}%)`}
                 >
                   {deviceUsage.map((entry, index) => (
                     <Cell key={index} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip />
-                <Legend />
+                <Tooltip formatter={(value) => `${value}%`} />
+                <Legend formatter={(value) => `${value}`} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -3577,7 +3593,19 @@ const CustomerPatterns = () => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={viewingSchedule}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" angle={-45} textAnchor="end" height={100} />
+                <XAxis 
+                  dataKey="time" 
+                  angle={-45} 
+                  textAnchor="end" 
+                  height={120}
+                  interval={0}
+                  tick={{
+                    fontSize: 11,
+                    width: 100,
+                    wordWrap: 'break-word',
+                    dy: 10
+                  }}
+                />
                 <YAxis />
                 <Tooltip />
                 <Bar dataKey="sessions">
@@ -3607,14 +3635,14 @@ const CustomerPatterns = () => {
                   cx="50%"
                   cy="50%"
                   outerRadius={80}
-                  label
+                  label={({ name, value }) => `${name} (${value}%)`}
                 >
                   {householdTypes.map((entry, index) => (
                     <Cell key={index} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip />
-                <Legend />
+                <Tooltip formatter={(value) => `${value}%`} />
+                <Legend formatter={(value) => `${value}`} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -3673,7 +3701,7 @@ const slides = [
     <CustomerPatterns key="customerpatterns"/>,
     <AcquisitionMetrics key="metrics" />,
     <ConversionFlow key="conversion" />,
-    <DataStructureSlides key="data-structure" />,
+    /*<DataStructureSlides key="data-structure" />,*/
     <CustomerSegmentsSlide key="customer-segments"/>,
     <SegmentAnalysis key="segments" />,
     <GrowthInitiativeSlide key="growth-initiatives"/>,
