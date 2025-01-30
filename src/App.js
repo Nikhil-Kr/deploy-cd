@@ -571,7 +571,7 @@ const AgendaSlide = () => (
       </li>
       <li className="text-white text-3xl flex items-center gap-4">
         <div className="w-2 h-2 bg-white rounded-full" />
-        Craft Demo
+        Netflix Customer Analysis
       </li>
       <li className="text-white text-3xl flex items-center gap-4">
         <div className="w-2 h-2 bg-white rounded-full" />
