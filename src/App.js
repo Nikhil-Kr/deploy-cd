@@ -573,7 +573,7 @@ const AboutMe = () => {
       year: '2022-2023',
       company: 'SAP',
       role: 'Data Science Intern',
-      story: 'Discovered my passion for open-source contribution while working on FedML framework, collaborating with global teams & orgs.',
+      story: 'Discovered my passion for open-source contribution while working on FedML framework, collaborating with global teams',
       impact: 'Contributed to FedML open-source framework',
       location: '🇺🇸',
       color: '#2E86C1',
@@ -585,8 +585,8 @@ const AboutMe = () => {
       role: 'Data Scientist - Marketing',
       story: 'Started my journey in India, taking on challenging projects in the Data Science space.',
       impacts: [
-        '10% ↓ in Creative Cloud churn rate',
-        'Improved the retention rate of Lightroom, Illustrator, and Premiere Pro users by 0.25%,2.33%, and 1.57%'
+        '10% ↓ in churn rate for Creative Cloud',
+        '$10M annual savings from fraud detection'
       ],
       location: '🇮🇳',
       color: '#FF0000',
@@ -656,25 +656,48 @@ const AboutMe = () => {
                         <div className="font-medium text-sm text-slate-800">{event.company}</div>
                       </div>
                       <div className="text-xs text-slate-500">{event.year} {event.location}</div>
-                      <div className="text-xs text-slate-700 mt-1">{event.story}</div>
-                      {event.impact && (
-                        <div className="text-xs text-green-600 font-medium mt-1">
-                          {event.impact}
-                        </div>
-                      )}
-                      {event.impacts && event.impacts.map((impact, i) => (
-                        <div key={i} className="text-xs text-green-600 font-medium mt-1">
-                          {impact}
-                        </div>
-                      ))}
-                      <div className="text-xs text-slate-600 italic mt-1">
-                        {event.lesson}
+                      <div className="text-xs text-slate-700 mt-1">
+                        {event.company === 'SAP' ? (
+                          <span>
+                            Discovered my passion for open-source contribution while working on{' '}
+                            <a 
+                              href="https://community.sap.com/t5/technology-blogs-by-sap/fedml-the-federated-machine-learning-libraries-for-hyperscalers-2-0/ba-p/13528073"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800 underline"
+                            >
+                              FedML
+                            </a>{' '}
+                            framework, collaborating with global teams & orgs.
+                          </span>
+                        ) : (
+                          event.story
+                        )}
+                      </div>
+                      
+                      <div className="bg-green-50 rounded-lg p-2 mt-2">
+                        <div className="text-xs font-medium text-green-800 mb-1">Key Achievements:</div>
+                        {event.impact ? (
+                          <div className="flex items-start">
+                            <span className="text-green-600 mr-2">•</span>
+                            <span className="text-xs text-green-600">{event.impact}</span>
+                          </div>
+                        ) : event.impacts && (
+                          <div className="space-y-1">
+                            {event.impacts.map((impact, i) => (
+                              <div key={i} className="flex items-start">
+                                <span className="text-green-600 mr-2">•</span>
+                                <span className="text-xs text-green-600">{impact}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
                   {index < careerStories.length - 1 && (
                     <div
-                      className="absolute left-1.5 w-0.5 h-12 -bottom-4"
+                      className="absolute left-1.5 w-0.5 h-16 -bottom-4"
                       style={{ backgroundColor: event.color }}
                     />
                   )}
