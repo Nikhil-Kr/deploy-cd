@@ -636,7 +636,7 @@ const AboutMe = () => {
 
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <h3 className="font-semibold text-base text-slate-900">My Journey & Key Learnings</h3>
+              <h3 className="font-semibold text-base text-slate-900">My Professional Journey (6.5+ years)</h3>
             </div>
             <div className="space-y-4">
               {careerStories.map((event, index) => (
