@@ -7,7 +7,7 @@ import { MapPin, GraduationCap, Linkedin, ChevronLeft, ChevronRight, Users, Tv, 
   Globe,
   Target, 
   Beaker,
-  Smartphone, Monitor,Search} from 'lucide-react';
+  Smartphone, Monitor,Search,Table,FileSpreadsheet} from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,ReferenceLine,PieChart, Pie, Cell, AreaChart, Area, Funnel, FunnelChart
   ,RadarChart, 
   Radar, 
@@ -33,7 +33,7 @@ const TitleSlide = () => (
 );
 
 
-const AboutMe = () => {
+/*const AboutMe = () => {
   const careerTimeline = [
     {
       year: '2023-Present',
@@ -228,7 +228,7 @@ const AboutMe = () => {
       </div>
     </div>
   );
-};
+};*/
 
 const ProjectShowcase = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -364,7 +364,7 @@ const ProjectShowcase = () => {
             <div className="mb-4 bg-white p-4 rounded">
               <p className="font-medium mb-2">Feature Selection Methodology</p>
               <div className="space-y-2 text-sm">
-                <p>• Single Variable Analysis using Importance = 2 * AUC – 1</p>
+                <p>• <strong>Importance = (PR-AUC - baseline) / (1 - baseline)</strong>, where baseline = proportion of positive class (churn rate)</p>
                 <p>• Ranges from 0 to 1</p>
                 <p>• Importance &gt; 0.2: Significant feature</p>
                 <p>• Importance &lt; 0.05: Negligible impact</p>
@@ -551,6 +551,297 @@ const ProjectShowcase = () => {
           >
             <ChevronRight className="w-6 h-6" />
           </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const AboutMe = () => {
+  const careerStories = [
+    {
+      year: '2023-Present',
+      company: 'Google',
+      role: 'Marketing Data Scientist',
+      story: 'Leading Marketing Data Science efforts that influence Creator behavior.',
+      impact: '67% ↑ in creator applications through targeted campaigns',
+      location: '🇺🇸',
+      color: '#4CAF50',
+      logo: '/deploy-cd/images/Google.png'
+    },
+    {
+      year: '2022-2023',
+      company: 'SAP',
+      role: 'Data Science Intern',
+      story: 'Discovered my passion for open-source contribution while working on FedML framework, collaborating with global teams & orgs.',
+      impact: 'Contributed to FedML open-source framework',
+      location: '🇺🇸',
+      color: '#2E86C1',
+      logo: '/deploy-cd/images/SAP.jpg'
+    },
+    {
+      year: '2016-2021',
+      company: 'Adobe',
+      role: 'Data Scientist - Marketing',
+      story: 'Started my journey in India, taking on challenging projects in the Data Science space.',
+      impacts: [
+        '10% ↓ in Creative Cloud churn rate',
+        'Improved the retention rate of Lightroom, Illustrator, and Premiere Pro users by 0.25%,2.33%, and 1.57%'
+      ],
+      location: '🇮🇳',
+      color: '#FF0000',
+      logo: '/deploy-cd/images/Adobe.png'
+    }
+  ];
+
+  const personalProjects = [
+    {
+      name: 'Community Data Workshop',
+      description: 'Founded a monthly workshop teaching data science to underserved communities',
+      impact: 'Mentored 50+ aspiring data scientists'
+    },
+    {
+      name: 'Environmental Data Analysis',
+      description: 'Volunteer data scientist for local environmental nonprofit',
+      impact: 'Helped identify optimal locations for urban gardens'
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-slate-100 p-4">
+      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-xl p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="flex flex-col items-center">
+            <img
+              src="/deploy-cd/images/ProfPic.jpeg"
+              alt="Nikhil Kumar"
+              className="rounded-full w-32 h-32 object-cover mb-3 shadow-lg"
+            />
+            <h2 className="text-xl font-bold text-slate-900">Nikhil Kumar</h2>
+            <p className="text-slate-600 mt-1 text-sm">Data Scientist</p>
+            <div className="flex items-center mt-1 text-sm text-slate-700">
+              <MapPin className="w-3 h-3 mr-1" />
+              <span>Denver, CO 🇺🇸</span>
+            </div>
+            <a 
+              href="https://www.linkedin.com/in/nikkr/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center text-blue-600 hover:text-blue-800 mt-1 text-sm"
+            >
+              <Linkedin className="w-3 h-3 mr-1" />
+              LinkedIn
+            </a>
+          </div>
+
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <h3 className="font-semibold text-base text-slate-900">My Journey & Key Learnings</h3>
+            </div>
+            <div className="space-y-4">
+              {careerStories.map((event, index) => (
+                <div key={index} className="relative">
+                  <div className="flex items-start">
+                    <div
+                      className="w-3 h-3 rounded-full mt-1"
+                      style={{ backgroundColor: event.color }}
+                    />
+                    <div className="ml-2">
+                      <div className="flex items-center mb-1">
+                        <img
+                          src={event.logo}
+                          alt={`${event.company} Logo`}
+                          className="w-5 h-5 rounded mr-1"
+                        />
+                        <div className="font-medium text-sm text-slate-800">{event.company}</div>
+                      </div>
+                      <div className="text-xs text-slate-500">{event.year} {event.location}</div>
+                      <div className="text-xs text-slate-700 mt-1">{event.story}</div>
+                      {event.impact && (
+                        <div className="text-xs text-green-600 font-medium mt-1">
+                          {event.impact}
+                        </div>
+                      )}
+                      {event.impacts && event.impacts.map((impact, i) => (
+                        <div key={i} className="text-xs text-green-600 font-medium mt-1">
+                          {impact}
+                        </div>
+                      ))}
+                      <div className="text-xs text-slate-600 italic mt-1">
+                        {event.lesson}
+                      </div>
+                    </div>
+                  </div>
+                  {index < careerStories.length - 1 && (
+                    <div
+                      className="absolute left-1.5 w-0.5 h-12 -bottom-4"
+                      style={{ backgroundColor: event.color }}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="bg-slate-50 p-4 rounded-lg">
+            <h3 className="font-semibold mb-3 text-sm text-slate-900">Why Data Science?</h3>
+            <div className="space-y-3">
+              <div className="bg-white bg-opacity-70 p-3 rounded">
+                <div className="flex items-center mb-2">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-2">
+                    <span className="text-lg">💡</span>
+                  </div>
+                  <span className="text-sm font-medium text-slate-800">The Spark</span>
+                </div>
+                <p className="text-xs text-slate-700 leading-relaxed">
+                  It all started with a college project where I had to build Web Crawlers 
+                  which powered a Bharat Centric Search Engine. The thrill of gathering data 
+                  eventually changed into trying to make sense of it.
+                </p>
+              </div>
+
+              <div className="bg-white bg-opacity-70 p-3 rounded">
+                <div className="flex items-center mb-2">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-2">
+                    <span className="text-lg">🎯</span>
+                  </div>
+                  <span className="text-sm font-medium text-slate-800">The Mission</span>
+                </div>
+                <p className="text-xs text-slate-700 leading-relaxed">
+                  I believe data science has the power to democratize decision-making and create 
+                  positive impact at scale. Every project is an opportunity to turn raw data into 
+                  actionable insights that drive real-world change.
+                </p>
+              </div>
+
+              <div className="bg-white bg-opacity-70 p-3 rounded">
+                <div className="flex items-center mb-2">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-2">
+                    <span className="text-lg">🚀</span>
+                  </div>
+                  <span className="text-sm font-medium text-slate-800">The Journey</span>
+                </div>
+                <p className="text-xs text-slate-700 leading-relaxed">
+                  From building predictive churn models at Adobe to influencing & understanding Creator Behavior 
+                  at Google, each role has reinforced my passion for using data to solve 
+                  complex business challenges.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-slate-50 p-4 rounded-lg">
+            <h3 className="font-semibold mb-3 text-sm text-slate-900">Education & Learning Journey</h3>
+            <div className="space-y-4">
+              <div className="bg-white bg-opacity-70 p-3 rounded">
+                <div className="flex items-center text-slate-800 mb-2">
+                  <GraduationCap className="w-4 h-4 mr-2 text-blue-600" />
+                  <span className="font-medium text-sm">MS in Data Science</span>
+                </div>
+                <p className="text-xs text-slate-600">CU Boulder (2021-2023) 🇺🇸</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {['Machine Learning', 'Deep Learning', 'NLP', 'Customer Analytics'].map((skill, i) => (
+                    <span key={i} className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+                <p className="text-xs text-slate-700 mt-2 italic">
+                  Focused mainly on Causal Inference and Customer Analytics
+                </p>
+              </div>
+
+              <div className="bg-white bg-opacity-70 p-3 rounded">
+                <div className="flex items-center text-slate-800 mb-2">
+                  <GraduationCap className="w-4 h-4 mr-2 text-blue-600" />
+                  <span className="font-medium text-sm">B.Tech in Computer Science</span>
+                </div>
+                <p className="text-xs text-slate-600">SRM University (2012-2016) 🇮🇳</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {['Data Structures', 'Algorithms', 'Python', 'DBMS'].map((skill, i) => (
+                    <span key={i} className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+                <p className="text-xs text-slate-700 mt-2 italic">
+                  Built strong CS fundamentals and discovered passion for Data.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 gap-4">
+          <div className="bg-slate-50 p-4 rounded-lg col-span-2">
+            <h3 className="font-semibold mb-3 text-sm text-slate-900">Life Beyond Work</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <div className="relative h-40 rounded-lg overflow-hidden">
+                  <img 
+                    src="/deploy-cd/images/Hiking.jpg" 
+                    alt="Hiking in the Rockies" 
+                    className="object-cover w-full h-full"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 p-2">
+                    <p className="text-white text-xs">Hiking 🏔️</p>
+                    <p className="text-white text-xs opacity-75">17.5K Ft.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="relative h-40 rounded-lg overflow-hidden">
+                  <img 
+                    src="/deploy-cd/images/Soccer.jpg" 
+                    alt="Playing soccer" 
+                    className="object-cover w-full h-full"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 p-2">
+                    <p className="text-white text-xs">Soccer ⚽</p>
+                    <p className="text-white text-xs opacity-75">#HalaMadrid!</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="relative h-40 rounded-lg overflow-hidden">
+                  <img 
+                    src="/deploy-cd/images/DisneyLand.jpg" 
+                    alt="Traveling" 
+                    className="object-cover w-full h-full"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 p-2">
+                    <p className="text-white text-xs">Traveling 🌎</p>
+                    <p className="text-white text-xs opacity-75">Not many states left in the US to explore</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="relative h-40 rounded-lg overflow-hidden">
+                  <img 
+                    src="/deploy-cd/images/SprayPainting.jpg" 
+                    alt="Painting" 
+                    className="object-cover w-full h-full"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 p-2">
+                    <p className="text-white text-xs">Painting 🎨</p>
+                    <p className="text-white text-xs opacity-75">More than a passion!</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-4 space-y-3">
+              <p className="text-xs text-slate-700 leading-relaxed">
+                Beyond data science, I'm passionate about exploring both the outdoors and creative pursuits. 
+                Whether I'm scaling mountains, competing on the soccer field, discovering new cultures through travel, 
+                or expressing myself through painting, I bring the same enthusiasm and dedication I apply to my professional work.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1334,19 +1625,19 @@ const ConversionFlow = () => {
 const SegmentAnalysis = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Distribution data
+  // Distribution data with shorter labels
   const segmentDistribution = [
-    { name: 'Family Viewers (The Thompsons)', value: 35, color: '#3B82F6' },
-    { name: 'Entertainment Enthusiasts (Alex)', value: 25, color: '#8B5CF6' },
-    { name: 'Casual Browsers (Emily)', value: 30, color: '#10B981' },
-    { name: 'Trial-Hoppers (Marcus)', value: 10, color: '#F59E0B' }
+    { name: 'Family', fullName: 'Family Viewers (The Thompsons)', value: 35, color: '#3B82F6' },
+    { name: 'Enthusiasts', fullName: 'Entertainment Enthusiasts (Alex)', value: 25, color: '#8B5CF6' },
+    { name: 'Casual', fullName: 'Casual Browsers (Emily)', value: 30, color: '#10B981' },
+    { name: 'Trial', fullName: 'Trial-Hoppers (Marcus)', value: 10, color: '#F59E0B' }
   ];
 
   const watchTimeData = [
     { segment: 'Family', avgHours: 15, completion: 85 },
     { segment: 'Enthusiasts', avgHours: 25, completion: 90 },
     { segment: 'Casual', avgHours: 5, completion: 60 },
-    { segment: 'Trial-Hoppers', avgHours: 3, completion: 40 }
+    { segment: 'Trial', avgHours: 3, completion: 40 }
   ];
 
   const personas = [
@@ -1449,10 +1740,10 @@ const SegmentAnalysis = () => {
     {
       title: "Customer Segment Distribution",
       content: (
-        <div className="space-y-8">
-          <div className="grid grid-cols-2 gap-8">
-            {/* Distribution Pie Chart */}
-            <div className="h-80">
+        <div className="space-y-6 md:space-y-8">
+          {/* Pie Chart Section */}
+          <div className="flex flex-col items-center mb-12">
+            <div className="h-72 md:h-96 w-full max-w-xl md:max-w-2xl">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -1461,22 +1752,29 @@ const SegmentAnalysis = () => {
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    outerRadius={100}
-                    label={({ name, value }) => `${name} (${value}%)`}
+                    outerRadius={125}
+                    label={({ name, value }) => `${name} ${value}%`}
+                    labelLine={{ strokeWidth: 1, length: 10 }}
                   >
                     {segmentDistribution.map((entry, index) => (
                       <Cell key={index} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => `${value}%`} />
+                  <Tooltip 
+                    formatter={(value, name, props) => {
+                      const segment = segmentDistribution.find(s => s.name === name);
+                      return [`${value}%`, segment?.fullName || name];
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            
-            {/* Engagement Metrics */}
-            <div className="h-80">
+          </div>
+          {/* Bar Chart Section */}
+          <div className="flex justify-center">
+            <div className="h-64 w-full max-w-2xl">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={watchTimeData}>
+                <BarChart data={watchTimeData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="segment" />
                   <YAxis yAxisId="left" orientation="left" stroke="#3B82F6" />
@@ -1490,10 +1788,11 @@ const SegmentAnalysis = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          {/* Insights Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-blue-50 p-4 rounded-lg">
-              <h3 className="font-medium mb-2">Key Segment Insights</h3>
-              <ul className="space-y-1 text-sm">
+              <h3 className="font-medium mb-2 text-sm md:text-base">Key Segment Insights</h3>
+              <ul className="space-y-1 text-xs md:text-sm">
                 <li>• Entertainment Enthusiasts show highest engagement</li>
                 <li>• Family Viewers demonstrate consistent patterns</li>
                 <li>• Casual Browsers represent growth opportunity</li>
@@ -1501,8 +1800,8 @@ const SegmentAnalysis = () => {
               </ul>
             </div>
             <div className="bg-green-50 p-4 rounded-lg">
-              <h3 className="font-medium mb-2">Strategic Implications</h3>
-              <ul className="space-y-1 text-sm">
+              <h3 className="font-medium mb-2 text-sm md:text-base">Strategic Implications</h3>
+              <ul className="space-y-1 text-xs md:text-sm">
                 <li>• Segment-specific content strategies</li>
                 <li>• Targeted engagement programs</li>
                 <li>• Customized retention approaches</li>
@@ -1517,21 +1816,21 @@ const SegmentAnalysis = () => {
     ...personas.map(persona => ({
       title: persona.type,
       content: (
-        <div className="space-y-6">
-          <div className="bg-blue-50 p-6 rounded-lg">
-            <div className="flex items-center gap-6">
-              <div className="text-6xl">{persona.avatar}</div>
+        <div className="space-y-4 md:space-y-6">
+          <div className="bg-blue-50 p-4 md:p-6 rounded-lg">
+            <div className="flex items-center gap-4 md:gap-6">
+              <div className="text-4xl md:text-6xl">{persona.avatar}</div>
               <div>
-                <h3 className="text-2xl font-bold">{persona.name}</h3>
-                <p className="text-lg text-gray-600">{persona.type}</p>
+                <h3 className="text-xl md:text-2xl font-bold">{persona.name}</h3>
+                <p className="text-base md:text-lg text-gray-600">{persona.type}</p>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-6">
-            <div className="bg-purple-50 p-6 rounded-lg">
-              <h4 className="font-medium text-xl mb-4">Key Characteristics</h4>
-              <ul className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            <div className="bg-purple-50 p-4 md:p-6 rounded-lg">
+              <h4 className="font-medium text-lg md:text-xl mb-3 md:mb-4">Key Characteristics</h4>
+              <ul className="space-y-2 text-sm md:text-base">
                 {persona.characteristics.map((char, idx) => (
                   <li key={idx} className="flex items-start gap-2">
                     <span className="text-purple-500">•</span>
@@ -1541,9 +1840,9 @@ const SegmentAnalysis = () => {
               </ul>
             </div>
 
-            <div className="bg-green-50 p-6 rounded-lg">
-              <h4 className="font-medium text-xl mb-4">Growth Strategy</h4>
-              <ul className="space-y-2">
+            <div className="bg-green-50 p-4 md:p-6 rounded-lg">
+              <h4 className="font-medium text-lg md:text-xl mb-3 md:mb-4">Growth Strategy</h4>
+              <ul className="space-y-2 text-sm md:text-base">
                 {persona.growth.map((strategy, idx) => (
                   <li key={idx} className="flex items-start gap-2">
                     <span className="text-green-500">•</span>
@@ -1553,9 +1852,9 @@ const SegmentAnalysis = () => {
               </ul>
             </div>
 
-            <div className="bg-blue-50 p-6 rounded-lg">
-              <h4 className="font-medium text-xl mb-4">Retention Focus</h4>
-              <ul className="space-y-2">
+            <div className="bg-blue-50 p-4 md:p-6 rounded-lg">
+              <h4 className="font-medium text-lg md:text-xl mb-3 md:mb-4">Retention Focus</h4>
+              <ul className="space-y-2 text-sm md:text-base">
                 {persona.retention.map((focus, idx) => (
                   <li key={idx} className="flex items-start gap-2">
                     <span className="text-blue-500">•</span>
@@ -1571,29 +1870,29 @@ const SegmentAnalysis = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white flex items-center">
-      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-lg">
-        <div className="p-8">
-          <h2 className="text-2xl font-bold mb-6">{slides[currentSlide].title}</h2>
+    <div className="min-h-screen bg-white flex items-center p-4">
+      <div className="w-full max-w-6xl mx-auto bg-white rounded-lg shadow-lg">
+        <div className="p-4 md:p-8">
+          <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">{slides[currentSlide].title}</h2>
           {slides[currentSlide].content}
         </div>
-        <div className="flex justify-between items-center px-8 py-4 bg-gray-50 rounded-b-lg">
+        <div className="flex justify-between items-center px-4 md:px-8 py-3 md:py-4 bg-gray-50 rounded-b-lg">
           <button
             onClick={() => setCurrentSlide(Math.max(0, currentSlide - 1))}
             disabled={currentSlide === 0}
-            className="p-2 disabled:opacity-50"
+            className="p-1 md:p-2 disabled:opacity-50"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
           </button>
-          <span className="text-sm text-gray-600">
+          <span className="text-xs md:text-sm text-gray-600">
             {currentSlide === 0 ? "Overview" : `Persona ${currentSlide} of ${slides.length - 1}`}
           </span>
           <button
             onClick={() => setCurrentSlide(Math.min(slides.length - 1, currentSlide + 1))}
             disabled={currentSlide === slides.length - 1}
-            className="p-2 disabled:opacity-50"
+            className="p-1 md:p-2 disabled:opacity-50"
           >
-            <ChevronRight className="w-6 h-6" />
+            <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
           </button>
         </div>
       </div>
@@ -3007,29 +3306,78 @@ const GroupedBusinessAssumptionsSlide = () => {
             <Database className="w-6 h-6 text-blue-600" />
             <h3 className="text-lg font-semibold">Available Dataset (18 customers, 17 viewing records)</h3>
           </div>
+          
           <div className="grid grid-cols-2 gap-8">
-            <div>
-              <h4 className="font-medium mb-2">Customer Table Fields:</h4>
-              <ul className="space-y-1 text-sm">
-                <li>• Customer_ID</li>
-                <li>• Customer_Name</li>
-                <li>• Plan (Streaming/Mail/Both)</li>
-                <li>• Signup_Date</li>
-                <li>• First_Charge_Date</li>
-                <li>• Cancel_Date</li>
-                <li>• Channel (PPC/SEO/Direct)</li>
-              </ul>
+            {/* Customer Table */}
+            <div className="bg-white rounded-lg p-4 border-2 border-blue-200">
+              <div className="flex items-center gap-2 mb-3">
+                <Table className="w-5 h-5 text-blue-600" />
+                <h4 className="font-medium">Customer Table Fields:</h4>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-start gap-2">
+                  <span className="font-semibold min-w-24">Customer_ID:</span>
+                  <span className="text-gray-600">unique identifier per customer</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="font-semibold min-w-24">Customer_Name:</span>
+                  <span className="text-gray-600">name of the customer</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="font-semibold min-w-24">Plan:</span>
+                  <span className="text-gray-600">the Netflix usage plan the customer is on</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="font-semibold min-w-24">Signup_Date:</span>
+                  <span className="text-gray-600">the date a customer started their free trial</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="font-semibold min-w-24">First_Charge_Date:</span>
+                  <span className="text-gray-600">the date the customer converted their free trial to a subscription</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="font-semibold min-w-24">Cancel_Date:</span>
+                  <span className="text-gray-600">the date a customer cancels their subscription</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="font-semibold min-w-24">Channel:</span>
+                  <span className="text-gray-600">the marketing channel the customer came through to start their free trial</span>
+                </div>
+              </div>
             </div>
-            <div>
-              <h4 className="font-medium mb-2">Usage Table Fields:</h4>
-              <ul className="space-y-1 text-sm">
-                <li>• Customer_ID</li>
-                <li>• Movie_Name</li>
-                <li>• Movie_Genre</li>
-                <li>• Movie_Length</li>
-                <li>• Start_Time</li>
-                <li>• End_Time</li>
-              </ul>
+
+            {/* Usage Table */}
+            <div className="bg-white rounded-lg p-4 border-2 border-blue-200">
+              <div className="flex items-center gap-2 mb-3">
+                <FileSpreadsheet className="w-5 h-5 text-blue-600" />
+                <h4 className="font-medium">Usage Table Fields:</h4>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-start gap-2">
+                  <span className="font-semibold min-w-24">Customer_ID:</span>
+                  <span className="text-gray-600">unique identifier per customer</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="font-semibold min-w-24">Movie_Name:</span>
+                  <span className="text-gray-600">name of the movie being viewed</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="font-semibold min-w-24">Movie_Genre:</span>
+                  <span className="text-gray-600">genre of the movie being viewed</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="font-semibold min-w-24">Movie_Length:</span>
+                  <span className="text-gray-600">length of the movie being viewed (hours)</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="font-semibold min-w-24">Start_Time:</span>
+                  <span className="text-gray-600">the timestamp a customer starts watching a movie</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="font-semibold min-w-24">End_Time:</span>
+                  <span className="text-gray-600">the timestamp a customer stops watching a movie</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

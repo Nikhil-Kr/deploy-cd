@@ -7,6 +7,7 @@ module.exports = {
         colors: {
             amber: require('tailwindcss/colors').amber,
             rose: require('tailwindcss/colors').rose,
+            orange:require('tailwindcss/colors').orange
           },
       },
     },
