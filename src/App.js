@@ -1334,11 +1334,12 @@ const ConversionFlow = () => {
 const SegmentAnalysis = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  // Distribution data
   const segmentDistribution = [
-    { name: 'Family', value: 35 },
-    { name: 'Enthusiasts', value: 25 },
-    { name: 'Casual', value: 30 },
-    { name: 'Trial-Hoppers', value: 10 }
+    { name: 'Family Viewers (The Thompsons)', value: 35, color: '#3B82F6' },
+    { name: 'Entertainment Enthusiasts (Alex)', value: 25, color: '#8B5CF6' },
+    { name: 'Casual Browsers (Emily)', value: 30, color: '#10B981' },
+    { name: 'Trial-Hoppers (Marcus)', value: 10, color: '#F59E0B' }
   ];
 
   const watchTimeData = [
@@ -1348,199 +1349,230 @@ const SegmentAnalysis = () => {
     { segment: 'Trial-Hoppers', avgHours: 3, completion: 40 }
   ];
 
-  const slides = [
+  const personas = [
     {
-      title: "Customer Segmentation Overview",
-      content: (
-        <div className="space-y-6">
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={segmentDistribution}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                >
-                  <Cell fill="#3B82F6"/>
-                  <Cell fill="#8B5CF6"/>
-                  <Cell fill="#10B981"/>
-                  <Cell fill="#F59E0B"/>
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="grid grid-cols-4 gap-4">
-            {segmentDistribution.map(segment => (
-              <div key={segment.name} className="text-center">
-                <p className="font-medium">{segment.name}</p>
-                <p className="text-2xl font-bold text-blue-600">{segment.value}%</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )
+      type: "Family Viewers",
+      avatar: "👨‍👩‍👧‍👦",
+      name: "The Thompson Family",
+      characteristics: [
+        "Multi-profile household",
+        "Weekend morning peaks",
+        "Kids content priority",
+        "High completion rate (85%)"
+      ],
+      growth: [
+        "Family plan upsell",
+        "Profile customization",
+        "Parental controls",
+        "Co-viewing features"
+      ],
+      retention: [
+        "Content continuity",
+        "Family recommendations",
+        "Multi-device support",
+        "Watch-together tools"
+      ]
     },
     {
-      title: "Family Segment Deep Dive",
-      content: (
-        <div className="grid grid-cols-2 gap-6">
-          <div className="bg-blue-50 p-6 rounded-lg">
-            <h3 className="font-medium text-xl mb-4">Behavior Profile</h3>
-            <ul className="space-y-3">
-              <li>• Kids/Family content focus</li>
-              <li>• Higher watch frequency</li>
-              <li>• Shorter sessions</li>
-              <li>• Weekend viewing peaks</li>
-            </ul>
-            <div className="mt-4">
-              <p className="font-medium">Preferred Plan Types</p>
-              <p>Both (60%), Streaming (40%)</p>
-            </div>
-          </div>
-          <div className="bg-blue-50 p-6 rounded-lg">
-            <h3 className="font-medium text-xl mb-4">Retention Strategy</h3>
-            <ul className="space-y-3">
-              <li>• Family content recommendations</li>
-              <li>• Parental controls</li>
-              <li>• Special bundles</li>
-              <li>• Multi-profile features</li>
-            </ul>
-          </div>
-        </div>
-      )
+      type: "Entertainment Enthusiasts",
+      avatar: "👨‍💻",
+      name: "Alex Rivera",
+      characteristics: [
+        "High engagement (25+ hrs/week)",
+        "Multi-genre exploration",
+        "Premium plan preference",
+        "Early content adopter"
+      ],
+      growth: [
+        "Advanced features access",
+        "Pre-release content",
+        "Social sharing tools",
+        "Exclusive content"
+      ],
+      retention: [
+        "New release notifications",
+        "Personalized curation",
+        "Premium experience",
+        "Community features"
+      ]
     },
     {
-      title: "Entertainment Enthusiasts",
-      content: (
-        <div className="grid grid-cols-2 gap-6">
-          <div className="bg-purple-50 p-6 rounded-lg">
-            <h3 className="font-medium text-xl mb-4">Behavior Profile</h3>
-            <ul className="space-y-3">
-              <li>• Multi-genre watchers</li>
-              <li>• High watch time</li>
-              <li>• New releases + classics</li>
-              <li>• Evening prime time</li>
-            </ul>
-            <div className="mt-4">
-              <p className="font-medium">Preferred Plan Types</p>
-              <p>Both (70%), Streaming (30%)</p>
-            </div>
-          </div>
-          <div className="bg-purple-50 p-6 rounded-lg">
-            <h3 className="font-medium text-xl mb-4">Retention Strategy</h3>
-            <ul className="space-y-3">
-              <li>• Early access perks</li>
-              <li>• Curated collections</li>
-              <li>• New release notifications</li>
-              <li>• Personalized recommendations</li>
-            </ul>
-          </div>
-        </div>
-      )
+      type: "Casual Browsers",
+      avatar: "👩",
+      name: "Emily Chen",
+      characteristics: [
+        "Irregular viewing pattern",
+        "Price sensitive",
+        "Mobile-first usage",
+        "Limited time investment"
+      ],
+      growth: [
+        "Quick-watch features",
+        "Mobile optimization",
+        "Value tier options",
+        "Simplified discovery"
+      ],
+      retention: [
+        "Engagement reminders",
+        "Smart recommendations",
+        "Flexible plans",
+        "Content previews"
+      ]
     },
     {
-      title: "Casual Browsers",
-      content: (
-        <div className="grid grid-cols-2 gap-6">
-          <div className="bg-green-50 p-6 rounded-lg">
-            <h3 className="font-medium text-xl mb-4">Behavior Profile</h3>
-            <ul className="space-y-3">
-              <li>• Low watch frequency</li>
-              <li>• No genre preference</li>
-              <li>• Price sensitive</li>
-              <li>• Irregular patterns</li>
-            </ul>
-            <div className="mt-4">
-              <p className="font-medium">Plan Distribution</p>
-              <p>Even split across plans</p>
-            </div>
-          </div>
-          <div className="bg-green-50 p-6 rounded-lg">
-            <h3 className="font-medium text-xl mb-4">Retention Strategy</h3>
-            <ul className="space-y-3">
-              <li>• "Top Picks" highlights</li>
-              <li>• Limited-time upgrades</li>
-              <li>• Engagement campaigns</li>
-              <li>• Value messaging</li>
-            </ul>
-          </div>
-        </div>
-      )
-    },
-    {
-      title: "Trial-Hoppers",
-      content: (
-        <div className="grid grid-cols-2 gap-6">
-          <div className="bg-yellow-50 p-6 rounded-lg">
-            <h3 className="font-medium text-xl mb-4">Behavior Profile</h3>
-            <ul className="space-y-3">
-              <li>• Brief engagement</li>
-              <li>• Pre-billing churn</li>
-              <li>• Limited exploration</li>
-              <li>• Single-device usage</li>
-            </ul>
-            <div className="mt-4">
-              <p className="font-medium">Primary Plan</p>
-              <p>Streaming (90%)</p>
-            </div>
-          </div>
-          <div className="bg-yellow-50 p-6 rounded-lg">
-            <h3 className="font-medium text-xl mb-4">Retention Strategy</h3>
-            <ul className="space-y-3">
-              <li>• Clear value proposition</li>
-              <li>• First-month offers</li>
-              <li>• Content previews</li>
-              <li>• Pre-cancel interventions</li>
-            </ul>
-          </div>
-        </div>
-      )
-    },
-    {
-      title: "Engagement Comparison",
-      content: (
-        <div className="space-y-6">
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={watchTimeData}>
-                <XAxis dataKey="segment"/>
-                <YAxis/>
-                <Tooltip/>
-                <Bar dataKey="avgHours" fill="#3B82F6" name="Avg Hours/Week"/>
-                <Bar dataKey="completion" fill="#10B981" name="Completion Rate %"/>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-blue-50 p-4 rounded">
-              <h3 className="font-medium mb-2">Key Metrics</h3>
-              <ul className="space-y-2">
-                <li>Watch time per week</li>
-                <li>Content completion rates</li>
-                <li>Genre diversity</li>
-              </ul>
-            </div>
-            <div className="bg-green-50 p-4 rounded">
-              <h3 className="font-medium mb-2">Insights</h3>
-              <ul className="space-y-2">
-                <li>Enthusiasts: highest engagement</li>
-                <li>Family: consistent patterns</li>
-                <li>Casual & Trial: retention risk</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      )
+      type: "Trial-Hoppers",
+      avatar: "🧑",
+      name: "Marcus Johnson",
+      characteristics: [
+        "Short trial engagement",
+        "Limited exploration",
+        "Single device usage",
+        "Value-seeking behavior"
+      ],
+      growth: [
+        "Clear value proposition",
+        "Extended trial options",
+        "Feature highlights",
+        "Conversion incentives"
+      ],
+      retention: [
+        "Early intervention",
+        "Guided exploration",
+        "Trial experience",
+        "Engagement triggers"
+      ]
     }
+  ];
+
+  const slides = [
+    // Slide 1: Overview Distribution
+    {
+      title: "Customer Segment Distribution",
+      content: (
+        <div className="space-y-8">
+          <div className="grid grid-cols-2 gap-8">
+            {/* Distribution Pie Chart */}
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={segmentDistribution}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    label={({ name, value }) => `${name} (${value}%)`}
+                  >
+                    {segmentDistribution.map((entry, index) => (
+                      <Cell key={index} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => `${value}%`} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            
+            {/* Engagement Metrics */}
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={watchTimeData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="segment" />
+                  <YAxis yAxisId="left" orientation="left" stroke="#3B82F6" />
+                  <YAxis yAxisId="right" orientation="right" stroke="#10B981" />
+                  <Tooltip />
+                  <Legend />
+                  <Bar yAxisId="left" dataKey="avgHours" name="Avg Hours/Week" fill="#3B82F6" />
+                  <Bar yAxisId="right" dataKey="completion" name="Completion Rate %" fill="#10B981" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h3 className="font-medium mb-2">Key Segment Insights</h3>
+              <ul className="space-y-1 text-sm">
+                <li>• Entertainment Enthusiasts show highest engagement</li>
+                <li>• Family Viewers demonstrate consistent patterns</li>
+                <li>• Casual Browsers represent growth opportunity</li>
+                <li>• Trial-Hoppers need targeted retention strategies</li>
+              </ul>
+            </div>
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h3 className="font-medium mb-2">Strategic Implications</h3>
+              <ul className="space-y-1 text-sm">
+                <li>• Segment-specific content strategies</li>
+                <li>• Targeted engagement programs</li>
+                <li>• Customized retention approaches</li>
+                <li>• Personalized growth paths</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    // Detailed Persona Slides
+    ...personas.map(persona => ({
+      title: persona.type,
+      content: (
+        <div className="space-y-6">
+          <div className="bg-blue-50 p-6 rounded-lg">
+            <div className="flex items-center gap-6">
+              <div className="text-6xl">{persona.avatar}</div>
+              <div>
+                <h3 className="text-2xl font-bold">{persona.name}</h3>
+                <p className="text-lg text-gray-600">{persona.type}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-6">
+            <div className="bg-purple-50 p-6 rounded-lg">
+              <h4 className="font-medium text-xl mb-4">Key Characteristics</h4>
+              <ul className="space-y-2">
+                {persona.characteristics.map((char, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <span className="text-purple-500">•</span>
+                    <span>{char}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="bg-green-50 p-6 rounded-lg">
+              <h4 className="font-medium text-xl mb-4">Growth Strategy</h4>
+              <ul className="space-y-2">
+                {persona.growth.map((strategy, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <span className="text-green-500">•</span>
+                    <span>{strategy}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="bg-blue-50 p-6 rounded-lg">
+              <h4 className="font-medium text-xl mb-4">Retention Focus</h4>
+              <ul className="space-y-2">
+                {persona.retention.map((focus, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <span className="text-blue-500">•</span>
+                    <span>{focus}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )
+    }))
   ];
 
   return (
     <div className="min-h-screen bg-white flex items-center">
-      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg">
+      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-lg">
         <div className="p-8">
           <h2 className="text-2xl font-bold mb-6">{slides[currentSlide].title}</h2>
           {slides[currentSlide].content}
@@ -1554,7 +1586,7 @@ const SegmentAnalysis = () => {
             <ChevronLeft className="w-6 h-6" />
           </button>
           <span className="text-sm text-gray-600">
-            Slide {currentSlide + 1} of {slides.length}
+            {currentSlide === 0 ? "Overview" : `Persona ${currentSlide} of ${slides.length - 1}`}
           </span>
           <button
             onClick={() => setCurrentSlide(Math.min(slides.length - 1, currentSlide + 1))}
@@ -3185,7 +3217,7 @@ const EnhancedChurnAnalysis = () => {
               <BarChart data={modelComparison} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis type="number" domain={[0, 1]} />
-                <YAxis dataKey="model" type="category" width={120} />
+                <YAxis dataKey="model" type="category" width={150} />
                 <Tooltip />
                 <Legend />
                 <Bar name="AUC Score" dataKey="auc" fill="#3B82F6" />
