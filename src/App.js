@@ -7501,7 +7501,6 @@ const renderSingleExperimentAnalysis = (exp) => {
             title="Review Brief"
             size="lg"
           >
-            // Review Modal (continued)
             <div className="mb-4 p-4 bg-gray-50 rounded-lg">
               <h3 className="text-sm font-medium text-gray-700 mb-2">Brief Summary</h3>
               <div className="space-y-2 text-sm">
