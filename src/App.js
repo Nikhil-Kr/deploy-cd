@@ -4276,6 +4276,8 @@ const Wizard = ({ steps, onComplete, initialStep = 0 }) => {
           data={stepData[currentStep]}
           onChange={handleStepDataChange}
           allData={stepData}
+          allKnowledge={[]} // Replace with actual knowledge array if needed
+          onToast={() => {}} // Replace with actual toast function if needed
         />
       </div>
 
@@ -4307,7 +4309,12 @@ const Wizard = ({ steps, onComplete, initialStep = 0 }) => {
 };
 
 // Basic Info Step Component
-const WizardBasicInfoStep = ({ data, onChange, allKnowledge, onToast }) => {
+const WizardBasicInfoStep = ({
+  data,
+  onChange,
+  allKnowledge = [],
+  onToast = () => {},
+}) => {
   const handleChange = (field, value) => {
     onChange({ ...data, [field]: value });
   };
@@ -4450,7 +4457,7 @@ const WizardBasicInfoStep = ({ data, onChange, allKnowledge, onToast }) => {
           </div>
         </div>
       </FormGroup>
-      
+
       <FormGroup
         title="Knowledge References"
         description="Link this experiment to existing knowledge"
