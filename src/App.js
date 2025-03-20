@@ -104,6 +104,13 @@ const multivariateTrends = [
 
 function getTrendData(exp) {
   if (!exp) return [];
+
+  // If the experiment has custom trend data, use that
+  if (exp.trendData && exp.trendData.length > 0) {
+    return exp.trendData;
+  }
+
+  // Original switch statement for predefined experiments
   switch (exp.id) {
     case "mem-001":
       return membershipTrends;
@@ -116,7 +123,46 @@ function getTrendData(exp) {
     case "multi-001":
       return multivariateTrends;
     default:
-      return [];
+      // For new experiments, generate random data
+      const randomData = [];
+
+      try {
+        // Try to parse the start date
+        const startDate = new Date(exp.startDate);
+        const daysToGenerate = Math.max(5, exp.daysRunning || 0);
+
+        for (let i = 0; i < daysToGenerate; i++) {
+          const currentDate = new Date(startDate);
+          currentDate.setDate(startDate.getDate() + i);
+
+          const formattedDate = currentDate.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          });
+
+          randomData.push({
+            date: formattedDate,
+            standard: parseFloat((2.0 + Math.random() * 0.3).toFixed(1)),
+            personalized: parseFloat((2.7 + Math.random() * 0.4).toFixed(1)),
+          });
+        }
+
+        // Store the generated data on the experiment for future use
+        exp.trendData = randomData;
+
+        return randomData;
+      } catch (e) {
+        console.error("Error generating trend data:", e);
+        // Fallback to simple numbered days
+        for (let i = 0; i < 5; i++) {
+          randomData.push({
+            date: `Day ${i + 1}`,
+            standard: parseFloat((2.0 + Math.random() * 0.3).toFixed(1)),
+            personalized: parseFloat((2.7 + Math.random() * 0.4).toFixed(1)),
+          });
+        }
+        return randomData;
+      }
   }
 }
 
@@ -2880,11 +2926,178 @@ const SuccessCriteriaBuilder = ({
 };
 
 // Learning Agenda Component
-const LearningAgendaBuilder = ({ onChange, initialValue = "" }) => {
+// const LearningAgendaBuilder = ({ onChange, initialValue = "" }) => {
+//   const [agenda, setAgenda] = useState(initialValue);
+//   const [showAIAssistant, setShowAIAssistant] = useState(false);
+//   const [isGenerating, setIsGenerating] = useState(false);
+//   const [aiSuggestion, setAiSuggestion] = useState("");
+
+//   const templates = [
+//     "Understand how [feature/change] impacts [key metric] for [audience segment].",
+//     "Identify which variation of [element] performs best for [goal/metric].",
+//     "Learn whether [audience] responds differently to [feature] than other segments.",
+//     "Determine if [hypothesis] holds true across different [contexts/platforms/regions].",
+//   ];
+
+//   const handleSelectTemplate = (template) => {
+//     setAgenda(template);
+//     onChange(template);
+//   };
+
+//   const handleChange = (e) => {
+//     setAgenda(e.target.value);
+//     onChange(e.target.value);
+//   };
+
+//   const handleGenerateAI = () => {
+//     setIsGenerating(true);
+
+//     // Simulate AI response with timeout
+//     setTimeout(() => {
+//       const aiAgenda =
+//         "Understand how different user segments respond to our personalized experience, specifically measuring whether new users show stronger engagement lifts than existing users, and identifying which specific personalization elements (content recommendations, UI adaptations, or messaging) drive the most significant improvements in retention and session duration.";
+
+//       setAiSuggestion(aiAgenda);
+//       setIsGenerating(false);
+//     }, 1200);
+//   };
+
+//   const handleUseAiSuggestion = () => {
+//     if (aiSuggestion) {
+//       setAgenda(aiSuggestion);
+//       onChange(aiSuggestion);
+//       setShowAIAssistant(false);
+//       setAiSuggestion("");
+//     }
+//   };
+
+//   return (
+//     <div>
+//       <div className="flex justify-between items-center mb-2">
+//         <h4 className="text-sm font-medium text-gray-700">Learning Agenda</h4>
+//         <button
+//           type="button"
+//           onClick={() => setShowAIAssistant(!showAIAssistant)}
+//           className="px-2 py-1 text-xs text-purple-700 bg-purple-100 rounded hover:bg-purple-200 flex items-center"
+//         >
+//           <span className="mr-1">✨</span>
+//           AI Assistant
+//         </button>
+//       </div>
+
+//       <textarea
+//         className="w-full p-2 border rounded mb-2"
+//         rows={3}
+//         value={agenda}
+//         onChange={handleChange}
+//         placeholder="What do you want to learn from this experiment?"
+//       />
+
+//       {showAIAssistant && (
+//         <div className="mb-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+//           <h4 className="font-medium text-purple-800 mb-2">
+//             AI Learning Agenda Assistant
+//           </h4>
+//           {aiSuggestion ? (
+//             <div className="mb-4">
+//               <div className="p-3 bg-white border rounded mb-3">
+//                 <p className="text-gray-800">{aiSuggestion}</p>
+//               </div>
+//               <div className="flex justify-end">
+//                 <button
+//                   onClick={handleUseAiSuggestion}
+//                   className="px-3 py-1.5 bg-purple-600 text-white text-sm rounded hover:bg-purple-700"
+//                 >
+//                   Use This Agenda
+//                 </button>
+//               </div>
+//             </div>
+//           ) : (
+//             <div>
+//               <p className="text-sm text-purple-700 mb-3">
+//                 Our AI will generate a comprehensive learning agenda based on
+//                 your experiment goals and hypothesis.
+//               </p>
+//               <button
+//                 onClick={handleGenerateAI}
+//                 className="w-full px-3 py-2 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 flex items-center justify-center"
+//                 disabled={isGenerating}
+//               >
+//                 {isGenerating ? (
+//                   <>
+//                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+//                     Generating...
+//                   </>
+//                 ) : (
+//                   <>
+//                     <span className="mr-2">✨</span>
+//                     Generate Learning Agenda
+//                   </>
+//                 )}
+//               </button>
+//             </div>
+//           )}
+//         </div>
+//       )}
+
+//       <div className="mt-3">
+//         <p className="text-sm text-gray-600 mb-2">Suggested templates:</p>
+//         <div className="space-y-2">
+//           {templates.map((template, index) => (
+//             <button
+//               key={index}
+//               className="block w-full text-left p-2 bg-gray-50 hover:bg-gray-100 text-sm rounded"
+//               onClick={() => handleSelectTemplate(template)}
+//             >
+//               {template}
+//             </button>
+//           ))}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+const LearningAgendaBuilder = ({
+  onChange,
+  initialValue = "",
+  experimentData = {},
+}) => {
   const [agenda, setAgenda] = useState(initialValue);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiSuggestion, setAiSuggestion] = useState("");
+
+  // Generate smart suggestions based on experiment context
+  const generateSmartAgenda = () => {
+    const category = experimentData.category || "";
+    const hypothesisText = experimentData.hypothesis || "";
+    const previousExperiments = experimentData.relatedExperiments || [];
+
+    // Base suggestions on experiment type
+    let contextualSuggestions = [];
+
+    if (category === "monetization") {
+      contextualSuggestions = [
+        "Understand price sensitivity across different user segments",
+        "Identify which features drive willingness to pay",
+        "Determine optimal pricing structure for conversion vs. retention",
+      ];
+    } else if (category === "engagement") {
+      contextualSuggestions = [
+        "Learn how UI changes affect different user segments' engagement patterns",
+        "Understand the relationship between session duration and return frequency",
+        "Identify which content categories drive deepest engagement",
+      ];
+    } else {
+      contextualSuggestions = [
+        "Understand how this change affects user behavior across segments",
+        "Identify any unintended consequences on secondary metrics",
+        "Determine if the effect is consistent across platforms and devices",
+      ];
+    }
+
+    return contextualSuggestions;
+  };
 
   const templates = [
     "Understand how [feature/change] impacts [key metric] for [audience segment].",
@@ -2906,10 +3119,21 @@ const LearningAgendaBuilder = ({ onChange, initialValue = "" }) => {
   const handleGenerateAI = () => {
     setIsGenerating(true);
 
+    // Get smart suggestions
+    const suggestions = generateSmartAgenda();
+
     // Simulate AI response with timeout
     setTimeout(() => {
+      // Create a more detailed learning agenda that builds on existing context
       const aiAgenda =
-        "Understand how different user segments respond to our personalized experience, specifically measuring whether new users show stronger engagement lifts than existing users, and identifying which specific personalization elements (content recommendations, UI adaptations, or messaging) drive the most significant improvements in retention and session duration.";
+        `Based on your experiment context, we recommend focusing on these learning objectives:\n\n` +
+        `1. ${suggestions[0]}\n` +
+        `2. ${suggestions[1]}\n` +
+        `3. ${suggestions[2]}\n\n` +
+        `Additionally, this experiment can help us build on previous learnings about ` +
+        `${
+          experimentData.category || "user behavior"
+        } and connect to our strategic understanding.`;
 
       setAiSuggestion(aiAgenda);
       setIsGenerating(false);
@@ -2939,12 +3163,19 @@ const LearningAgendaBuilder = ({ onChange, initialValue = "" }) => {
         </button>
       </div>
 
+      <div className="mb-3 bg-blue-50 p-3 rounded text-sm text-blue-700">
+        <p>
+          <strong>Why is this important:</strong> A learning agenda transforms
+          each experiment from a yes/no test into systematic knowledge building.
+        </p>
+      </div>
+
       <textarea
         className="w-full p-2 border rounded mb-2"
         rows={3}
         value={agenda}
         onChange={handleChange}
-        placeholder="What do you want to learn from this experiment?"
+        placeholder="What specific knowledge do you want to gain from this experiment, beyond the primary metric?"
       />
 
       {showAIAssistant && (
@@ -2955,7 +3186,9 @@ const LearningAgendaBuilder = ({ onChange, initialValue = "" }) => {
           {aiSuggestion ? (
             <div className="mb-4">
               <div className="p-3 bg-white border rounded mb-3">
-                <p className="text-gray-800">{aiSuggestion}</p>
+                <p className="text-gray-800 whitespace-pre-line">
+                  {aiSuggestion}
+                </p>
               </div>
               <div className="flex justify-end">
                 <button
@@ -2970,7 +3203,8 @@ const LearningAgendaBuilder = ({ onChange, initialValue = "" }) => {
             <div>
               <p className="text-sm text-purple-700 mb-3">
                 Our AI will generate a comprehensive learning agenda based on
-                your experiment goals and hypothesis.
+                your experiment context, previous related experiments, and
+                strategic knowledge gaps.
               </p>
               <button
                 onClick={handleGenerateAI}
@@ -4204,12 +4438,155 @@ const SignificanceCalculator = ({
    --------------------------------------------------------------------------- */
 
 // Multi-step Wizard Component
-const Wizard = ({ steps, onComplete, initialStep = 0 }) => {
-  const [currentStep, setCurrentStep] = useState(initialStep);
-  const [stepData, setStepData] = useState(
-    steps.map((step) => step.initialData || {})
-  );
+// const Wizard = ({ steps, onComplete, initialStep = 0 }) => {
+//   const [currentStep, setCurrentStep] = useState(initialStep);
+//   const [stepData, setStepData] = useState(
+//     steps.map((step) => step.initialData || {})
+//   );
 
+//   const handleNext = () => {
+//     if (currentStep < steps.length - 1) {
+//       setCurrentStep(currentStep + 1);
+//     } else {
+//       onComplete(stepData);
+//     }
+//   };
+
+//   const handleBack = () => {
+//     if (currentStep > 0) {
+//       setCurrentStep(currentStep - 1);
+//     }
+//   };
+
+//   const handleStepDataChange = (data) => {
+//     const newStepData = [...stepData];
+//     newStepData[currentStep] = { ...newStepData[currentStep], ...data };
+//     setStepData(newStepData);
+//   };
+
+//   const currentStepConfig = steps[currentStep];
+//   const StepComponent = currentStepConfig.component;
+
+//   return (
+//     <div>
+//       <div className="mb-6">
+//         <div className="flex items-center justify-between">
+//           {steps.map((step, index) => (
+//             <div
+//               key={index}
+//               className="flex flex-col items-center"
+//               onClick={() => index < currentStep && setCurrentStep(index)}
+//             >
+//               <div
+//                 className={`w-8 h-8 rounded-full flex items-center justify-center ${
+//                   currentStep >= index
+//                     ? "bg-blue-500 text-white"
+//                     : "bg-gray-200 text-gray-500"
+//                 } ${index < currentStep ? "cursor-pointer" : ""}`}
+//               >
+//                 {index + 1}
+//               </div>
+//               <span className="text-xs mt-1 text-gray-600">{step.title}</span>
+//             </div>
+//           ))}
+//         </div>
+//         <div className="relative mt-2 h-1 bg-gray-200">
+//           <div
+//             className="absolute h-1 bg-blue-500 transition-all duration-300"
+//             style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
+//           />
+//         </div>
+//       </div>
+
+//       <div className="mb-6">
+//         <h2 className="text-lg font-bold mb-2">{currentStepConfig.title}</h2>
+//         {currentStepConfig.description && (
+//           <p className="text-gray-600">{currentStepConfig.description}</p>
+//         )}
+//       </div>
+
+//       <div className="mb-6">
+//         <StepComponent
+//           data={stepData[currentStep]}
+//           onChange={handleStepDataChange}
+//           allData={stepData}
+//           allKnowledge={[]} // Replace with actual knowledge array if needed
+//           onToast={() => {}} // Replace with actual toast function if needed
+//         />
+//       </div>
+
+//       <div className="flex justify-between">
+//         {currentStep > 0 ? (
+//           <button
+//             onClick={handleBack}
+//             className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-50"
+//           >
+//             Back
+//           </button>
+//         ) : (
+//           <div></div> // Empty div for spacing
+//         )}
+
+//         <button
+//           onClick={handleNext}
+//           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+//           disabled={
+//             currentStepConfig.isDisabled &&
+//             currentStepConfig.isDisabled(stepData[currentStep])
+//           }
+//         >
+//           {currentStep === steps.length - 1 ? "Complete" : "Continue"}
+//         </button>
+//       </div>
+//     </div>
+//   );
+// };
+
+// Multi-step Wizard Component
+const Wizard = ({ steps, onComplete, initialStep = 0, initialData = {} }) => {
+  const [currentStep, setCurrentStep] = useState(initialStep);
+
+  // Initialize stepData with initialData merged into each step's data
+  const [stepData, setStepData] = useState(() => {
+    return steps.map((step, index) => {
+      // For first step, merge initialData with step's initialData
+      if (index === 0) {
+        return { ...(step.initialData || {}), ...initialData };
+      }
+      // For other steps, check if initialData has relevant fields for this step
+      const stepFields = {};
+
+      // This is a simple mechanism to pass data to other steps based on properties
+      // Add specific property mappings based on your steps
+      if (index === 1 && initialData) {
+        // For Goals & Metrics step
+        if (initialData.goal) stepFields.goal = initialData.goal;
+        if (initialData.primaryMetric)
+          stepFields.primaryMetric = initialData.primaryMetric;
+        if (initialData.hypothesis)
+          stepFields.hypothesis = initialData.hypothesis;
+        if (initialData.successCriteria)
+          stepFields.successCriteria = initialData.successCriteria;
+        if (initialData.learningAgenda)
+          stepFields.learningAgenda = initialData.learningAgenda;
+        if (initialData.audiences) stepFields.audiences = initialData.audiences;
+        if (initialData.baselineRate)
+          stepFields.baselineRate = initialData.baselineRate;
+        if (initialData.minimumEffect)
+          stepFields.minimumEffect = initialData.minimumEffect;
+      } else if (index === 2 && initialData) {
+        // For Variants step
+        if (initialData.control) stepFields.control = initialData.control;
+        if (initialData.treatment) stepFields.treatment = initialData.treatment;
+        if (initialData.allocation)
+          stepFields.allocation = initialData.allocation;
+      }
+
+      return { ...(step.initialData || {}), ...stepFields };
+    });
+  });
+
+  // Rest of the component remains the same
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -4387,6 +4764,7 @@ const WizardBasicInfoStep = ({
           placeholder="Person responsible for this experiment"
         />
       </FormGroup>
+
       <FormGroup title="Link to Strategic Objectives">
         <OKRSelector
           selectedOKRs={data.okrs || []}
@@ -4598,6 +4976,16 @@ const WizardGoalsMetricsStep = ({ data, onChange, allData }) => {
         />
       </FormGroup>
 
+      {/* <FormGroup
+        title="Learning Agenda"
+        description="What specific questions are you trying to answer with this experiment?"
+      >
+        <LearningAgendaBuilder
+          initialValue={data.learningAgenda || ""}
+          onChange={(agenda) => handleChange("learningAgenda", agenda)}
+        />
+      </FormGroup> */}
+
       <FormGroup
         title="Learning Agenda"
         description="What specific questions are you trying to answer with this experiment?"
@@ -4605,6 +4993,13 @@ const WizardGoalsMetricsStep = ({ data, onChange, allData }) => {
         <LearningAgendaBuilder
           initialValue={data.learningAgenda || ""}
           onChange={(agenda) => handleChange("learningAgenda", agenda)}
+          experimentData={{
+            category: allData[0].category,
+            hypothesis: data.hypothesis,
+            relatedExperiments: data.planningContext
+              ? [data.planningContext.id]
+              : [],
+          }}
         />
       </FormGroup>
 
@@ -5072,6 +5467,14 @@ export default function E2ExperimentPlatform() {
       suggestedPrompt = `Define clear success criteria for an experiment measuring ${
         context.primaryMetric || "key metrics"
       } with baseline conversion rate of ${context.baselineRate || "3"}%.`;
+    } else if (purpose === "feedback") {
+      suggestedPrompt = `Analyze this experiment brief titled "${
+        context.name || "Experiment Brief"
+      }" with goal "${
+        context.businessGoal || context.goal || "Improve metrics"
+      }" and hypothesis "${
+        context.hypothesis || "No hypothesis provided"
+      }". Provide feedback on statistical design, business alignment, and implementation feasibility. Format as bullet points with clear issues and recommendations.`;
     }
 
     // Update the AI context with the suggested prompt
@@ -5177,6 +5580,29 @@ This agenda will provide actionable insights regardless of whether your hypothes
 These criteria balance statistical rigor with practical business impact and account for potential side effects. The 15% threshold is ambitious but realistic based on industry benchmarks for similar changes.`;
           break;
 
+        case "insight":
+          response = `## AI-Generated Knowledge Insight
+          
+          Based on your ${
+            aiPromptContext.category || "experiment"
+          } focus, here's a valuable insight:
+          
+          ### Key Finding
+          Users respond most strongly to personalized experiences that maintain familiarity while introducing novelty. Our experiments show that gradual personalization outperforms immediate full personalization by 15-20%.
+          
+          ### Evidence
+          - Experiments with gradual introduction of personalized elements showed 22% higher engagement
+          - User segments with previous exposure to similar features demonstrated 35% higher retention
+          - Mobile users benefited more (+28%) from personalization than desktop users (+19%)
+          
+          ### Implications
+          1. Design personalization features with progressive disclosure patterns
+          2. Consider different personalization paths for different device types
+          3. Use historical behavior as a key signal for determining personalization depth
+          
+          This insight can be applied across product areas to improve user satisfaction while maximizing metric gains.`;
+          break;
+
         default:
           response = `I've analyzed your request and here are my thoughts:
 
@@ -5273,52 +5699,236 @@ Would you like me to help refine this further with more specific recommendations
   //   setIsSimulating(false);
   //   showToast(`Simulation Day ${simulationDay + 1}: Data updated`, "info");
   // };
-  const simulateDataUpdate = () => {
+  // const simulateDataUpdate = () => {
+  //   if (isSimulating) return;
+
+  //   setIsSimulating(true);
+
+  //   // Increment simulation day
+  //   const newSimDay = simulationDay + 1;
+  //   setSimulationDay(newSimDay);
+
+  //   showLoading(`Simulating Day ${newSimDay}...`);
+
+  //   setTimeout(() => {
+  //     // Only update in-progress experiments
+  //     const updatedExperiments = experiments.map((exp) => {
+  //       if (
+  //         exp.status !==
+  //         LIFECYCLE_STAGES.EXECUTION.IN_PROGRESS.label.toLowerCase()
+  //       ) {
+  //         return exp;
+  //       }
+
+  //       // Increase progress
+  //       const progressIncrement = Math.floor(Math.random() * 5) + 3; // 3-7% progress increment
+  //       const newProgress = Math.min(100, exp.progress + progressIncrement);
+
+  //       // Update days running
+  //       const newDaysRunning = exp.daysRunning + 1;
+
+  //       // Generate new data point for trend chart
+  //       const newDataPoint = {
+  //         date: `Sim ${newSimDay}`,
+  //         standard: parseFloat((2.0 + Math.random() * 0.3).toFixed(1)),
+  //         personalized: parseFloat((2.7 + Math.random() * 0.4).toFixed(1)),
+  //       };
+
+  //       // Handle different experiment IDs
+  //       if (exp.id === "mem-001" && membershipTrends) {
+  //         membershipTrends.push(newDataPoint);
+  //       } else if (exp.id === "ypp-001" && yppTrends) {
+  //         yppTrends.push(newDataPoint);
+  //       } else if (exp.id === "eng-001" && engagementTrends) {
+  //         engagementTrends.push(newDataPoint);
+  //       }
+
+  //       // If experiment is completed, add results
+  //       if (newProgress >= 100) {
+  //         // Generate random results
+  //         const improvement = Math.floor(Math.random() * 40) - 5; // -5% to +35%
+  //         const significance =
+  //           improvement > 15
+  //             ? 0.001
+  //             : improvement > 5
+  //             ? 0.03
+  //             : improvement > 0
+  //             ? 0.08
+  //             : 0.2;
+  //         const confidence = 100 - significance * 100;
+
+  //         return {
+  //           ...exp,
+  //           progress: 100,
+  //           daysRunning: newDaysRunning,
+  //           status: LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase(),
+  //           improvement,
+  //           significance,
+  //           confidence,
+  //           impact:
+  //             improvement > 0
+  //               ? `~${Math.floor(improvement * 100)} additional conversions`
+  //               : "No positive impact detected",
+  //           knowledgeStatus:
+  //             LIFECYCLE_STAGES.KNOWLEDGE.ANALYZING.label.toLowerCase(),
+  //         };
+  //       }
+
+  //       // Just update progress for ongoing experiments
+  //       return {
+  //         ...exp,
+  //         progress: newProgress,
+  //         daysRunning: newDaysRunning,
+  //       };
+  //     });
+
+  //     setExperiments(updatedExperiments);
+
+  //     // If we have a selected experiment, update it too
+  //     if (
+  //       selectedExperiment &&
+  //       selectedExperiment.status ===
+  //         LIFECYCLE_STAGES.EXECUTION.IN_PROGRESS.label.toLowerCase()
+  //     ) {
+  //       const updated = updatedExperiments.find(
+  //         (e) => e.id === selectedExperiment.id
+  //       );
+  //       if (updated) {
+  //         setSelectedExperiment(updated);
+  //       }
+  //     }
+
+  //     // Highlight what changed
+  //     const updatedCount = updatedExperiments.filter(
+  //       (e, i) => e.daysRunning !== experiments[i].daysRunning
+  //     ).length;
+
+  //     hideLoading();
+  //     setIsSimulating(false);
+  //     showToast(
+  //       `Simulation Day ${newSimDay}: Updated ${updatedCount} experiments with new data`,
+  //       "success",
+  //       4000
+  //     );
+  //   }, 800);
+  // };
+
+  const simulateDataUpdate = (days = 1) => {
     if (isSimulating) return;
 
     setIsSimulating(true);
-
-    // Increment simulation day
-    const newSimDay = simulationDay + 1;
-    setSimulationDay(newSimDay);
-
-    showLoading(`Simulating Day ${newSimDay}...`);
+    showLoading(`Simulating ${days} day${days > 1 ? "s" : ""}...`);
 
     setTimeout(() => {
-      // Only update in-progress experiments
-      const updatedExperiments = experiments.map((exp) => {
+      // Get today's date for consistency
+      const today = new Date();
+
+      // Clone the experiments to avoid mutation issues
+      const updatedExperiments = [...experiments].map((originalExp) => {
+        // Skip experiments that aren't in progress
         if (
-          exp.status !==
+          originalExp.status !==
           LIFECYCLE_STAGES.EXECUTION.IN_PROGRESS.label.toLowerCase()
         ) {
-          return exp;
+          return originalExp;
         }
 
-        // Increase progress
-        const progressIncrement = Math.floor(Math.random() * 5) + 3; // 3-7% progress increment
-        const newProgress = Math.min(100, exp.progress + progressIncrement);
+        // Make a deep copy to avoid reference issues
+        let updatedExp = { ...originalExp };
 
-        // Update days running
-        const newDaysRunning = exp.daysRunning + 1;
+        // Initialize trendData if it doesn't exist
+        if (!updatedExp.trendData) {
+          updatedExp.trendData = [];
 
-        // Generate new data point for trend chart
-        const newDataPoint = {
-          date: `Sim ${newSimDay}`,
-          standard: parseFloat((2.0 + Math.random() * 0.3).toFixed(1)),
-          personalized: parseFloat((2.7 + Math.random() * 0.4).toFixed(1)),
-        };
+          // Get initial data from standard sources if available
+          let initialData = [];
+          switch (updatedExp.id) {
+            case "mem-001":
+              initialData = [...membershipTrends];
+              break;
+            case "ypp-001":
+              initialData = [...yppTrends];
+              break;
+            case "eng-001":
+              initialData = [...engagementTrends];
+              break;
+            case "search-001":
+              initialData = [...searchTrends];
+              break;
+            case "multi-001":
+              initialData = [...multivariateTrends];
+              break;
+            default:
+              initialData = [];
+          }
 
-        // Handle different experiment IDs
-        if (exp.id === "mem-001" && membershipTrends) {
-          membershipTrends.push(newDataPoint);
-        } else if (exp.id === "ypp-001" && yppTrends) {
-          yppTrends.push(newDataPoint);
-        } else if (exp.id === "eng-001" && engagementTrends) {
-          engagementTrends.push(newDataPoint);
+          updatedExp.trendData = initialData;
         }
 
-        // If experiment is completed, add results
-        if (newProgress >= 100) {
+        // Get the current and total days
+        const startDaysRunning = updatedExp.daysRunning || 0;
+        const daysTotal = updatedExp.daysTotal || 31; // Default to 31 if not specified
+
+        // Determine how many days to actually simulate (don't exceed the total days)
+        const daysToSimulate = Math.min(days, daysTotal - startDaysRunning);
+        const newDaysRunning = startDaysRunning + daysToSimulate;
+
+        // If we're not going to simulate any days, just return the original
+        if (daysToSimulate <= 0) {
+          return originalExp;
+        }
+
+        // Calculate progress increment with some randomness
+        // If we're reaching the end of the timeline, ensure we reach 100%
+        let newProgress;
+        if (newDaysRunning >= daysTotal) {
+          // If we're completing the experiment, ensure progress is 100%
+          newProgress = 100;
+        } else {
+          // Otherwise calculate a reasonable progress increment
+          const totalProgressIncrement = Math.min(
+            100 - (updatedExp.progress || 0),
+            (Math.floor(Math.random() * 5) + 3) * daysToSimulate
+          );
+          newProgress = Math.min(
+            100,
+            (updatedExp.progress || 0) + totalProgressIncrement
+          );
+        }
+
+        // Generate data points for each day being simulated
+        const startDate = new Date(updatedExp.startDate);
+
+        // Generate trend data for each of the days being simulated
+        for (let i = 0; i < daysToSimulate; i++) {
+          const dayNumber = startDaysRunning + i + 1;
+          const currentDate = new Date(startDate);
+          currentDate.setDate(startDate.getDate() + dayNumber - 1);
+
+          const formattedDate = currentDate.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          });
+
+          // Add a data point for this simulation day
+          updatedExp.trendData.push({
+            date: formattedDate,
+            standard: parseFloat((2.0 + Math.random() * 0.3).toFixed(1)),
+            personalized: parseFloat((2.7 + Math.random() * 0.4).toFixed(1)),
+          });
+        }
+
+        // Update the experiment with the new values
+        updatedExp.daysRunning = newDaysRunning;
+        updatedExp.progress = newProgress;
+
+        // Handle experiment completion - either by reaching 100% progress or by completing the timeline
+        if (updatedExp.progress >= 100 || newDaysRunning >= daysTotal) {
+          // If we're completing due to timeline, ensure progress is 100%
+          if (newDaysRunning >= daysTotal) {
+            updatedExp.progress = 100;
+          }
+
           // Generate random results
           const improvement = Math.floor(Math.random() * 40) - 5; // -5% to +35%
           const significance =
@@ -5331,34 +5941,43 @@ Would you like me to help refine this further with more specific recommendations
               : 0.2;
           const confidence = 100 - significance * 100;
 
-          return {
-            ...exp,
-            progress: 100,
-            daysRunning: newDaysRunning,
-            status: LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase(),
-            improvement,
-            significance,
-            confidence,
-            impact:
-              improvement > 0
-                ? `~${Math.floor(improvement * 100)} additional conversions`
-                : "No positive impact detected",
-            knowledgeStatus:
-              LIFECYCLE_STAGES.KNOWLEDGE.ANALYZING.label.toLowerCase(),
-          };
+          // Set completion values
+          updatedExp.status =
+            LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase();
+          updatedExp.improvement = improvement;
+          updatedExp.significance = significance;
+          updatedExp.confidence = confidence;
+          updatedExp.impact =
+            improvement > 0
+              ? `~${Math.floor(improvement * 100)} additional conversions`
+              : "No positive impact detected";
+
+          // Don't set knowledgeStatus when experiment is completed through simulation
+          // This will allow user to add it to Knowledge Hub later
+          updatedExp.knowledgeStatus = null;
+          updatedExp.knowledgeId = null; // Make sure there's no knowledge ID either
+
+          // Update the end date to the actual completion date
+          const completionDate = new Date(startDate);
+          completionDate.setDate(startDate.getDate() + newDaysRunning - 1);
+
+          updatedExp.endDate = completionDate.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          });
         }
 
-        // Just update progress for ongoing experiments
-        return {
-          ...exp,
-          progress: newProgress,
-          daysRunning: newDaysRunning,
-        };
+        return updatedExp;
       });
 
+      // Update global experiments state
       setExperiments(updatedExperiments);
 
-      // If we have a selected experiment, update it too
+      // Increment simulation day (but only by the actual days simulated)
+      setSimulationDay(simulationDay + days);
+
+      // Update selected experiment if needed
       if (
         selectedExperiment &&
         selectedExperiment.status ===
@@ -5372,19 +5991,45 @@ Would you like me to help refine this further with more specific recommendations
         }
       }
 
-      // Highlight what changed
-      const updatedCount = updatedExperiments.filter(
-        (e, i) => e.daysRunning !== experiments[i].daysRunning
+      // Count completed experiments due to this simulation
+      const newlyCompletedCount = updatedExperiments.filter(
+        (e) =>
+          e.status ===
+            LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase() &&
+          experiments.find((orig) => orig.id === e.id)?.status ===
+            LIFECYCLE_STAGES.EXECUTION.IN_PROGRESS.label.toLowerCase()
       ).length;
 
+      // Count still-running experiments
+      const stillRunningCount = updatedExperiments.filter(
+        (e) =>
+          e.status ===
+          LIFECYCLE_STAGES.EXECUTION.IN_PROGRESS.label.toLowerCase()
+      ).length;
+
+      // Complete the simulation
       hideLoading();
       setIsSimulating(false);
-      showToast(
-        `Simulation Day ${newSimDay}: Updated ${updatedCount} experiments with new data`,
-        "success",
-        4000
-      );
-    }, 800);
+
+      // Show appropriate toast message
+      if (newlyCompletedCount > 0) {
+        showToast(
+          `Simulation complete: ${newlyCompletedCount} experiment${
+            newlyCompletedCount > 1 ? "s" : ""
+          } completed! ${stillRunningCount} still running.`,
+          "success",
+          4000
+        );
+      } else {
+        showToast(
+          `Simulation complete: Advanced timeline for ${stillRunningCount} experiment${
+            stillRunningCount > 1 ? "s" : ""
+          }.`,
+          "success",
+          4000
+        );
+      }
+    }, 1000);
   };
 
   /* ---------------------------------------------------------------------------
@@ -5460,19 +6105,92 @@ Would you like me to help refine this further with more specific recommendations
     }, 1500);
   };
 
+  // const sendToWizard = (item) => {
+  //   // Initialize wizard with data from the planning item
+  //   const wizardData = {
+  //     name: item.name,
+  //     category: item.category,
+  //     goal: item.goal,
+  //     hypothesis: item.hypothesis,
+  //     primaryMetric:
+  //       item.metrics[0] === "Conversion"
+  //         ? "conversion-rate"
+  //         : "average-session-duration",
+  //     successCriteria: `Achieve ≥15% improvement in ${item.metrics[0]} with statistical significance (p < 0.05)`,
+  //     learningAgenda: item.learningAgenda || "",
+  //     baselineRate: 2.5,
+  //     minimumEffect: 15,
+  //     okrs: item.okrs || [],
+  //     control: {
+  //       description: "Current implementation",
+  //     },
+  //     treatment: {
+  //       description: "New implementation based on the hypothesis",
+  //     },
+  //     allocation: { Control: 50, Treatment: 50 },
+  //     startDate: item.startDate,
+  //     endDate: item.endDate,
+  //     owner: item.owner,
+  //   };
+
+  //   // Start the wizard with this data
+  //   initializeWizard(wizardData);
+
+  //   // Update breadcrumbs
+  //   updateBreadcrumbs("new-experiment", "New Experiment");
+
+  //   // Close the plan item modal
+  //   closePlanItemModal();
+  // };
+
   const sendToWizard = (item) => {
-    // Initialize wizard with data from the planning item
+    // Format dates properly for HTML date inputs
+    const formatDateForInput = (dateString) => {
+      if (!dateString) return "";
+
+      try {
+        // Parse the date string which might be in format like "Apr 1, 2025"
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return ""; // Invalid date
+
+        // Format as YYYY-MM-DD
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+          2,
+          "0"
+        )}-${String(date.getDate()).padStart(2, "0")}`;
+      } catch (e) {
+        return ""; // Return empty on error
+      }
+    };
+
+    // Initialize wizard with comprehensive data from the planning item
     const wizardData = {
       name: item.name,
       category: item.category,
       goal: item.goal,
       hypothesis: item.hypothesis,
       primaryMetric:
-        item.metrics[0] === "Conversion"
-          ? "conversion-rate"
-          : "average-session-duration",
-      successCriteria: `Achieve ≥15% improvement in ${item.metrics[0]} with statistical significance (p < 0.05)`,
-      learningAgenda: item.learningAgenda || "",
+        item.metrics && item.metrics.length > 0
+          ? item.metrics[0] === "Conversion"
+            ? "conversion-rate"
+            : item.metrics[0] === "Engagement"
+            ? "average-session-duration"
+            : item.metrics[0] === "Retention"
+            ? "retention-rate"
+            : "click-through-rate"
+          : "",
+      successCriteria: `Achieve ≥15% improvement in ${
+        item.metrics && item.metrics.length > 0
+          ? item.metrics[0]
+          : "primary metric"
+      } with statistical significance (p < 0.05)`,
+      learningAgenda:
+        item.learningAgenda ||
+        `Understand how ${
+          item.hypothesis
+            ? item.hypothesis.split(" ").slice(0, 8).join(" ") + "..."
+            : "this change"
+        } affects user behavior across segments`,
       baselineRate: 2.5,
       minimumEffect: 15,
       okrs: item.okrs || [],
@@ -5480,13 +6198,31 @@ Would you like me to help refine this further with more specific recommendations
         description: "Current implementation",
       },
       treatment: {
-        description: "New implementation based on the hypothesis",
+        description: item.hypothesis
+          ? `Implementation based on hypothesis: ${item.hypothesis.substring(
+              0,
+              100
+            )}${item.hypothesis.length > 100 ? "..." : ""}`
+          : "New implementation based on the hypothesis",
       },
       allocation: { Control: 50, Treatment: 50 },
-      startDate: item.startDate,
-      endDate: item.endDate,
+      startDate: formatDateForInput(item.startDate),
+      endDate: formatDateForInput(item.endDate),
       owner: item.owner,
+      priority: item.priority,
+      duration: item.duration,
+      audiences: item.targetAudience ? [item.targetAudience] : [],
+      team: item.team || [],
+      // Additional context for AI-generated elements
+      planningContext: {
+        id: item.id,
+        createdDate: item.createdDate,
+        originalItem: true,
+      },
     };
+
+    // Show toast to indicate the data is being transferred
+    showToast(`Transferring "${item.name}" to experiment wizard`, "info");
 
     // Start the wizard with this data
     initializeWizard(wizardData);
@@ -6086,6 +6822,16 @@ Generated by E2E Experiment Platform`;
         )
       );
 
+      // Update the selected experiment if it's currently being viewed
+      if (selectedExperiment && selectedExperiment.id === exp.id) {
+        setSelectedExperiment({
+          ...selectedExperiment,
+          knowledgeStatus:
+            LIFECYCLE_STAGES.KNOWLEDGE.DOCUMENTED.label.toLowerCase(),
+          knowledgeId: newKnowledgeId,
+        });
+      }
+
       hideLoading();
       showToast("Added to Knowledge Hub!", "success");
 
@@ -6133,8 +6879,75 @@ Generated by E2E Experiment Platform`;
     setShowApplyInsightsModal(false);
   };
 
+  // const applyInsightsToWizard = () => {
+  //   if (!insightsItem) return;
+
+  //   // Initialize wizard data with insights
+  //   const wizardData = {
+  //     name: `Follow-up: ${insightsItem.name}`,
+  //     category: insightsItem.category,
+  //     goal: `Build on insights from "${insightsItem.name}"`,
+  //     hypothesis: `Based on prior insights: ${insightsItem.plainLanguageResult} We expect a similar or better result by...`,
+  //     primaryMetric:
+  //       insightsItem.relatedExperiments.length > 0
+  //         ? experiments.find((e) => e.id === insightsItem.relatedExperiments[0])
+  //             ?.primaryMetric || ""
+  //         : "",
+  //     successCriteria: `Improve on previous ${insightsItem.improvement}% lift with statistical significance`,
+  //     baselineRate: 3.0,
+  //     minimumEffect: 5.0,
+  //     learningAgenda: `Further explore the impact and mechanisms behind ${insightsItem.plainLanguageResult}`,
+  //     control: {
+  //       description: "Current implementation based on previous learnings",
+  //     },
+  //     treatment: {
+  //       description: "Further optimized version building on previous insights",
+  //     },
+  //     allocation: { Control: 50, Treatment: 50 },
+  //     knowledgeReference: insightsItem.id,
+  //   };
+
+  //   // Start the wizard with these values
+  //   initializeWizard(wizardData);
+
+  //   setShowApplyInsightsModal(false);
+  //   setShowWizard(true);
+
+  //   // Update breadcrumbs
+  //   updateBreadcrumbs("new-experiment", "New Experiment");
+  // };
+
   const applyInsightsToWizard = () => {
     if (!insightsItem) return;
+
+    // Format dates properly for HTML date inputs
+    const formatDateForInput = (dateString) => {
+      if (!dateString) return "";
+
+      try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+          // Default to today
+          const today = new Date();
+          return `${today.getFullYear()}-${String(
+            today.getMonth() + 1
+          ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+        }
+
+        // Format as YYYY-MM-DD
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+          2,
+          "0"
+        )}-${String(date.getDate()).padStart(2, "0")}`;
+      } catch (e) {
+        return ""; // Return empty on error
+      }
+    };
+
+    // Get today and one month from today
+    const today = new Date();
+    const oneMonthLater = new Date(today);
+    oneMonthLater.setMonth(today.getMonth() + 1);
 
     // Initialize wizard data with insights
     const wizardData = {
@@ -6143,6 +6956,7 @@ Generated by E2E Experiment Platform`;
       goal: `Build on insights from "${insightsItem.name}"`,
       hypothesis: `Based on prior insights: ${insightsItem.plainLanguageResult} We expect a similar or better result by...`,
       primaryMetric:
+        insightsItem.relatedExperiments &&
         insightsItem.relatedExperiments.length > 0
           ? experiments.find((e) => e.id === insightsItem.relatedExperiments[0])
               ?.primaryMetric || ""
@@ -6158,8 +6972,25 @@ Generated by E2E Experiment Platform`;
         description: "Further optimized version building on previous insights",
       },
       allocation: { Control: 50, Treatment: 50 },
+      // Add properly formatted dates
+      startDate: formatDateForInput(today.toISOString()),
+      endDate: formatDateForInput(oneMonthLater.toISOString()),
+      // Add OKRs from the knowledge item if available
+      okrs: insightsItem.okrs || [],
+      // Add related experiments
+      relatedExperiments: insightsItem.relatedExperiments || [],
+      // Reference to the original knowledge item
       knowledgeReference: insightsItem.id,
+      // Add knowledge source context
+      knowledgeSource: {
+        id: insightsItem.id,
+        name: insightsItem.name,
+        improvement: insightsItem.improvement,
+        originalItem: true,
+      },
     };
+
+    console.log("Applying insights to wizard with data:", wizardData);
 
     // Start the wizard with these values
     initializeWizard(wizardData);
@@ -6204,9 +7035,56 @@ Generated by E2E Experiment Platform`;
     showLoading("Generating knowledge report...");
 
     setTimeout(() => {
-      // In a real app, this would generate a comprehensive report
-      showToast("Knowledge report downloaded", "success");
+      // Create report content
+      const reportDate = new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+
+      let reportContent = `# Experiment Knowledge Report
+  Generated: ${reportDate}
+  
+  ## Summary
+  Total Insights: ${knowledge.length}
+  Positive Results: ${knowledge.filter((k) => k.improvement > 0).length}
+  Negative Results: ${knowledge.filter((k) => k.improvement <= 0).length}
+  Applied Knowledge: ${
+    knowledge.filter(
+      (k) => k.status === LIFECYCLE_STAGES.KNOWLEDGE.APPLIED.label.toLowerCase()
+    ).length
+  }
+  
+  ## Key Insights\n\n`;
+
+      // Add the top 5 insights by impact
+      const sortedKnowledge = [...knowledge].sort(
+        (a, b) => Math.abs(b.improvement) - Math.abs(a.improvement)
+      );
+
+      sortedKnowledge.slice(0, 5).forEach((k, idx) => {
+        reportContent += `### ${idx + 1}. ${k.name}\n`;
+        reportContent += `Category: ${k.category}\n`;
+        reportContent += `Impact: ${k.improvement > 0 ? "+" : ""}${
+          k.improvement
+        }% (p=${k.significance})\n`;
+        reportContent += `Summary: ${k.plainLanguageResult}\n\n`;
+      });
+
+      // Create a downloadable file
+      const blob = new Blob([reportContent], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+
+      // Create a link and trigger download
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "knowledge-report.txt";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
       hideLoading();
+      showToast("Knowledge report downloaded", "success");
     }, 1000);
   };
 
@@ -6338,8 +7216,39 @@ Generated by E2E Experiment Platform`;
     team: [],
   });
 
+  // const initializeWizard = (initialData = {}) => {
+  //   setWizardData({
+  //     name: "",
+  //     category: "",
+  //     startDate: "",
+  //     endDate: "",
+  //     goal: "",
+  //     primaryMetric: "",
+  //     targetAudience: "",
+  //     hypothesis: "",
+  //     successCriteria: "",
+  //     learningAgenda: "",
+  //     controlDetails: "",
+  //     treatmentDetails: "",
+  //     template: "standard",
+  //     control: {},
+  //     treatment: {},
+  //     allocation: { Control: 50, Treatment: 50 },
+  //     owner: "",
+  //     team: [],
+  //     ...initialData,
+  //   });
+
+  //   setWizardStep(1);
+  //   setShowWizard(true);
+  // };
+
   const initializeWizard = (initialData = {}) => {
-    setWizardData({
+    // Log the initialization for debugging
+    console.log("Initializing wizard with data:", initialData);
+
+    // Create a more complete default structure that the wizard expects
+    const defaultData = {
       name: "",
       category: "",
       startDate: "",
@@ -6358,8 +7267,36 @@ Generated by E2E Experiment Platform`;
       allocation: { Control: 50, Treatment: 50 },
       owner: "",
       team: [],
+    };
+
+    // Merge with provided initial data, preserving all fields
+    setWizardData({
+      ...defaultData,
       ...initialData,
+      // Ensure nested objects are properly merged
+      control: {
+        ...defaultData.control,
+        ...(initialData.control || {}),
+      },
+      treatment: {
+        ...defaultData.treatment,
+        ...(initialData.treatment || {}),
+      },
+      // For array fields, use initialData versions if provided, otherwise defaults
+      audiences: initialData.audiences || defaultData.audiences || [],
+      team: initialData.team || defaultData.team || [],
+      okrs: initialData.okrs || defaultData.okrs || [],
     });
+
+    // Notify user about pre-filled data if coming from planning
+    if (
+      initialData.planningContext &&
+      initialData.planningContext.originalItem
+    ) {
+      setTimeout(() => {
+        showToast("Data pre-filled from planning item", "success", 3000);
+      }, 500);
+    }
 
     setWizardStep(1);
     setShowWizard(true);
@@ -6708,25 +7645,90 @@ Generated by E2E Experiment Platform`;
             <span className="mr-1">📊</span>
             Simulate Day +1
           </button> */}
-          <button
-            onClick={simulateDataUpdate}
-            className={`px-3 py-2 ${
-              isSimulating ? "bg-gray-400" : "bg-green-500 hover:bg-green-600"
-            } text-white rounded flex items-center text-sm`}
-            disabled={isSimulating}
-          >
+          <div className="relative inline-block">
             {isSimulating ? (
-              <>
+              <button
+                className="px-3 py-2 bg-gray-400 text-white rounded flex items-center text-sm"
+                disabled
+              >
                 <div className="w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin mr-2"></div>
                 Simulating...
-              </>
+              </button>
             ) : (
-              <>
-                <span className="mr-1">📊</span>
-                Simulate Day +1
-              </>
+              <div className="flex items-center space-x-1">
+                <button
+                  onClick={() => simulateDataUpdate(1)}
+                  className="px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded flex items-center text-sm"
+                >
+                  <span className="mr-1">📊</span>
+                  Simulate +1 Day
+                </button>
+                <div className="relative">
+                  <button
+                    onClick={() =>
+                      document
+                        .getElementById("sim-dropdown")
+                        .classList.toggle("hidden")
+                    }
+                    className="px-2 py-2 bg-green-500 hover:bg-green-600 text-white rounded"
+                  >
+                    ▼
+                  </button>
+                  <div
+                    id="sim-dropdown"
+                    className="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg hidden z-10"
+                  >
+                    <div className="py-1">
+                      <button
+                        onClick={() => {
+                          document
+                            .getElementById("sim-dropdown")
+                            .classList.add("hidden");
+                          simulateDataUpdate(5);
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Simulate +5 Days
+                      </button>
+                      <button
+                        onClick={() => {
+                          document
+                            .getElementById("sim-dropdown")
+                            .classList.add("hidden");
+                          simulateDataUpdate(10);
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Simulate +10 Days
+                      </button>
+                      <button
+                        onClick={() => {
+                          document
+                            .getElementById("sim-dropdown")
+                            .classList.add("hidden");
+                          simulateDataUpdate(25);
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Simulate +25 Days
+                      </button>
+                      <button
+                        onClick={() => {
+                          document
+                            .getElementById("sim-dropdown")
+                            .classList.add("hidden");
+                          simulateDataUpdate(30);
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Simulate +30 Days
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
-          </button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -7830,9 +8832,13 @@ Generated by E2E Experiment Platform`;
                   <button
                     className="w-full px-3 py-2 bg-blue-50 text-blue-700 rounded text-sm text-left hover:bg-blue-100"
                     onClick={() => addExperimentToKnowledge(exp)}
-                    disabled={exp.knowledgeStatus !== null}
+                    disabled={
+                      exp.knowledgeStatus !== null &&
+                      exp.knowledgeStatus !== undefined
+                    }
                   >
-                    {exp.knowledgeStatus === null
+                    {exp.knowledgeStatus === null ||
+                    exp.knowledgeStatus === undefined
                       ? "Document learnings in Knowledge Hub"
                       : `Already in Knowledge Hub (${exp.knowledgeStatus})`}
                   </button>
@@ -8353,6 +9359,1044 @@ Generated by E2E Experiment Platform`;
     );
   };
 
+  // // Render Knowledge Hub Tab
+  // const renderKnowledgeTab = () => (
+  //   <div className="container mx-auto px-6 py-8">
+  //     {/* Context Banner */}
+  //     <ContextBanner section="knowledge" />
+
+  //     <div className="flex flex-col md:flex-row md:space-x-6">
+  //       <div className="md:w-3/4">
+  //         <div className="flex justify-between items-center mb-6">
+  //           <h1 className="text-2xl font-bold text-gray-800">Knowledge Hub</h1>
+  //           <div className="flex space-x-2">
+  //             <button
+  //               onClick={() => setKnowledgeView("list")}
+  //               className={`px-3 py-1.5 rounded text-sm ${
+  //                 knowledgeView === "list"
+  //                   ? "bg-blue-100 text-blue-700 font-medium"
+  //                   : "bg-gray-100 text-gray-700"
+  //               }`}
+  //             >
+  //               List View
+  //             </button>
+  //             <button
+  //               onClick={() => setKnowledgeView("graph")}
+  //               className={`px-3 py-1.5 rounded text-sm ${
+  //                 knowledgeView === "graph"
+  //                   ? "bg-blue-100 text-blue-700 font-medium"
+  //                   : "bg-gray-100 text-gray-700"
+  //               }`}
+  //             >
+  //               Graph View
+  //             </button>
+  //           </div>
+  //         </div>
+
+  //         {/* Filters */}
+  //         <div className="bg-white border rounded p-4 mb-6">
+  //           <div className="flex flex-col md:flex-row md:space-x-3 space-y-3 md:space-y-0">
+  //             <div className="flex-grow">
+  //               <input
+  //                 type="text"
+  //                 placeholder="Search insights or tags..."
+  //                 className="w-full p-2 border rounded"
+  //                 value={knowledgeSearch}
+  //                 onChange={(e) => setKnowledgeSearch(e.target.value)}
+  //               />
+  //             </div>
+  //             <div>
+  //               <select
+  //                 className="appearance-none bg-white border rounded w-full p-2"
+  //                 value={knowledgeCategory}
+  //                 onChange={(e) => setKnowledgeCategory(e.target.value)}
+  //               >
+  //                 <option value="all">All Categories</option>
+  //                 <option value="monetization">Monetization</option>
+  //                 <option value="engagement">Engagement</option>
+  //                 <option value="satisfaction">Satisfaction</option>
+  //               </select>
+  //             </div>
+  //           </div>
+
+  //           <div className="flex flex-wrap gap-2 mt-4">
+  //             <p className="text-xs text-gray-500 mr-2 mt-1">Popular tags:</p>
+  //             {[
+  //               "personalization",
+  //               "conversion",
+  //               "multivariate",
+  //               "negative result",
+  //               "ui",
+  //             ].map((tag) => (
+  //               <button
+  //                 key={tag}
+  //                 className={`px-2 py-1 rounded-full text-xs ${
+  //                   knowledgeSearch === tag
+  //                     ? "bg-blue-100 text-blue-700"
+  //                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+  //                 }`}
+  //                 onClick={() => setKnowledgeSearch(tag)}
+  //               >
+  //                 {tag}
+  //               </button>
+  //             ))}
+  //           </div>
+  //         </div>
+
+  //         <div className="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+  //           <h3 className="font-medium text-indigo-800 mb-2">
+  //             Knowledge Hub Overview
+  //           </h3>
+  //           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+  //             <div className="p-3 bg-white rounded border border-indigo-100">
+  //               <div className="flex items-center mb-2">
+  //                 <div className="w-8 h-8 rounded-full bg-green-100 text-green-700 flex items-center justify-center mr-2">
+  //                   <span className="text-lg">+</span>
+  //                 </div>
+  //                 <h4 className="font-medium text-gray-800">
+  //                   Positive Insights
+  //                 </h4>
+  //               </div>
+  //               <p className="text-2xl font-bold text-green-600">
+  //                 {knowledge.filter((k) => k.improvement > 0).length}
+  //               </p>
+  //               <button
+  //                 className="mt-2 text-xs text-indigo-600 hover:text-indigo-800"
+  //                 onClick={() => {
+  //                   // Simulate filtering to positive insights
+  //                   showToast("Filtering to positive insights", "info");
+  //                 }}
+  //               >
+  //                 View all positive insights →
+  //               </button>
+  //             </div>
+
+  //             <div className="p-3 bg-white rounded border border-indigo-100">
+  //               <div className="flex items-center mb-2">
+  //                 <div className="w-8 h-8 rounded-full bg-red-100 text-red-700 flex items-center justify-center mr-2">
+  //                   <span className="text-lg">-</span>
+  //                 </div>
+  //                 <h4 className="font-medium text-gray-800">
+  //                   Negative Insights
+  //                 </h4>
+  //               </div>
+  //               <p className="text-2xl font-bold text-red-600">
+  //                 {knowledge.filter((k) => k.improvement <= 0).length}
+  //               </p>
+  //               <button
+  //                 className="mt-2 text-xs text-indigo-600 hover:text-indigo-800"
+  //                 onClick={() => {
+  //                   // Simulate filtering to negative insights
+  //                   showToast("Filtering to negative insights", "info");
+  //                 }}
+  //               >
+  //                 View all negative insights →
+  //               </button>
+  //             </div>
+
+  //             <div className="p-3 bg-white rounded border border-indigo-100">
+  //               <div className="flex items-center mb-2">
+  //                 <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center mr-2">
+  //                   <span className="text-lg">✓</span>
+  //                 </div>
+  //                 <h4 className="font-medium text-gray-800">
+  //                   Applied Knowledge
+  //                 </h4>
+  //               </div>
+  //               <p className="text-2xl font-bold text-indigo-600">
+  //                 {
+  //                   knowledge.filter(
+  //                     (k) =>
+  //                       k.status ===
+  //                       LIFECYCLE_STAGES.KNOWLEDGE.APPLIED.label.toLowerCase()
+  //                   ).length
+  //                 }
+  //               </p>
+  //               <button
+  //                 className="mt-2 text-xs text-indigo-600 hover:text-indigo-800"
+  //                 onClick={() => {
+  //                   // Simulate filtering to applied knowledge
+  //                   showToast("Filtering to applied knowledge", "info");
+  //                 }}
+  //               >
+  //                 View all applied knowledge →
+  //               </button>
+  //             </div>
+  //           </div>
+
+  //           <div className="mt-4 flex items-center">
+  //             <div className="text-sm text-indigo-700 mr-3">
+  //               <span className="font-medium">Knowledge Hub Health:</span>{" "}
+  //               {knowledge.length > 5 ? "Strong" : "Building"}
+  //             </div>
+  //             <div className="flex-grow">
+  //               <div className="w-full bg-indigo-200 h-2 rounded">
+  //                 <div
+  //                   className="bg-indigo-600 h-2 rounded"
+  //                   style={{
+  //                     width: `${Math.min(100, knowledge.length * 10)}%`,
+  //                   }}
+  //                 ></div>
+  //               </div>
+  //             </div>
+  //             <div className="ml-3 text-sm text-indigo-700">
+  //               {Math.min(100, knowledge.length * 10)}%
+  //             </div>
+  //           </div>
+  //         </div>
+
+  //         {/* Main Content */}
+  //         {knowledgeView === "list" ? (
+  //           <div className="space-y-6">
+  //             {knowledge
+  //               .filter((k) => {
+  //                 const matchName = k.name
+  //                   .toLowerCase()
+  //                   .includes(knowledgeSearch.toLowerCase());
+  //                 const matchTags = k.tags.some((tag) =>
+  //                   tag.toLowerCase().includes(knowledgeSearch.toLowerCase())
+  //                 );
+  //                 const matchInsights = k.insights.some((insight) =>
+  //                   insight
+  //                     .toLowerCase()
+  //                     .includes(knowledgeSearch.toLowerCase())
+  //                 );
+  //                 const matchCat =
+  //                   knowledgeCategory === "all" ||
+  //                   k.category === knowledgeCategory;
+  //                 return (matchName || matchTags || matchInsights) && matchCat;
+  //               })
+  //               .map((item) => (
+  //                 <Card
+  //                   key={item.id}
+  //                   onClick={() => openKnowledgeDetails(item)}
+  //                 >
+  //                   <div className="flex justify-between items-start">
+  //                     <div>
+  //                       <h3 className="text-lg font-semibold text-gray-800">
+  //                         {item.name}
+  //                       </h3>
+  //                       <p className="text-sm text-gray-500 mt-1">
+  //                         {item.date} • {item.owner}
+  //                       </p>
+  //                     </div>
+  //                     <div className="flex items-center space-x-2">
+  //                       <StatusBadge
+  //                         status={item.status}
+  //                         lifecycleStage="knowledge"
+  //                       />
+  //                       <div
+  //                         className={`px-3 py-1 text-sm font-medium rounded ${
+  //                           item.improvement > 0
+  //                             ? "bg-green-100 text-green-700"
+  //                             : "bg-red-100 text-red-700"
+  //                         }`}
+  //                       >
+  //                         {item.improvement > 0
+  //                           ? `+${item.improvement}%`
+  //                           : `${item.improvement}%`}
+  //                       </div>
+  //                     </div>
+  //                   </div>
+
+  //                   <div className="mt-3">
+  //                     <h4 className="text-sm font-medium text-gray-700">
+  //                       Summary
+  //                     </h4>
+  //                     <p className="text-sm text-gray-600 mt-1">
+  //                       {item.plainLanguageResult}
+  //                     </p>
+  //                   </div>
+
+  //                   <div className="flex flex-wrap gap-1 mt-4">
+  //                     {item.tags.map((tag) => (
+  //                       <span
+  //                         key={tag}
+  //                         className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded cursor-pointer hover:bg-gray-200"
+  //                         onClick={(e) => {
+  //                           e.stopPropagation();
+  //                           setKnowledgeSearch(tag);
+  //                         }}
+  //                       >
+  //                         {tag}
+  //                       </span>
+  //                     ))}
+  //                   </div>
+
+  //                   <div className="mt-3">
+  //                     <h4 className="text-sm font-medium text-gray-700">
+  //                       Key Insights
+  //                     </h4>
+  //                     <ul className="list-disc list-inside text-sm text-gray-600 space-y-1 mt-1">
+  //                       {item.insights.slice(0, 2).map((insight, idx) => (
+  //                         <li key={idx}>{insight}</li>
+  //                       ))}
+  //                       {item.insights.length > 2 && (
+  //                         <li className="text-blue-600 list-none text-xs cursor-pointer hover:text-blue-800">
+  //                           + {item.insights.length - 2} more insights...
+  //                         </li>
+  //                       )}
+  //                     </ul>
+  //                   </div>
+
+  //                   {item.aiRecommendations && (
+  //                     <div className="mt-3 bg-purple-50 p-2 rounded border border-purple-100">
+  //                       <div className="flex items-center mb-1">
+  //                         <span className="mr-1 text-purple-700">✨</span>
+  //                         <h4 className="text-xs font-medium text-purple-700">
+  //                           AI Recommendations
+  //                         </h4>
+  //                       </div>
+  //                       <p className="text-xs text-purple-700">
+  //                         {item.aiRecommendations[0]}
+  //                       </p>
+  //                     </div>
+  //                   )}
+
+  //                   <RelatedExperiments
+  //                     experimentIds={item.relatedExperiments}
+  //                     onViewExperiment={(exp) => {
+  //                       handleTabChange("experiments");
+  //                       setTimeout(() => {
+  //                         selectExperiment(exp);
+  //                       }, 100);
+  //                     }}
+  //                   />
+
+  //                   <div className="flex items-center justify-between mt-4">
+  //                     <span
+  //                       className={`px-2 py-0.5 text-xs font-medium rounded ${
+  //                         item.category === "monetization"
+  //                           ? "bg-green-100 text-green-700"
+  //                           : "bg-blue-100 text-blue-700"
+  //                       }`}
+  //                     >
+  //                       {item.category}
+  //                     </span>
+
+  //                     <div className="flex space-x-2">
+  //                       <button
+  //                         className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200"
+  //                         onClick={(e) => {
+  //                           e.stopPropagation();
+  //                           openKnowledgeDetails(item);
+  //                         }}
+  //                       >
+  //                         View Details
+  //                       </button>
+  //                       <button
+  //                         className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200"
+  //                         onClick={(e) => {
+  //                           e.stopPropagation();
+  //                           openApplyInsights(item);
+  //                         }}
+  //                       >
+  //                         Apply Insights
+  //                       </button>
+  //                     </div>
+  //                   </div>
+  //                 </Card>
+  //               ))}
+
+  //             {knowledge.filter((k) => {
+  //               const matchName = k.name
+  //                 .toLowerCase()
+  //                 .includes(knowledgeSearch.toLowerCase());
+  //               const matchTags = k.tags.some((tag) =>
+  //                 tag.toLowerCase().includes(knowledgeSearch.toLowerCase())
+  //               );
+  //               const matchInsights = k.insights.some((insight) =>
+  //                 insight.toLowerCase().includes(knowledgeSearch.toLowerCase())
+  //               );
+  //               const matchCat =
+  //                 knowledgeCategory === "all" ||
+  //                 k.category === knowledgeCategory;
+  //               return (matchName || matchTags || matchInsights) && matchCat;
+  //             }).length === 0 && (
+  //               <div className="bg-gray-50 p-8 rounded-lg text-center">
+  //                 <p className="text-gray-600">
+  //                   No knowledge items match your search criteria.
+  //                 </p>
+  //                 <button
+  //                   onClick={() => {
+  //                     setKnowledgeSearch("");
+  //                     setKnowledgeCategory("all");
+  //                   }}
+  //                   className="mt-2 text-blue-600 hover:text-blue-800 text-sm"
+  //                 >
+  //                   Clear filters
+  //                 </button>
+  //               </div>
+  //             )}
+  //           </div>
+  //         ) : (
+  //           // <Card className="p-0">
+  //           //   <div className="w-full" style={{ height: "600px" }}>
+  //           //     {/* The updated graph data logic */}
+  //           //     <ForceGraph2D
+  //           //       graphData={(() => {
+  //           //         // Extract all experiment and OKR IDs from the data
+  //           //         const completedExperiments = experiments.filter(
+  //           //           (e) =>
+  //           //             e.status ===
+  //           //             LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase()
+  //           //         );
+
+  //           //         // Create node lists
+  //           //         const knowledgeNodes = knowledge
+  //           //           .filter((k) => {
+  //           //             if (knowledgeSearch) {
+  //           //               const matchName = k.name
+  //           //                 .toLowerCase()
+  //           //                 .includes(knowledgeSearch.toLowerCase());
+  //           //               const matchTags = k.tags.some((tag) =>
+  //           //                 tag
+  //           //                   .toLowerCase()
+  //           //                   .includes(knowledgeSearch.toLowerCase())
+  //           //               );
+  //           //               const matchInsights = k.insights.some((insight) =>
+  //           //                 insight
+  //           //                   .toLowerCase()
+  //           //                   .includes(knowledgeSearch.toLowerCase())
+  //           //               );
+  //           //               return matchName || matchTags || matchInsights;
+  //           //             }
+  //           //             if (knowledgeCategory !== "all") {
+  //           //               return k.category === knowledgeCategory;
+  //           //             }
+  //           //             return true;
+  //           //           })
+  //           //           .map((k) => ({
+  //           //             id: k.id,
+  //           //             name: `📚 ${k.name}`,
+  //           //             group: k.category,
+  //           //             type: "knowledge",
+  //           //             val: 15, // size
+  //           //           }));
+
+  //           //         const experimentNodes = completedExperiments
+  //           //           .filter((e) => {
+  //           //             if (knowledgeSearch) {
+  //           //               return e.name
+  //           //                 .toLowerCase()
+  //           //                 .includes(knowledgeSearch.toLowerCase());
+  //           //             }
+  //           //             if (knowledgeCategory !== "all") {
+  //           //               return e.category === knowledgeCategory;
+  //           //             }
+  //           //             return true;
+  //           //           })
+  //           //           .map((e) => ({
+  //           //             id: e.id,
+  //           //             name: `🧪 ${e.name}`,
+  //           //             group: e.category,
+  //           //             type: "experiment",
+  //           //             val: 10, // size
+  //           //           }));
+
+  //           //         const okrNodes = okrData
+  //           //           .filter((o) => {
+  //           //             if (knowledgeSearch) {
+  //           //               return o.title
+  //           //                 .toLowerCase()
+  //           //                 .includes(knowledgeSearch.toLowerCase());
+  //           //             }
+  //           //             return true;
+  //           //           })
+  //           //           .map((o) => ({
+  //           //             id: o.id,
+  //           //             name: `🎯 ${o.title}`,
+  //           //             group: "okr",
+  //           //             type: "okr",
+  //           //             val: 12, // size
+  //           //           }));
+
+  //           //         // Create a set of all node IDs for quick reference
+  //           //         const nodeIds = new Set([
+  //           //           ...knowledgeNodes.map((n) => n.id),
+  //           //           ...experimentNodes.map((n) => n.id),
+  //           //           ...okrNodes.map((n) => n.id),
+  //           //         ]);
+
+  //           //         // Create validated links that only connect existing nodes
+  //           //         const links = [];
+
+  //           //         // Knowledge to experiment links
+  //           //         knowledge.forEach((k) => {
+  //           //           if (k.relatedExperiments) {
+  //           //             k.relatedExperiments.forEach((expId) => {
+  //           //               if (nodeIds.has(expId)) {
+  //           //                 links.push({
+  //           //                   source: k.id,
+  //           //                   target: expId,
+  //           //                 });
+  //           //               }
+  //           //             });
+  //           //           }
+  //           //         });
+
+  //           //         // Experiment to OKR links
+  //           //         completedExperiments.forEach((e) => {
+  //           //           if (e.okrs) {
+  //           //             e.okrs.forEach((okrId) => {
+  //           //               if (nodeIds.has(okrId)) {
+  //           //                 links.push({
+  //           //                   source: e.id,
+  //           //                   target: okrId,
+  //           //                 });
+  //           //               }
+  //           //             });
+  //           //           }
+  //           //         });
+
+  //           //         return {
+  //           //           nodes: [
+  //           //             ...knowledgeNodes,
+  //           //             ...experimentNodes,
+  //           //             ...okrNodes,
+  //           //           ],
+  //           //           links: links,
+  //           //         };
+  //           //       })()}
+  //           //       nodeLabel={(node) => `${node.name} (${node.type})`}
+  //           //       nodeAutoColorBy="group"
+  //           //       linkWidth={2}
+  //           //       linkColor={() => "#999"}
+  //           //       cooldownTicks={100}
+  //           //       nodeRelSize={6}
+  //           //       onNodeClick={(node) => {
+  //           //         // Handle node click based on type
+  //           //         if (node.type === "knowledge") {
+  //           //           const item = knowledge.find((k) => k.id === node.id);
+  //           //           if (item) openKnowledgeDetails(item);
+  //           //         } else if (node.type === "experiment") {
+  //           //           handleTabChange("experiments");
+  //           //           setTimeout(() => {
+  //           //             const exp = experiments.find((e) => e.id === node.id);
+  //           //             if (exp) selectExperiment(exp);
+  //           //           }, 100);
+  //           //         } else if (node.type === "okr") {
+  //           //           // Just show a toast for now
+  //           //           showToast(
+  //           //             `Viewing OKR: ${node.name.substring(2)}`,
+  //           //             "info"
+  //           //           );
+  //           //         }
+  //           //       }}
+  //           //       onNodeHover={(node) => {
+  //           //         if (node) {
+  //           //           document.body.style.cursor = "pointer";
+  //           //         } else {
+  //           //           document.body.style.cursor = "default";
+  //           //         }
+  //           //       }}
+  //           //     />
+  //           //   </div>
+
+  //           //   <div className="p-4 bg-gray-50">
+  //           //     <h3 className="font-medium text-gray-800 mb-2">
+  //           //       Knowledge Graph Legend
+  //           //     </h3>
+  //           //     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+  //           //       <div className="flex items-center">
+  //           //         <span className="mr-2">📚</span>
+  //           //         <div>
+  //           //           <p className="font-medium">Knowledge</p>
+  //           //           <p className="text-xs text-gray-600">
+  //           //             Insights and learnings
+  //           //           </p>
+  //           //         </div>
+  //           //       </div>
+  //           //       <div className="flex items-center">
+  //           //         <span className="mr-2">🧪</span>
+  //           //         <div>
+  //           //           <p className="font-medium">Experiment</p>
+  //           //           <p className="text-xs text-gray-600">
+  //           //             Completed experiments
+  //           //           </p>
+  //           //         </div>
+  //           //       </div>
+  //           //       <div className="flex items-center">
+  //           //         <span className="mr-2">🎯</span>
+  //           //         <div>
+  //           //           <p className="font-medium">OKR</p>
+  //           //           <p className="text-xs text-gray-600">
+  //           //             Strategic objectives
+  //           //           </p>
+  //           //         </div>
+  //           //       </div>
+  //           //     </div>
+  //           //     <p className="mt-4 text-sm text-gray-600">
+  //           //       The knowledge graph visualizes relationships between insights,
+  //           //       experiments, and strategic goals. Click on any node to view
+  //           //       details or create new experiments based on existing knowledge.
+  //           //     </p>
+  //           //   </div>
+  //           // </Card>
+  //           <Card className="p-4">
+  //             <div className="mb-4">
+  //               <h3 className="font-medium text-gray-800 mb-2">
+  //                 Knowledge Graph Visualization
+  //               </h3>
+  //               <p className="text-sm text-gray-600">
+  //                 See how experiments, insights, and OKRs are connected in your
+  //                 organization's knowledge network.
+  //               </p>
+
+  //               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
+  //                 <div>
+  //                   <label className="block text-xs font-medium text-gray-700 mb-1">
+  //                     Show Node Types
+  //                   </label>
+  //                   <div className="space-y-1">
+  //                     <div className="flex items-center">
+  //                       <input
+  //                         type="checkbox"
+  //                         id="showKnowledgeNodes"
+  //                         className="mr-2"
+  //                         defaultChecked
+  //                         onChange={(e) => {
+  //                           // This would filter nodes in a real application
+  //                           showToast(
+  //                             `${
+  //                               e.target.checked ? "Showing" : "Hiding"
+  //                             } knowledge nodes`,
+  //                             "info"
+  //                           );
+  //                         }}
+  //                       />
+  //                       <label htmlFor="showKnowledgeNodes" className="text-sm">
+  //                         📚 Knowledge Items
+  //                       </label>
+  //                     </div>
+  //                     <div className="flex items-center">
+  //                       <input
+  //                         type="checkbox"
+  //                         id="showExperimentNodes"
+  //                         className="mr-2"
+  //                         defaultChecked
+  //                         onChange={(e) => {
+  //                           // This would filter nodes in a real application
+  //                           showToast(
+  //                             `${
+  //                               e.target.checked ? "Showing" : "Hiding"
+  //                             } experiment nodes`,
+  //                             "info"
+  //                           );
+  //                         }}
+  //                       />
+  //                       <label
+  //                         htmlFor="showExperimentNodes"
+  //                         className="text-sm"
+  //                       >
+  //                         🧪 Experiments
+  //                       </label>
+  //                     </div>
+  //                     <div className="flex items-center">
+  //                       <input
+  //                         type="checkbox"
+  //                         id="showOKRNodes"
+  //                         className="mr-2"
+  //                         defaultChecked
+  //                         onChange={(e) => {
+  //                           // This would filter nodes in a real application
+  //                           showToast(
+  //                             `${
+  //                               e.target.checked ? "Showing" : "Hiding"
+  //                             } OKR nodes`,
+  //                             "info"
+  //                           );
+  //                         }}
+  //                       />
+  //                       <label htmlFor="showOKRNodes" className="text-sm">
+  //                         🎯 OKRs
+  //                       </label>
+  //                     </div>
+  //                   </div>
+  //                 </div>
+
+  //                 <div>
+  //                   <label className="block text-xs font-medium text-gray-700 mb-1">
+  //                     Filter by Category
+  //                   </label>
+  //                   <select
+  //                     className="w-full p-2 border rounded text-sm"
+  //                     onChange={(e) => {
+  //                       // This would update the graph filter in a real application
+  //                       setKnowledgeCategory(e.target.value);
+  //                     }}
+  //                     value={knowledgeCategory}
+  //                   >
+  //                     <option value="all">All Categories</option>
+  //                     <option value="monetization">Monetization</option>
+  //                     <option value="engagement">Engagement</option>
+  //                     <option value="satisfaction">Satisfaction</option>
+  //                   </select>
+  //                 </div>
+
+  //                 <div>
+  //                   <label className="block text-xs font-medium text-gray-700 mb-1">
+  //                     Filter by Impact
+  //                   </label>
+  //                   <select
+  //                     className="w-full p-2 border rounded text-sm"
+  //                     onChange={(e) => {
+  //                       // This would update the graph filter in a real application
+  //                       showToast(
+  //                         `Filtering to ${e.target.value} impact items`,
+  //                         "info"
+  //                       );
+  //                     }}
+  //                   >
+  //                     <option value="all">All Impact Levels</option>
+  //                     <option value="high">High Impact</option>
+  //                     <option value="medium">Medium Impact</option>
+  //                     <option value="low">Low Impact</option>
+  //                   </select>
+  //                 </div>
+  //               </div>
+
+  //               <div className="mt-4 flex items-center justify-between">
+  //                 <div className="text-xs text-gray-600">
+  //                   {knowledgeCategory === "all"
+  //                     ? "Showing all categories"
+  //                     : `Filtering to ${knowledgeCategory} category`}
+  //                   {knowledgeSearch ? ` • Search: "${knowledgeSearch}"` : ""}
+  //                 </div>
+
+  //                 <button
+  //                   className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200"
+  //                   onClick={() => {
+  //                     setKnowledgeSearch("");
+  //                     setKnowledgeCategory("all");
+  //                     showToast("Filters reset", "info");
+  //                   }}
+  //                 >
+  //                   Reset Filters
+  //                 </button>
+  //               </div>
+  //             </div>
+
+  //             <div
+  //               className="w-full bg-gray-50 border rounded"
+  //               style={{ height: "500px" }}
+  //             >
+  //               <ForceGraph2D
+  //                 graphData={(() => {
+  //                   // Extract all experiment and OKR IDs from the data
+  //                   const completedExperiments = experiments.filter(
+  //                     (e) =>
+  //                       e.status ===
+  //                       LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase()
+  //                   );
+
+  //                   // Create node lists
+  //                   const knowledgeNodes = knowledge
+  //                     .filter((k) => {
+  //                       if (knowledgeSearch) {
+  //                         const matchName = k.name
+  //                           .toLowerCase()
+  //                           .includes(knowledgeSearch.toLowerCase());
+  //                         const matchTags = k.tags.some((tag) =>
+  //                           tag
+  //                             .toLowerCase()
+  //                             .includes(knowledgeSearch.toLowerCase())
+  //                         );
+  //                         const matchInsights = k.insights.some((insight) =>
+  //                           insight
+  //                             .toLowerCase()
+  //                             .includes(knowledgeSearch.toLowerCase())
+  //                         );
+  //                         return matchName || matchTags || matchInsights;
+  //                       }
+  //                       if (knowledgeCategory !== "all") {
+  //                         return k.category === knowledgeCategory;
+  //                       }
+  //                       return true;
+  //                     })
+  //                     .map((k) => ({
+  //                       id: k.id,
+  //                       name: `📚 ${k.name}`,
+  //                       group: k.category,
+  //                       type: "knowledge",
+  //                       val: 15, // size
+  //                     }));
+
+  //                   const experimentNodes = completedExperiments
+  //                     .filter((e) => {
+  //                       if (knowledgeSearch) {
+  //                         return e.name
+  //                           .toLowerCase()
+  //                           .includes(knowledgeSearch.toLowerCase());
+  //                       }
+  //                       if (knowledgeCategory !== "all") {
+  //                         return e.category === knowledgeCategory;
+  //                       }
+  //                       return true;
+  //                     })
+  //                     .map((e) => ({
+  //                       id: e.id,
+  //                       name: `🧪 ${e.name}`,
+  //                       group: e.category,
+  //                       type: "experiment",
+  //                       val: 10, // size
+  //                     }));
+
+  //                   const okrNodes = okrData
+  //                     .filter((o) => {
+  //                       if (knowledgeSearch) {
+  //                         return o.title
+  //                           .toLowerCase()
+  //                           .includes(knowledgeSearch.toLowerCase());
+  //                       }
+  //                       return true;
+  //                     })
+  //                     .map((o) => ({
+  //                       id: o.id,
+  //                       name: `🎯 ${o.title}`,
+  //                       group: "okr",
+  //                       type: "okr",
+  //                       val: 12, // size
+  //                     }));
+
+  //                   // Create a set of all node IDs for quick reference
+  //                   const nodeIds = new Set([
+  //                     ...knowledgeNodes.map((n) => n.id),
+  //                     ...experimentNodes.map((n) => n.id),
+  //                     ...okrNodes.map((n) => n.id),
+  //                   ]);
+
+  //                   // Create validated links that only connect existing nodes
+  //                   const links = [];
+
+  //                   // Knowledge to experiment links
+  //                   knowledge.forEach((k) => {
+  //                     if (k.relatedExperiments) {
+  //                       k.relatedExperiments.forEach((expId) => {
+  //                         if (nodeIds.has(expId)) {
+  //                           links.push({
+  //                             source: k.id,
+  //                             target: expId,
+  //                           });
+  //                         }
+  //                       });
+  //                     }
+  //                   });
+
+  //                   // Experiment to OKR links
+  //                   completedExperiments.forEach((e) => {
+  //                     if (e.okrs) {
+  //                       e.okrs.forEach((okrId) => {
+  //                         if (nodeIds.has(okrId)) {
+  //                           links.push({
+  //                             source: e.id,
+  //                             target: okrId,
+  //                           });
+  //                         }
+  //                       });
+  //                     }
+  //                   });
+
+  //                   return {
+  //                     nodes: [
+  //                       ...knowledgeNodes,
+  //                       ...experimentNodes,
+  //                       ...okrNodes,
+  //                     ],
+  //                     links: links,
+  //                   };
+  //                 })()}
+  //                 nodeLabel={(node) => `${node.name} (${node.type})`}
+  //                 nodeAutoColorBy="group"
+  //                 linkWidth={2}
+  //                 linkColor={() => "#999"}
+  //                 cooldownTicks={100}
+  //                 nodeRelSize={6}
+  //                 onNodeClick={(node) => {
+  //                   // Handle node click based on type
+  //                   if (node.type === "knowledge") {
+  //                     const item = knowledge.find((k) => k.id === node.id);
+  //                     if (item) openKnowledgeDetails(item);
+  //                   } else if (node.type === "experiment") {
+  //                     handleTabChange("experiments");
+  //                     setTimeout(() => {
+  //                       const exp = experiments.find((e) => e.id === node.id);
+  //                       if (exp) selectExperiment(exp);
+  //                     }, 100);
+  //                   } else if (node.type === "okr") {
+  //                     // Just show a toast for now
+  //                     showToast(
+  //                       `Viewing OKR: ${node.name.substring(2)}`,
+  //                       "info"
+  //                     );
+  //                   }
+  //                 }}
+  //                 onNodeHover={(node) => {
+  //                   if (node) {
+  //                     document.body.style.cursor = "pointer";
+  //                   } else {
+  //                     document.body.style.cursor = "default";
+  //                   }
+  //                 }}
+  //               />
+  //             </div>
+
+  //             <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
+  //               <h4 className="font-medium text-gray-800 mb-2">
+  //                 Knowledge Graph Legend
+  //               </h4>
+  //               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+  //                 <div className="flex items-center">
+  //                   <span className="mr-2">📚</span>
+  //                   <div>
+  //                     <p className="font-medium">Knowledge</p>
+  //                     <p className="text-xs text-gray-600">
+  //                       Insights and learnings
+  //                     </p>
+  //                   </div>
+  //                 </div>
+  //                 <div className="flex items-center">
+  //                   <span className="mr-2">🧪</span>
+  //                   <div>
+  //                     <p className="font-medium">Experiment</p>
+  //                     <p className="text-xs text-gray-600">
+  //                       Completed experiments
+  //                     </p>
+  //                   </div>
+  //                 </div>
+  //                 <div className="flex items-center">
+  //                   <span className="mr-2">🎯</span>
+  //                   <div>
+  //                     <p className="font-medium">OKR</p>
+  //                     <p className="text-xs text-gray-600">
+  //                       Strategic objectives
+  //                     </p>
+  //                   </div>
+  //                 </div>
+  //               </div>
+  //               <p className="mt-4 text-sm text-gray-600">
+  //                 The knowledge graph visualizes relationships between insights,
+  //                 experiments, and strategic goals. Click on any node to view
+  //                 details or create new experiments based on existing knowledge.
+  //               </p>
+  //             </div>
+  //           </Card>
+  //         )}
+  //       </div>
+
+  //       <div className="md:w-1/4 mt-6 md:mt-0">
+  //         {/* Recent Items */}
+  //         {renderRecentItems()}
+
+  //         {/* Stats */}
+  //         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+  //           <h3 className="text-sm font-medium text-gray-700 mb-3">
+  //             Knowledge Stats
+  //           </h3>
+  //           <div className="space-y-4">
+  //             <StatCard
+  //               title="Total Learnings"
+  //               value={knowledge.length}
+  //               color="indigo"
+  //             />
+  //             <StatCard
+  //               title="Engagement Insights"
+  //               value={
+  //                 knowledge.filter((k) => k.category === "engagement").length
+  //               }
+  //               color="blue"
+  //             />
+  //             <StatCard
+  //               title="Monetization Insights"
+  //               value={
+  //                 knowledge.filter((k) => k.category === "monetization").length
+  //               }
+  //               color="green"
+  //             />
+  //           </div>
+  //         </div>
+
+  //         {/* Impact Rating */}
+  //         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+  //           <h3 className="text-sm font-medium text-gray-700 mb-3">
+  //             Impact Rating
+  //           </h3>
+  //           <div className="space-y-3">
+  //             {["High", "Medium", "Low"].map((impact) => {
+  //               const count = knowledge.filter(
+  //                 (k) => k.businessImpact && k.businessImpact.includes(impact)
+  //               ).length;
+  //               return (
+  //                 <div key={impact}>
+  //                   <div className="flex justify-between text-sm">
+  //                     <span>{impact} Impact</span>
+  //                     <span className="font-medium">{count}</span>
+  //                   </div>
+  //                   <div className="w-full bg-gray-200 h-2 rounded mt-1">
+  //                     <div
+  //                       className={`h-2 rounded ${
+  //                         impact === "High"
+  //                           ? "bg-green-500"
+  //                           : impact === "Medium"
+  //                           ? "bg-blue-500"
+  //                           : "bg-gray-500"
+  //                       }`}
+  //                       style={{
+  //                         width: `${
+  //                           (count / Math.max(1, knowledge.length)) * 100
+  //                         }%`,
+  //                       }}
+  //                     />
+  //                   </div>
+  //                 </div>
+  //               );
+  //             })}
+  //           </div>
+  //         </div>
+
+  //         {/* Actions */}
+  //         <div className="bg-white rounded-lg shadow-sm p-4">
+  //           <h3 className="text-sm font-medium text-gray-700 mb-3">
+  //             Quick Actions
+  //           </h3>
+  //           <div className="space-y-2">
+  //             <button
+  //               className="w-full px-3 py-2 bg-blue-50 text-blue-700 rounded text-sm text-left hover:bg-blue-100 flex items-center"
+  //               onClick={() => {
+  //                 // Use a different prompt type more appropriate for insights
+  //                 openAIPromptModal("insight", {
+  //                   category:
+  //                     knowledgeCategory !== "all"
+  //                       ? knowledgeCategory
+  //                       : "general",
+  //                   search: knowledgeSearch || "",
+  //                 });
+  //               }}
+  //             >
+  //               <span className="mr-2">✨</span>
+  //               Generate New Insight
+  //             </button>
+  //             <button
+  //               className="w-full px-3 py-2 bg-green-50 text-green-700 rounded text-sm text-left hover:bg-green-100 flex items-center"
+  //               onClick={() => generateKnowledgeReport()}
+  //             >
+  //               <span className="mr-2">📊</span>
+  //               Generate Report
+  //             </button>
+  //             <button
+  //               className="w-full px-3 py-2 bg-purple-50 text-purple-700 rounded text-sm text-left hover:bg-purple-100 flex items-center"
+  //               onClick={() => generateLearningPathPlan()}
+  //             >
+  //               <span className="mr-2">🧭</span>
+  //               Generate Learning Path
+  //             </button>
+  //           </div>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   </div>
+  // );
+
   // Render Knowledge Hub Tab
   const renderKnowledgeTab = () => (
     <div className="container mx-auto px-6 py-8">
@@ -8724,209 +10768,6 @@ Generated by E2E Experiment Platform`;
               )}
             </div>
           ) : (
-            // <Card className="p-0">
-            //   <div className="w-full" style={{ height: "600px" }}>
-            //     {/* The updated graph data logic */}
-            //     <ForceGraph2D
-            //       graphData={(() => {
-            //         // Extract all experiment and OKR IDs from the data
-            //         const completedExperiments = experiments.filter(
-            //           (e) =>
-            //             e.status ===
-            //             LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase()
-            //         );
-
-            //         // Create node lists
-            //         const knowledgeNodes = knowledge
-            //           .filter((k) => {
-            //             if (knowledgeSearch) {
-            //               const matchName = k.name
-            //                 .toLowerCase()
-            //                 .includes(knowledgeSearch.toLowerCase());
-            //               const matchTags = k.tags.some((tag) =>
-            //                 tag
-            //                   .toLowerCase()
-            //                   .includes(knowledgeSearch.toLowerCase())
-            //               );
-            //               const matchInsights = k.insights.some((insight) =>
-            //                 insight
-            //                   .toLowerCase()
-            //                   .includes(knowledgeSearch.toLowerCase())
-            //               );
-            //               return matchName || matchTags || matchInsights;
-            //             }
-            //             if (knowledgeCategory !== "all") {
-            //               return k.category === knowledgeCategory;
-            //             }
-            //             return true;
-            //           })
-            //           .map((k) => ({
-            //             id: k.id,
-            //             name: `📚 ${k.name}`,
-            //             group: k.category,
-            //             type: "knowledge",
-            //             val: 15, // size
-            //           }));
-
-            //         const experimentNodes = completedExperiments
-            //           .filter((e) => {
-            //             if (knowledgeSearch) {
-            //               return e.name
-            //                 .toLowerCase()
-            //                 .includes(knowledgeSearch.toLowerCase());
-            //             }
-            //             if (knowledgeCategory !== "all") {
-            //               return e.category === knowledgeCategory;
-            //             }
-            //             return true;
-            //           })
-            //           .map((e) => ({
-            //             id: e.id,
-            //             name: `🧪 ${e.name}`,
-            //             group: e.category,
-            //             type: "experiment",
-            //             val: 10, // size
-            //           }));
-
-            //         const okrNodes = okrData
-            //           .filter((o) => {
-            //             if (knowledgeSearch) {
-            //               return o.title
-            //                 .toLowerCase()
-            //                 .includes(knowledgeSearch.toLowerCase());
-            //             }
-            //             return true;
-            //           })
-            //           .map((o) => ({
-            //             id: o.id,
-            //             name: `🎯 ${o.title}`,
-            //             group: "okr",
-            //             type: "okr",
-            //             val: 12, // size
-            //           }));
-
-            //         // Create a set of all node IDs for quick reference
-            //         const nodeIds = new Set([
-            //           ...knowledgeNodes.map((n) => n.id),
-            //           ...experimentNodes.map((n) => n.id),
-            //           ...okrNodes.map((n) => n.id),
-            //         ]);
-
-            //         // Create validated links that only connect existing nodes
-            //         const links = [];
-
-            //         // Knowledge to experiment links
-            //         knowledge.forEach((k) => {
-            //           if (k.relatedExperiments) {
-            //             k.relatedExperiments.forEach((expId) => {
-            //               if (nodeIds.has(expId)) {
-            //                 links.push({
-            //                   source: k.id,
-            //                   target: expId,
-            //                 });
-            //               }
-            //             });
-            //           }
-            //         });
-
-            //         // Experiment to OKR links
-            //         completedExperiments.forEach((e) => {
-            //           if (e.okrs) {
-            //             e.okrs.forEach((okrId) => {
-            //               if (nodeIds.has(okrId)) {
-            //                 links.push({
-            //                   source: e.id,
-            //                   target: okrId,
-            //                 });
-            //               }
-            //             });
-            //           }
-            //         });
-
-            //         return {
-            //           nodes: [
-            //             ...knowledgeNodes,
-            //             ...experimentNodes,
-            //             ...okrNodes,
-            //           ],
-            //           links: links,
-            //         };
-            //       })()}
-            //       nodeLabel={(node) => `${node.name} (${node.type})`}
-            //       nodeAutoColorBy="group"
-            //       linkWidth={2}
-            //       linkColor={() => "#999"}
-            //       cooldownTicks={100}
-            //       nodeRelSize={6}
-            //       onNodeClick={(node) => {
-            //         // Handle node click based on type
-            //         if (node.type === "knowledge") {
-            //           const item = knowledge.find((k) => k.id === node.id);
-            //           if (item) openKnowledgeDetails(item);
-            //         } else if (node.type === "experiment") {
-            //           handleTabChange("experiments");
-            //           setTimeout(() => {
-            //             const exp = experiments.find((e) => e.id === node.id);
-            //             if (exp) selectExperiment(exp);
-            //           }, 100);
-            //         } else if (node.type === "okr") {
-            //           // Just show a toast for now
-            //           showToast(
-            //             `Viewing OKR: ${node.name.substring(2)}`,
-            //             "info"
-            //           );
-            //         }
-            //       }}
-            //       onNodeHover={(node) => {
-            //         if (node) {
-            //           document.body.style.cursor = "pointer";
-            //         } else {
-            //           document.body.style.cursor = "default";
-            //         }
-            //       }}
-            //     />
-            //   </div>
-
-            //   <div className="p-4 bg-gray-50">
-            //     <h3 className="font-medium text-gray-800 mb-2">
-            //       Knowledge Graph Legend
-            //     </h3>
-            //     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            //       <div className="flex items-center">
-            //         <span className="mr-2">📚</span>
-            //         <div>
-            //           <p className="font-medium">Knowledge</p>
-            //           <p className="text-xs text-gray-600">
-            //             Insights and learnings
-            //           </p>
-            //         </div>
-            //       </div>
-            //       <div className="flex items-center">
-            //         <span className="mr-2">🧪</span>
-            //         <div>
-            //           <p className="font-medium">Experiment</p>
-            //           <p className="text-xs text-gray-600">
-            //             Completed experiments
-            //           </p>
-            //         </div>
-            //       </div>
-            //       <div className="flex items-center">
-            //         <span className="mr-2">🎯</span>
-            //         <div>
-            //           <p className="font-medium">OKR</p>
-            //           <p className="text-xs text-gray-600">
-            //             Strategic objectives
-            //           </p>
-            //         </div>
-            //       </div>
-            //     </div>
-            //     <p className="mt-4 text-sm text-gray-600">
-            //       The knowledge graph visualizes relationships between insights,
-            //       experiments, and strategic goals. Click on any node to view
-            //       details or create new experiments based on existing knowledge.
-            //     </p>
-            //   </div>
-            // </Card>
             <Card className="p-4">
               <div className="mb-4">
                 <h3 className="font-medium text-gray-800 mb-2">
@@ -9073,7 +10914,7 @@ Generated by E2E Experiment Platform`;
 
               <div
                 className="w-full bg-gray-50 border rounded"
-                style={{ height: "500px" }}
+                style={{ height: "500px", position: "relative", zIndex: 1 }}
               >
                 <ForceGraph2D
                   graphData={(() => {
@@ -9218,15 +11059,11 @@ Generated by E2E Experiment Platform`;
                         if (exp) selectExperiment(exp);
                       }, 100);
                     } else if (node.type === "okr") {
-                      // Show a toast with OKR info
-                      const okr = okrData.find((o) => o.id === node.id);
-                      if (okr) {
-                        showToast(
-                          `OKR: ${okr.title} (${okr.progress}% complete)`,
-                          "info",
-                          3000
-                        );
-                      }
+                      // Just show a toast for now
+                      showToast(
+                        `Viewing OKR: ${node.name.substring(2)}`,
+                        "info"
+                      );
                     }
                   }}
                   onNodeHover={(node) => {
@@ -9282,7 +11119,10 @@ Generated by E2E Experiment Platform`;
           )}
         </div>
 
-        <div className="md:w-1/4 mt-6 md:mt-0">
+        <div
+          className="md:w-1/4 mt-6 md:mt-0"
+          style={{ position: "relative", zIndex: 10 }}
+        >
           {/* Recent Items */}
           {renderRecentItems()}
 
@@ -9361,8 +11201,14 @@ Generated by E2E Experiment Platform`;
               <button
                 className="w-full px-3 py-2 bg-blue-50 text-blue-700 rounded text-sm text-left hover:bg-blue-100 flex items-center"
                 onClick={() => {
-                  // In a real application, this would open a knowledge creation form
-                  openAIPromptModal("learningAgenda", {});
+                  // Use a different prompt type more appropriate for insights
+                  openAIPromptModal("insight", {
+                    category:
+                      knowledgeCategory !== "all"
+                        ? knowledgeCategory
+                        : "general",
+                    search: knowledgeSearch || "",
+                  });
                 }}
               >
                 <span className="mr-2">✨</span>
@@ -10386,7 +12232,7 @@ Generated by E2E Experiment Platform`;
                   Add Feedback
                 </h3>
                 <button
-                  onClick={() => openAIPromptModal("analysis", reviewModalItem)}
+                  onClick={() => openAIPromptModal("feedback", reviewModalItem)}
                   className="flex items-center px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200"
                 >
                   <span className="mr-1">✨</span>
@@ -11333,6 +13179,59 @@ Generated by E2E Experiment Platform`;
               }
             />
 
+            {/* <div className="flex justify-end space-x-3 mt-4">
+              <button
+                onClick={() => setShowAIPromptModal(false)}
+                className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-50"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => {
+                  // Apply the AI response to the appropriate field
+                  if (aiPromptPurpose === "hypothesis") {
+                    setWizardData((prev) => ({
+                      ...prev,
+                      hypothesis: aiResponse,
+                    }));
+                  } else if (aiPromptPurpose === "analysis") {
+                    setExperiments((prev) =>
+                      prev.map((e) =>
+                        e.id === aiPromptContext.id
+                          ? { ...e, aiAnalysis: aiResponse }
+                          : e
+                      )
+                    );
+
+                    if (
+                      selectedExperiment &&
+                      selectedExperiment.id === aiPromptContext.id
+                    ) {
+                      setSelectedExperiment((prev) => ({
+                        ...prev,
+                        aiAnalysis: aiResponse,
+                      }));
+                    }
+                  } else if (aiPromptPurpose === "learningAgenda") {
+                    setWizardData((prev) => ({
+                      ...prev,
+                      learningAgenda: aiResponse,
+                    }));
+                  } else if (aiPromptPurpose === "successCriteria") {
+                    setWizardData((prev) => ({
+                      ...prev,
+                      successCriteria: aiResponse,
+                    }));
+                  }
+
+                  setShowAIPromptModal(false);
+                  showToast("AI suggestion applied", "success");
+                }}
+                className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+              >
+                Apply Suggestion
+              </button>
+            </div> */}
             <div className="flex justify-end space-x-3 mt-4">
               <button
                 onClick={() => setShowAIPromptModal(false)}
@@ -11376,6 +13275,38 @@ Generated by E2E Experiment Platform`;
                       ...prev,
                       successCriteria: aiResponse,
                     }));
+                  } else if (
+                    aiPromptPurpose === "feedback" &&
+                    reviewModalItem
+                  ) {
+                    // Handle AI feedback for reviews
+                    const feedbackTypes = [
+                      "statistical",
+                      "business",
+                      "operational",
+                    ];
+                    const feedbackMessages = aiResponse
+                      .split("\n\n")
+                      .filter((line) => line.trim());
+
+                    // Add AI-generated feedback to the review item
+                    feedbackMessages.forEach((message, idx) => {
+                      const type = feedbackTypes[idx % feedbackTypes.length]; // Cycle through types
+                      const status =
+                        message.toLowerCase().includes("issue") ||
+                        message.toLowerCase().includes("concern")
+                          ? "warning"
+                          : message.toLowerCase().includes("error") ||
+                            message.toLowerCase().includes("problem")
+                          ? "error"
+                          : "success";
+
+                      addFeedbackToReview({
+                        type,
+                        status,
+                        message: message.substring(0, 100), // Truncate if too long
+                      });
+                    });
                   }
 
                   setShowAIPromptModal(false);
@@ -11642,6 +13573,70 @@ Generated by E2E Experiment Platform`;
   };
 
   // Wizard Component
+  // const renderWizard = () => {
+  //   if (!showWizard) return null;
+
+  //   const wizardSteps = [
+  //     {
+  //       title: "Basics",
+  //       component: WizardBasicInfoStep,
+  //       initialData: {
+  //         name: "",
+  //         category: "",
+  //         startDate: "",
+  //         endDate: "",
+  //         owner: "",
+  //         team: [],
+  //       },
+  //     },
+  //     {
+  //       title: "Goals & Metrics",
+  //       component: WizardGoalsMetricsStep,
+  //       initialData: {
+  //         goal: "",
+  //         primaryMetric: "",
+  //         audiences: [],
+  //         hypothesis: "",
+  //         successCriteria: "",
+  //         learningAgenda: "",
+  //         baselineRate: 2.5,
+  //         minimumEffect: 10,
+  //       },
+  //     },
+  //     {
+  //       title: "Variants",
+  //       component: WizardVariantsStep,
+  //       initialData: {
+  //         control: {},
+  //         treatment: {},
+  //         allocation: { Control: 50, Treatment: 50 },
+  //       },
+  //     },
+  //     {
+  //       title: "Review",
+  //       component: WizardReviewStep,
+  //       initialData: {
+  //         notes: "",
+  //       },
+  //     },
+  //   ];
+
+  //   return (
+  //     <Modal
+  //       isOpen={showWizard}
+  //       onClose={() => setShowWizard(false)}
+  //       title="Create New Experiment Brief"
+  //       size="xl"
+  //     >
+  //       <Wizard
+  //         steps={wizardSteps}
+  //         onComplete={handleWizardFinalSubmit}
+  //         initialStep={0}
+  //       />
+  //     </Modal>
+  //   );
+  // };
+
   const renderWizard = () => {
     if (!showWizard) return null;
 
@@ -11701,6 +13696,7 @@ Generated by E2E Experiment Platform`;
           steps={wizardSteps}
           onComplete={handleWizardFinalSubmit}
           initialStep={0}
+          initialData={wizardData} // Pass the wizardData to the Wizard
         />
       </Modal>
     );
