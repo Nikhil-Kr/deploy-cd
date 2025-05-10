@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   LineChart as RechartsLineChart,
   Line,
@@ -509,8 +509,8 @@ const initialExperiments = [
       { name: "Mobile Users", improvement: 45 },
       { name: "Desktop Users", improvement: 35 },
     ],
-    aiAnalysis:
-      "The personalized membership prompts significantly outperformed generic prompts with a 40% improvement in conversion rate. This effect was strongest among new users (+52%) and mobile users (+45%), suggesting that personalization resonates most with these segments. The p-value of 0.0012 indicates these results are highly statistically significant.\n\nKey factors driving this success likely include:\n1. Content relevance based on viewing history\n2. Timing of the prompt after engagement with similar content\n3. Mobile-optimized presentation of personalized value propositions\n\nRecommended next steps:\n1. Implement personalized prompts across all channels\n2. Test variations that emphasize specific benefits for different user segments\n3. Explore extending personalization to pricing tiers based on usage patterns",
+    // aiAnalysis:
+    //   "The personalized membership prompts significantly outperformed generic prompts with a 40% improvement in conversion rate. This effect was strongest among new users (+52%) and mobile users (+45%), suggesting that personalization resonates most with these segments. The p-value of 0.0012 indicates these results are highly statistically significant.\n\nKey factors driving this success likely include:\n1. Content relevance based on viewing history\n2. Timing of the prompt after engagement with similar content\n3. Mobile-optimized presentation of personalized value propositions\n\nRecommended next steps:\n1. Implement personalized prompts across all channels\n2. Test variations that emphasize specific benefits for different user segments\n3. Explore extending personalization to pricing tiers based on usage patterns",
   },
   {
     id: "ypp-001",
@@ -553,8 +553,8 @@ const initialExperiments = [
       { name: "Educational Content", improvement: 28 },
       { name: "Entertainment", improvement: 21 },
     ],
-    aiAnalysis:
-      "The progress tracking notifications achieved a statistically significant 25% increase in YPP application rates. Gaming creators showed the strongest response (+30%), followed by educational content creators (+28%).\n\nThe psychology of visible progress appears to motivate creators to take action toward monetization. The milestone visualization creates both a sense of achievement for current progress and clearly shows the remaining steps, reducing perceived friction.\n\nKey insights:\n1. Transparent progress visualization increases motivation to complete the application\n2. Different creator segments respond with varying levels of enthusiasm\n3. The timing of notifications relative to milestone achievement is critical\n\nRecommended follow-up experiments:\n1. Test different milestone granularity (fewer vs. more milestones)\n2. Create segment-specific messaging for gaming vs. educational creators\n3. Explore additional motivational elements like social proof from similar creators",
+    // aiAnalysis:
+    //   "The progress tracking notifications achieved a statistically significant 25% increase in YPP application rates. Gaming creators showed the strongest response (+30%), followed by educational content creators (+28%).\n\nThe psychology of visible progress appears to motivate creators to take action toward monetization. The milestone visualization creates both a sense of achievement for current progress and clearly shows the remaining steps, reducing perceived friction.\n\nKey insights:\n1. Transparent progress visualization increases motivation to complete the application\n2. Different creator segments respond with varying levels of enthusiasm\n3. The timing of notifications relative to milestone achievement is critical\n\nRecommended follow-up experiments:\n1. Test different milestone granularity (fewer vs. more milestones)\n2. Create segment-specific messaging for gaming vs. educational creators\n3. Explore additional motivational elements like social proof from similar creators",
   },
   {
     id: "eng-001",
@@ -596,8 +596,8 @@ const initialExperiments = [
       { segment: "How-to Videos", improvement: "~28%*" },
       { segment: "Commentary", improvement: "~15%*" },
     ],
-    aiAnalysis:
-      "Preliminary results show promising trends with an overall increase in comment rates. Educational content is showing the strongest response (+32%), while commentary videos show more modest improvements (+15%). \n\nInitial data suggests that timestamp-specific prompts create relevant conversation entry points that lower the barrier to engagement. The treatment appears to increase not just comment volume but also relevance and specificity of comments.\n\nEarly insights (pending final results):\n1. Context-relevance significantly increases engagement likelihood\n2. Educational content benefits most, possibly due to specific questions/clarifications\n3. Comment quality metrics (length, specificity) also trending positive\n\nRecommend continuing the experiment to completion before fully implementing, but current signals strongly support the hypothesis.",
+    // aiAnalysis:
+    //   "Preliminary results show promising trends with an overall increase in comment rates. Educational content is showing the strongest response (+32%), while commentary videos show more modest improvements (+15%). \n\nInitial data suggests that timestamp-specific prompts create relevant conversation entry points that lower the barrier to engagement. The treatment appears to increase not just comment volume but also relevance and specificity of comments.\n\nEarly insights (pending final results):\n1. Context-relevance significantly increases engagement likelihood\n2. Educational content benefits most, possibly due to specific questions/clarifications\n3. Comment quality metrics (length, specificity) also trending positive\n\nRecommend continuing the experiment to completion before fully implementing, but current signals strongly support the hypothesis.",
   },
   {
     id: "search-001",
@@ -638,8 +638,8 @@ const initialExperiments = [
       { name: "Mobile Users", improvement: -8 },
       { name: "Desktop Users", improvement: -6 },
     ],
-    aiAnalysis:
-      "This experiment showed a statistically significant 7% decrease in search click-through rates when using personalized ranking. The negative effect was consistent across user segments, with casual users showing the largest decline (-9%).\n\nPossible explanations for these unexpected results:\n1. The personalization algorithm may have created filter bubbles that limited content discovery\n2. Users may have specific search intent that differs from their general browsing patterns\n3. The implementation may have prioritized historical preferences too heavily over query relevance\n\nKey learnings:\n1. Search context appears fundamentally different from content browsing context\n2. User expectations for search may prioritize query relevance over personalization\n3. The current personalization approach needs substantial revision\n\nRecommended next steps:\n1. Revert to standard search results while exploring alternative approaches\n2. Test a hybrid model with lighter personalization influence\n3. Consider segment-specific personalization only for certain query types",
+    // aiAnalysis:
+    //   "This experiment showed a statistically significant 7% decrease in search click-through rates when using personalized ranking. The negative effect was consistent across user segments, with casual users showing the largest decline (-9%).\n\nPossible explanations for these unexpected results:\n1. The personalization algorithm may have created filter bubbles that limited content discovery\n2. Users may have specific search intent that differs from their general browsing patterns\n3. The implementation may have prioritized historical preferences too heavily over query relevance\n\nKey learnings:\n1. Search context appears fundamentally different from content browsing context\n2. User expectations for search may prioritize query relevance over personalization\n3. The current personalization approach needs substantial revision\n\nRecommended next steps:\n1. Revert to standard search results while exploring alternative approaches\n2. Test a hybrid model with lighter personalization influence\n3. Consider segment-specific personalization only for certain query types",
   },
   {
     id: "multi-001",
@@ -687,8 +687,55 @@ const initialExperiments = [
       { name: "US Region", improvement: 35 },
       { name: "Europe Region", improvement: 38 },
     ],
-    aiAnalysis:
-      "The multivariate test revealed significant insights about landing page optimization, with Variant E (new headlines + simplified form) achieving the highest conversion rate at 3.0% (+35% lift). Interestingly, the version with all elements combined (Variant H) performed worse than variants with just 2 optimized elements.\n\nKey insights:\n1. Form simplification had the strongest individual impact (+18%)\n2. The combination of clear benefit headlines and simplified form created the optimal experience\n3. Too many elements may create cognitive overload (explaining why Var H underperformed Var E)\n4. Mobile users showed dramatically higher improvement (+41%) vs desktop (+28%)\n\nRecommended actions:\n1. Implement Variant E across all landing pages\n2. Create dedicated mobile-optimized versions with even further simplified forms\n3. Consider A/A/B testing different benefit messaging within the winning template\n4. Explore regional messaging variations based on the different response rates",
+    // aiAnalysis:
+    //   "The multivariate test revealed significant insights about landing page optimization, with Variant E (new headlines + simplified form) achieving the highest conversion rate at 3.0% (+35% lift). Interestingly, the version with all elements combined (Variant H) performed worse than variants with just 2 optimized elements.\n\nKey insights:\n1. Form simplification had the strongest individual impact (+18%)\n2. The combination of clear benefit headlines and simplified form created the optimal experience\n3. Too many elements may create cognitive overload (explaining why Var H underperformed Var E)\n4. Mobile users showed dramatically higher improvement (+41%) vs desktop (+28%)\n\nRecommended actions:\n1. Implement Variant E across all landing pages\n2. Create dedicated mobile-optimized versions with even further simplified forms\n3. Consider A/A/B testing different benefit messaging within the winning template\n4. Explore regional messaging variations based on the different response rates",
+  },
+  // Add this to the initialExperiments array
+  {
+    id: "causal-001",
+    name: "Causal Mobile App Navigation Redesign",
+    status: LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase(),
+    lifecycleStage: "execution",
+    category: "causal",
+    startDate: "Apr 5, 2025",
+    endDate: "Apr 25, 2025",
+    daysRunning: 20,
+    daysTotal: 20,
+    primaryMetric: "Engagement Time",
+    improvement: 22,
+    significance: 0.008,
+    confidence: 95,
+    impact: "~15min additional engagement per user",
+    goal: "Determine the causal impact of navigation redesign on user engagement",
+    hypothesis:
+      "The simplified navigation menu will cause an increase in session duration by reducing cognitive load",
+    targetAudience: [
+      "Mobile app users",
+      "All regions",
+      "Both new and existing users",
+    ],
+    successCriteria:
+      "Causal effect of at least 15% increase in engagement time with p<0.05",
+    controlImage: "/api/placeholder/500/300?text=Original+Navigation",
+    treatmentImage: "/api/placeholder/500/300?text=Simplified+Navigation",
+    progress: 100,
+    okrs: ["okr-001"],
+    learningAgenda:
+      "Understand the causal mechanisms behind navigation simplification and user engagement patterns",
+    owner: "Taylor Wilson",
+    team: ["Sarah Chen", "Michael Wong"],
+    knowledgeStatus: LIFECYCLE_STAGES.KNOWLEDGE.ANALYZING.label.toLowerCase(),
+    causalModel: {
+      type: "difference-in-differences",
+      pretreatmentControl: [18, 19, 17, 20, 18, 19],
+      pretreatmentTreated: [17, 18, 16, 19, 17, 18],
+      posttreatmentControl: [19, 20, 18, 21, 19, 20],
+      posttreatmentTreated: [23, 25, 24, 28, 26, 27],
+      estimatedEffect: 22.4,
+      confInterval: [18.6, 26.2],
+    },
+    // aiAnalysis:
+    //   "The causal inference analysis using difference-in-differences methodology shows a statistically significant causal effect of the navigation redesign on user engagement time. The average treatment effect on the treated (ATT) is estimated at 22.4% with a 95% confidence interval of [18.6%, 26.2%].\n\nThe parallel trends assumption appears to hold based on pre-treatment data, strengthening our confidence in these causal estimates.\n\nKey insights:\n1. The effect is consistently positive across all user segments and appears to increase over time\n2. The mechanism appears to be decreased navigation time and increased content consumption\n3. The effect is stronger for users who previously had lower engagement metrics\n\nRecommended next steps:\n1. Roll out the simplified navigation to all users\n2. Monitor long-term effects to ensure persistence\n3. Apply similar simplification principles to other UI elements",
   },
 ];
 
@@ -1847,6 +1894,119 @@ const MultivariateResultsChart = ({ results }) => {
   );
 };
 
+// Add after the other chart components around line 1800
+const CausalInferenceChart = ({ causalModel }) => {
+  if (!causalModel) return null;
+
+  // Generate data for the chart
+  const generateChartData = () => {
+    const preLength = causalModel.pretreatmentControl.length;
+    const postLength = causalModel.posttreatmentControl.length;
+    const totalLength = preLength + postLength;
+
+    const data = [];
+
+    // Pre-treatment period
+    for (let i = 0; i < preLength; i++) {
+      data.push({
+        period: `Pre-${i + 1}`,
+        treatmentGroup: causalModel.pretreatmentTreated[i],
+        controlGroup: causalModel.pretreatmentControl[i],
+        counterfactual: null,
+        phase: "pre",
+      });
+    }
+
+    // Post-treatment period
+    for (let i = 0; i < postLength; i++) {
+      // Calculate counterfactual for treatment group
+      const counterfactual =
+        causalModel.posttreatmentControl[i] +
+        (causalModel.pretreatmentTreated[preLength - 1] -
+          causalModel.pretreatmentControl[preLength - 1]);
+
+      data.push({
+        period: `Post-${i + 1}`,
+        treatmentGroup: causalModel.posttreatmentTreated[i],
+        controlGroup: causalModel.posttreatmentControl[i],
+        counterfactual: counterfactual,
+        phase: "post",
+      });
+    }
+
+    return data;
+  };
+
+  const data = generateChartData();
+
+  // Add a vertical reference line at the treatment point
+  const treatmentIndex = causalModel.pretreatmentControl.length - 0.5;
+
+  return (
+    <div className="h-64">
+      <ResponsiveContainer width="100%" height="100%">
+        <RechartsLineChart
+          data={data}
+          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis
+            dataKey="period"
+            label={{
+              value: "Time Period",
+              position: "insideBottom",
+              offset: -5,
+            }}
+          />
+          <YAxis
+            label={{
+              value: "Metric Value",
+              angle: -90,
+              position: "insideLeft",
+            }}
+          />
+          <Tooltip />
+          <Legend />
+
+          {/* Add a vertical reference line at treatment point */}
+          <ReferenceLine
+            x={treatmentIndex}
+            stroke="red"
+            strokeDasharray="3 3"
+            label={{ value: "Treatment", position: "top" }}
+          />
+
+          <Line
+            type="monotone"
+            dataKey="treatmentGroup"
+            name="Treatment Group"
+            stroke="#8884d8"
+            strokeWidth={2}
+            dot={{ r: 5 }}
+          />
+          <Line
+            type="monotone"
+            dataKey="controlGroup"
+            name="Control Group"
+            stroke="#82ca9d"
+            strokeWidth={2}
+            dot={{ r: 5 }}
+          />
+          <Line
+            type="monotone"
+            dataKey="counterfactual"
+            name="Counterfactual"
+            stroke="#ffc658"
+            strokeWidth={2}
+            strokeDasharray="5 5"
+            dot={false}
+          />
+        </RechartsLineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
 // Metrics Distribution Chart
 const MetricsDistributionChart = ({ controlData, treatmentData }) => {
   // Assumes data is in format [{value: number}, ...]
@@ -2083,67 +2243,6 @@ const ConfidenceIntervalChart = ({
    --------------------------------------------------------------------------- */
 
 // AI Prompt Interface Component
-// const AIPromptInterface = ({
-//   onSubmit,
-//   placeholder = "Ask AI for help...",
-//   isLoading = false,
-//   label = "AI Assistant",
-//   buttonText = "Generate",
-// }) => {
-//   const [prompt, setPrompt] = useState("");
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     if (prompt.trim() && onSubmit) {
-//       onSubmit(prompt);
-//     }
-//   };
-
-//   return (
-//     <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-//       <div className="flex items-center mb-3">
-//         <div className="w-6 h-6 rounded-full bg-purple-600 text-white flex items-center justify-center text-xs mr-2">
-//           AI
-//         </div>
-//         <h3 className="font-medium text-purple-800">{label}</h3>
-//       </div>
-
-//       <form onSubmit={handleSubmit} className="space-y-3">
-//         <textarea
-//           value={prompt}
-//           onChange={(e) => setPrompt(e.target.value)}
-//           placeholder={placeholder}
-//           className="w-full p-3 border border-purple-200 rounded-lg"
-//           rows={3}
-//         />
-
-//         <div className="flex justify-end">
-//           <button
-//             type="submit"
-//             disabled={isLoading || !prompt.trim()}
-//             className={`px-4 py-2 rounded-lg flex items-center ${
-//               isLoading || !prompt.trim()
-//                 ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-//                 : "bg-purple-600 text-white hover:bg-purple-700"
-//             }`}
-//           >
-//             {isLoading ? (
-//               <>
-//                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-//                 Processing...
-//               </>
-//             ) : (
-//               <>
-//                 <span className="mr-2">✨</span>
-//                 {buttonText}
-//               </>
-//             )}
-//           </button>
-//         </div>
-//       </form>
-//     </div>
-//   );
-// };
 const AIPromptInterface = ({
   onSubmit,
   initialPrompt = "",
@@ -2347,28 +2446,99 @@ const AIHypothesisGenerator = ({
   );
 };
 
-// AI Analysis Component
+// // AI Analysis Component
+// const AIAnalysisComponent = ({
+//   experiment,
+//   isLoading = false,
+//   onRequestAnalysis,
+// }) => {
+//   return (
+//     <div className="border rounded-lg bg-gray-50 p-4">
+//       <h3 className="font-medium text-gray-800 mb-2">AI Analysis</h3>
+
+//       {experiment.aiAnalysis ? (
+//         <div className="bg-white p-4 rounded border">
+//           <div className="prose max-w-none text-sm">
+//             {experiment.aiAnalysis.split("\n").map((paragraph, idx) =>
+//               paragraph ? (
+//                 <p key={idx} className="mb-2">
+//                   {paragraph}
+//                 </p>
+//               ) : (
+//                 <br key={idx} />
+//               )
+//             )}
+//           </div>
+//         </div>
+//       ) : (
+//         <div className="text-center py-6">
+//           {isLoading ? (
+//             <div className="flex flex-col items-center">
+//               <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+//               <p className="text-gray-600">Analyzing experiment data...</p>
+//             </div>
+//           ) : (
+//             <>
+//               <p className="text-gray-600 mb-4">
+//                 Request AI-powered insights and recommendations based on your
+//                 experiment results.
+//               </p>
+//               <button
+//                 onClick={onRequestAnalysis}
+//                 className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 flex items-center mx-auto"
+//               >
+//                 <span className="mr-2">✨</span>
+//                 Generate AI Analysis
+//               </button>
+//             </>
+//           )}
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
 const AIAnalysisComponent = ({
   experiment,
   isLoading = false,
   onRequestAnalysis,
 }) => {
+  const [showModelSelection, setShowModelSelection] = useState(false);
+
+  const handleModelSelected = (modelId) => {
+    setShowModelSelection(false);
+    if (onRequestAnalysis) {
+      onRequestAnalysis(modelId);
+    }
+  };
+
   return (
     <div className="border rounded-lg bg-gray-50 p-4">
       <h3 className="font-medium text-gray-800 mb-2">AI Analysis</h3>
 
       {experiment.aiAnalysis ? (
-        <div className="bg-white p-4 rounded border">
-          <div className="prose max-w-none text-sm">
-            {experiment.aiAnalysis.split("\n").map((paragraph, idx) =>
-              paragraph ? (
-                <p key={idx} className="mb-2">
-                  {paragraph}
-                </p>
-              ) : (
-                <br key={idx} />
-              )
-            )}
+        <div>
+          <div className="bg-white p-4 rounded border mb-4">
+            <div className="prose max-w-none text-sm">
+              {experiment.aiAnalysis.split("\n").map((paragraph, idx) =>
+                paragraph ? (
+                  <p key={idx} className="mb-2">
+                    {paragraph}
+                  </p>
+                ) : (
+                  <br key={idx} />
+                )
+              )}
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <button
+              onClick={() => setShowModelSelection(true)}
+              className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded text-sm hover:bg-purple-200 flex items-center"
+            >
+              <span className="mr-1">✨</span>
+              Regenerate Analysis
+            </button>
           </div>
         </div>
       ) : (
@@ -2385,7 +2555,7 @@ const AIAnalysisComponent = ({
                 experiment results.
               </p>
               <button
-                onClick={onRequestAnalysis}
+                onClick={() => setShowModelSelection(true)}
                 className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 flex items-center mx-auto"
               >
                 <span className="mr-2">✨</span>
@@ -2395,51 +2565,548 @@ const AIAnalysisComponent = ({
           )}
         </div>
       )}
+
+      {/* AI Model Selection Modal */}
+      <AIModelSelectionModal
+        isOpen={showModelSelection}
+        onClose={() => setShowModelSelection(false)}
+        experiment={experiment}
+        onModelSelected={handleModelSelected}
+      />
     </div>
   );
 };
 
-// Role Selector Component
-// const RoleSelector = ({ selectedRole, onRoleChange }) => {
-//   const roles = [
-//     {
-//       id: "pm",
-//       name: "Product Manager",
-//       description: "End-to-end experiment management",
-//     },
-//     {
-//       id: "data-scientist",
-//       name: "Data Scientist",
-//       description: "Statistical design and analysis",
-//     },
-//     {
-//       id: "exec",
-//       name: "Executive",
-//       description: "Strategic view and insights",
-//     },
-//   ];
+const AIModelSelectionModal = ({
+  isOpen,
+  onClose,
+  experiment,
+  onModelSelected,
+}) => {
+  const [selectedModel, setSelectedModel] = useState(null);
+  const [analysisStage, setAnalysisStage] = useState("initializing"); // initializing -> evaluating -> selecting -> analyzing -> complete
+  const [analysisProgress, setAnalysisProgress] = useState(0);
+  const [stageMessage, setStageMessage] = useState("");
+  const [modelEvaluations, setModelEvaluations] = useState([]);
+  const [featureImportance, setFeatureImportance] = useState([]);
 
-//   return (
-//     <div className="bg-white p-3 rounded-lg shadow mb-6">
-//       <div className="flex items-center space-x-1">
-//         <div className="text-sm font-medium text-gray-700 mr-2">View as:</div>
-//         {roles.map((role) => (
-//           <button
-//             key={role.id}
-//             onClick={() => onRoleChange(role.id)}
-//             className={`px-3 py-1.5 rounded text-sm ${
-//               selectedRole === role.id
-//                 ? "bg-blue-600 text-white"
-//                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-//             }`}
-//           >
-//             {role.name}
-//           </button>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// };
+  // Replace the current modelOptions code with this:
+  const modelOptions = useMemo(() => {
+    if (experiment.category === "causal") {
+      return [
+        {
+          id: "diff-in-diff",
+          name: "Difference-in-Differences",
+          confidence: 0,
+          score: 0,
+          suited: true,
+          description:
+            "Estimates causal effects by comparing changes over time between treatment and control groups",
+        },
+        {
+          id: "synthetic-control",
+          name: "Synthetic Control Method",
+          confidence: 0,
+          score: 0,
+          suited: true,
+          description:
+            "Creates a synthetic control group from a weighted combination of control units",
+        },
+        {
+          id: "instrumental-var",
+          name: "Instrumental Variables",
+          confidence: 0,
+          score: 0,
+          suited: false,
+          description:
+            "Uses instrument variables to estimate causal relationships when confounding is present",
+        },
+      ];
+    } else if (
+      experiment.primaryMetric &&
+      experiment.primaryMetric.toLowerCase().includes("count")
+    ) {
+      return [
+        {
+          id: "negative-binomial",
+          name: "Negative Binomial Regression",
+          confidence: 0,
+          score: 0,
+          suited: true,
+          description: "Statistical model for count data with overdispersion",
+        },
+        {
+          id: "poisson",
+          name: "Poisson Regression",
+          confidence: 0,
+          score: 0,
+          suited: true,
+          description:
+            "Statistical model for count data assuming equal mean and variance",
+        },
+        {
+          id: "mann-whitney",
+          name: "Mann-Whitney U Test",
+          confidence: 0,
+          score: 0,
+          suited: false,
+          description:
+            "Non-parametric test comparing distributions of two independent groups",
+        },
+      ];
+    } else if (experiment.improvement < 0) {
+      return [
+        {
+          id: "bayesian-analysis",
+          name: "Bayesian Analysis",
+          confidence: 0,
+          score: 0,
+          suited: true,
+          description:
+            "Uses prior and posterior probabilities to update beliefs based on evidence",
+        },
+        {
+          id: "cohort-analysis",
+          name: "Cohort Analysis",
+          confidence: 0,
+          score: 0,
+          suited: true,
+          description: "Examines behavior changes in user cohorts over time",
+        },
+        {
+          id: "t-test",
+          name: "Student's t-test",
+          confidence: 0,
+          score: 0,
+          suited: false,
+          description: "Parametric test comparing means of two groups",
+        },
+      ];
+    } else {
+      return [
+        {
+          id: "t-test",
+          name: "Student's t-test",
+          confidence: 0,
+          score: 0,
+          suited: true,
+          description: "Parametric test comparing means of two groups",
+        },
+        {
+          id: "z-test",
+          name: "Z-test",
+          confidence: 0,
+          score: 0,
+          suited: experiment.category === "monetization",
+          description:
+            "Statistical test comparing population mean to a standard when variance is known",
+        },
+        {
+          id: "chi-squared",
+          name: "Chi-squared Test",
+          confidence: 0,
+          score: 0,
+          suited: experiment.primaryMetric?.toLowerCase().includes("rate"),
+          description:
+            "Tests if there is a statistically significant difference between observed and expected frequencies",
+        },
+      ];
+    }
+  }, [experiment]);
+
+  // Animation sequence
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Reset state when modal opens
+    setAnalysisStage("initializing");
+    setAnalysisProgress(0);
+    setSelectedModel(null);
+    setStageMessage("Initializing AI analysis module...");
+    setModelEvaluations([]);
+
+    // Stage 1: Initializing
+    const timer1 = setTimeout(() => {
+      setAnalysisProgress(10);
+      setStageMessage("Loading experiment data...");
+    }, 800);
+
+    const timer2 = setTimeout(() => {
+      setAnalysisProgress(20);
+      setStageMessage("Analyzing experiment metrics...");
+    }, 1600);
+
+    // Stage 2: Evaluating experiment characteristics
+    const timer3 = setTimeout(() => {
+      setAnalysisStage("evaluating");
+      setAnalysisProgress(30);
+      setStageMessage("Evaluating experiment characteristics...");
+
+      // Generate feature importance
+      setFeatureImportance(
+        [
+          {
+            name: "Experiment Category",
+            value: experiment.category === "causal" ? 90 : 75,
+          },
+          { name: "Sample Size", value: Math.floor(Math.random() * 30) + 60 },
+          { name: "Metric Type", value: Math.floor(Math.random() * 20) + 70 },
+          {
+            name: "Result Pattern",
+            value: Math.floor(Math.random() * 25) + 65,
+          },
+          {
+            name: "Segment Variation",
+            value: Math.floor(Math.random() * 40) + 40,
+          },
+        ].sort((a, b) => b.value - a.value)
+      );
+    }, 2400);
+
+    // Stage 3: Evaluating models
+    const timer4 = setTimeout(() => {
+      setAnalysisProgress(50);
+      setStageMessage("Evaluating potential analysis models...");
+
+      // Start evaluating models one by one
+      const updatedModels = [...modelOptions];
+
+      // First model evaluation
+      updatedModels[0].confidence = (Math.random() * 0.1 + 0.7).toFixed(2);
+      updatedModels[0].score = Math.floor(Math.random() * 20) + 75;
+      setModelEvaluations([...updatedModels]);
+    }, 3200);
+
+    // Evaluate second model
+    const timer5 = setTimeout(() => {
+      const updatedModels = [...modelEvaluations];
+      if (updatedModels.length > 1) {
+        updatedModels[1].confidence = (Math.random() * 0.2 + 0.6).toFixed(2);
+        updatedModels[1].score = Math.floor(Math.random() * 30) + 60;
+        setModelEvaluations([...updatedModels]);
+      }
+    }, 4000);
+
+    // Evaluate third model
+    const timer6 = setTimeout(() => {
+      const updatedModels = [...modelEvaluations];
+      if (updatedModels.length > 2) {
+        updatedModels[2].confidence = (Math.random() * 0.3 + 0.5).toFixed(2);
+        updatedModels[2].score = Math.floor(Math.random() * 40) + 50;
+        setModelEvaluations([...updatedModels]);
+      }
+
+      setAnalysisProgress(70);
+    }, 4800);
+
+    // Stage 4: Selecting best model
+    const timer7 = setTimeout(() => {
+      setAnalysisStage("selecting");
+      setAnalysisProgress(80);
+      setStageMessage("Selecting optimal analysis model...");
+
+      // Determine best model (first one is always "best" in this demo)
+      const bestModel = modelEvaluations[0]?.id;
+      setSelectedModel(bestModel);
+    }, 5600);
+
+    // Stage 5: Running analysis
+    const timer8 = setTimeout(() => {
+      setAnalysisStage("analyzing");
+      setAnalysisProgress(90);
+      setStageMessage(
+        `Running ${
+          modelEvaluations.find((m) => m.id === selectedModel)?.name ||
+          "selected model"
+        }...`
+      );
+    }, 6400);
+
+    // Final stage: Complete
+    const timer9 = setTimeout(() => {
+      setAnalysisStage("complete");
+      setAnalysisProgress(100);
+      setStageMessage("Analysis complete!");
+    }, 7200);
+
+    // Optional: Auto-close after completion
+    const timerAutoComplete = setTimeout(() => {
+      if (onModelSelected && selectedModel) {
+        onModelSelected(selectedModel);
+      }
+    }, 8500);
+
+    // Clean up all timers
+    return () => {
+      [
+        timer1,
+        timer2,
+        timer3,
+        timer4,
+        timer5,
+        timer6,
+        timer7,
+        timer8,
+        timer9,
+        timerAutoComplete,
+      ].forEach((timer) => clearTimeout(timer));
+    };
+  }, [isOpen, experiment, modelOptions]);
+
+  if (!isOpen) return null;
+
+  // Helper function to get model by ID
+  const getModelById = (id) =>
+    modelEvaluations.find((m) => m.id === id) ||
+    modelOptions.find((m) => m.id === id);
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="AI Analysis & Model Selection"
+      size="lg"
+    >
+      {/* Progress bar */}
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="font-medium text-gray-800">Analysis Progress</h3>
+          <span className="text-sm text-gray-600">{analysisProgress}%</span>
+        </div>
+        <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div
+            className={`h-full transition-all duration-500 ${
+              analysisStage === "complete" ? "bg-green-500" : "bg-blue-500"
+            }`}
+            style={{ width: `${analysisProgress}%` }}
+          ></div>
+        </div>
+        <p className="text-sm text-gray-600 mt-2 italic">{stageMessage}</p>
+      </div>
+
+      {/* Current stage visualization */}
+      <div className="mb-6">
+        <div className="flex space-x-1">
+          {[
+            "initializing",
+            "evaluating",
+            "selecting",
+            "analyzing",
+            "complete",
+          ].map((stage, idx) => (
+            <div
+              key={stage}
+              className={`flex-1 py-2 px-3 text-center text-xs font-medium rounded ${
+                analysisStage === stage
+                  ? "bg-blue-100 text-blue-800 border border-blue-300"
+                  : analysisStage === "complete" && idx < 4
+                  ? "bg-green-50 text-green-800 border border-green-200"
+                  : idx <
+                    [
+                      "initializing",
+                      "evaluating",
+                      "selecting",
+                      "analyzing",
+                      "complete",
+                    ].indexOf(analysisStage)
+                  ? "bg-blue-50 text-blue-600 border border-blue-100"
+                  : "bg-gray-50 text-gray-400 border border-gray-200"
+              }`}
+            >
+              {stage.charAt(0).toUpperCase() + stage.slice(1)}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Feature importance - visible during evaluating stage */}
+      {analysisStage === "evaluating" && featureImportance.length > 0 && (
+        <div className="mb-6 p-4 bg-gray-50 rounded border">
+          <h4 className="text-sm font-medium text-gray-700 mb-3">
+            Experiment Characteristics
+          </h4>
+          <div className="space-y-3">
+            {featureImportance.map((feature, idx) => (
+              <div key={idx}>
+                <div className="flex justify-between mb-1">
+                  <span className="text-sm text-gray-600">{feature.name}</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    {feature.value}%
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-500"
+                    style={{ width: `${feature.value}%` }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-gray-500 mt-3">
+            The AI evaluates experiment characteristics to determine which
+            models will be most effective.
+          </p>
+        </div>
+      )}
+
+      {/* Model evaluations - visible during selecting and later stages */}
+      {(analysisStage === "selecting" ||
+        analysisStage === "analyzing" ||
+        analysisStage === "complete") && (
+        <div className="mb-6">
+          <h4 className="text-sm font-medium text-gray-700 mb-3">
+            Model Evaluation
+          </h4>
+          <div className="space-y-3">
+            {modelEvaluations.map((model, idx) => (
+              <div
+                key={model.id}
+                className={`p-3 border rounded ${
+                  selectedModel === model.id
+                    ? "bg-blue-50 border-blue-300"
+                    : "bg-white hover:bg-gray-50"
+                }`}
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="flex items-center">
+                      <h5 className="font-medium text-gray-800">
+                        {model.name}
+                      </h5>
+                      {selectedModel === model.id && (
+                        <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
+                          Selected
+                        </span>
+                      )}
+                      {model.suited && (
+                        <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
+                          Best Match
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-600 mt-1">
+                      {model.description}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-medium text-gray-800">
+                      {model.score}%
+                    </div>
+                    <div className="text-xs text-gray-500">Score</div>
+                  </div>
+                </div>
+                <div className="mt-2 w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full ${
+                      selectedModel === model.id ? "bg-blue-500" : "bg-gray-400"
+                    }`}
+                    style={{ width: `${model.score}%` }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-gray-500 mt-3">
+            The AI evaluates each model's suitability based on experiment type,
+            data characteristics, and expected insights.
+          </p>
+        </div>
+      )}
+
+      {/* Analysis visualization - visible during analyzing stage */}
+      {analysisStage === "analyzing" && (
+        <div className="mb-6 p-4 bg-blue-50 rounded border border-blue-200">
+          <h4 className="text-sm font-medium text-blue-800 mb-2">
+            Analysis in Progress
+          </h4>
+          <div className="flex items-center mb-3">
+            <div className="w-8 h-8 mr-3 flex items-center justify-center">
+              <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+            <p className="text-sm text-blue-700">
+              {getModelById(selectedModel)?.name} is analyzing your experiment
+              data...
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-xs text-blue-700">
+            <div className="p-2 bg-blue-100 rounded">
+              Processing metrics data...
+            </div>
+            <div className="p-2 bg-blue-100 rounded">
+              Calculating confidence intervals...
+            </div>
+            <div className="p-2 bg-blue-100 rounded">
+              Analyzing segment variations...
+            </div>
+            <div className="p-2 bg-blue-100 rounded">
+              Evaluating statistical significance...
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Results summary - visible during complete stage */}
+      {analysisStage === "complete" && (
+        <div className="mb-6 p-4 bg-green-50 rounded border border-green-200">
+          <h4 className="text-sm font-medium text-green-800 mb-2">
+            Analysis Complete
+          </h4>
+          <div className="flex items-center mb-3">
+            <div className="w-8 h-8 mr-3 flex items-center justify-center text-green-500 text-xl">
+              ✓
+            </div>
+            <p className="text-sm text-green-700">
+              Analysis completed successfully using{" "}
+              {getModelById(selectedModel)?.name}
+            </p>
+          </div>
+          <div className="text-sm text-green-700">
+            <p>
+              The model produced high-quality insights based on your experiment
+              data. Key findings include:
+            </p>
+            <ul className="list-disc list-inside mt-2 space-y-1">
+              <li>
+                Statistical significance established with{" "}
+                {getModelById(selectedModel)?.confidence * 100}% confidence
+              </li>
+              <li>Segment-specific insights identified</li>
+              <li>Actionable recommendations generated</li>
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom buttons */}
+      <div className="flex justify-end mt-6">
+        <button
+          className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-50 mr-2"
+          onClick={onClose}
+        >
+          Cancel
+        </button>
+        <button
+          className={`px-4 py-2 ${
+            analysisStage === "complete"
+              ? "bg-green-500 hover:bg-green-600"
+              : "bg-blue-500 hover:bg-blue-600"
+          } text-white rounded ${
+            analysisStage !== "complete" ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+          disabled={analysisStage !== "complete"}
+          onClick={() => onModelSelected && onModelSelected(selectedModel)}
+        >
+          {analysisStage === "complete"
+            ? "View Analysis Results"
+            : "Processing..."}
+        </button>
+      </div>
+    </Modal>
+  );
+};
+
+// Role Selector Component
 const RoleSelector = ({ selectedRole, onRoleChange }) => {
   const roles = [
     {
@@ -2925,138 +3592,6 @@ const SuccessCriteriaBuilder = ({
   );
 };
 
-// Learning Agenda Component
-// const LearningAgendaBuilder = ({ onChange, initialValue = "" }) => {
-//   const [agenda, setAgenda] = useState(initialValue);
-//   const [showAIAssistant, setShowAIAssistant] = useState(false);
-//   const [isGenerating, setIsGenerating] = useState(false);
-//   const [aiSuggestion, setAiSuggestion] = useState("");
-
-//   const templates = [
-//     "Understand how [feature/change] impacts [key metric] for [audience segment].",
-//     "Identify which variation of [element] performs best for [goal/metric].",
-//     "Learn whether [audience] responds differently to [feature] than other segments.",
-//     "Determine if [hypothesis] holds true across different [contexts/platforms/regions].",
-//   ];
-
-//   const handleSelectTemplate = (template) => {
-//     setAgenda(template);
-//     onChange(template);
-//   };
-
-//   const handleChange = (e) => {
-//     setAgenda(e.target.value);
-//     onChange(e.target.value);
-//   };
-
-//   const handleGenerateAI = () => {
-//     setIsGenerating(true);
-
-//     // Simulate AI response with timeout
-//     setTimeout(() => {
-//       const aiAgenda =
-//         "Understand how different user segments respond to our personalized experience, specifically measuring whether new users show stronger engagement lifts than existing users, and identifying which specific personalization elements (content recommendations, UI adaptations, or messaging) drive the most significant improvements in retention and session duration.";
-
-//       setAiSuggestion(aiAgenda);
-//       setIsGenerating(false);
-//     }, 1200);
-//   };
-
-//   const handleUseAiSuggestion = () => {
-//     if (aiSuggestion) {
-//       setAgenda(aiSuggestion);
-//       onChange(aiSuggestion);
-//       setShowAIAssistant(false);
-//       setAiSuggestion("");
-//     }
-//   };
-
-//   return (
-//     <div>
-//       <div className="flex justify-between items-center mb-2">
-//         <h4 className="text-sm font-medium text-gray-700">Learning Agenda</h4>
-//         <button
-//           type="button"
-//           onClick={() => setShowAIAssistant(!showAIAssistant)}
-//           className="px-2 py-1 text-xs text-purple-700 bg-purple-100 rounded hover:bg-purple-200 flex items-center"
-//         >
-//           <span className="mr-1">✨</span>
-//           AI Assistant
-//         </button>
-//       </div>
-
-//       <textarea
-//         className="w-full p-2 border rounded mb-2"
-//         rows={3}
-//         value={agenda}
-//         onChange={handleChange}
-//         placeholder="What do you want to learn from this experiment?"
-//       />
-
-//       {showAIAssistant && (
-//         <div className="mb-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-//           <h4 className="font-medium text-purple-800 mb-2">
-//             AI Learning Agenda Assistant
-//           </h4>
-//           {aiSuggestion ? (
-//             <div className="mb-4">
-//               <div className="p-3 bg-white border rounded mb-3">
-//                 <p className="text-gray-800">{aiSuggestion}</p>
-//               </div>
-//               <div className="flex justify-end">
-//                 <button
-//                   onClick={handleUseAiSuggestion}
-//                   className="px-3 py-1.5 bg-purple-600 text-white text-sm rounded hover:bg-purple-700"
-//                 >
-//                   Use This Agenda
-//                 </button>
-//               </div>
-//             </div>
-//           ) : (
-//             <div>
-//               <p className="text-sm text-purple-700 mb-3">
-//                 Our AI will generate a comprehensive learning agenda based on
-//                 your experiment goals and hypothesis.
-//               </p>
-//               <button
-//                 onClick={handleGenerateAI}
-//                 className="w-full px-3 py-2 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 flex items-center justify-center"
-//                 disabled={isGenerating}
-//               >
-//                 {isGenerating ? (
-//                   <>
-//                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-//                     Generating...
-//                   </>
-//                 ) : (
-//                   <>
-//                     <span className="mr-2">✨</span>
-//                     Generate Learning Agenda
-//                   </>
-//                 )}
-//               </button>
-//             </div>
-//           )}
-//         </div>
-//       )}
-
-//       <div className="mt-3">
-//         <p className="text-sm text-gray-600 mb-2">Suggested templates:</p>
-//         <div className="space-y-2">
-//           {templates.map((template, index) => (
-//             <button
-//               key={index}
-//               className="block w-full text-left p-2 bg-gray-50 hover:bg-gray-100 text-sm rounded"
-//               onClick={() => handleSelectTemplate(template)}
-//             >
-//               {template}
-//             </button>
-//           ))}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
 const LearningAgendaBuilder = ({
   onChange,
   initialValue = "",
@@ -4438,111 +4973,6 @@ const SignificanceCalculator = ({
    --------------------------------------------------------------------------- */
 
 // Multi-step Wizard Component
-// const Wizard = ({ steps, onComplete, initialStep = 0 }) => {
-//   const [currentStep, setCurrentStep] = useState(initialStep);
-//   const [stepData, setStepData] = useState(
-//     steps.map((step) => step.initialData || {})
-//   );
-
-//   const handleNext = () => {
-//     if (currentStep < steps.length - 1) {
-//       setCurrentStep(currentStep + 1);
-//     } else {
-//       onComplete(stepData);
-//     }
-//   };
-
-//   const handleBack = () => {
-//     if (currentStep > 0) {
-//       setCurrentStep(currentStep - 1);
-//     }
-//   };
-
-//   const handleStepDataChange = (data) => {
-//     const newStepData = [...stepData];
-//     newStepData[currentStep] = { ...newStepData[currentStep], ...data };
-//     setStepData(newStepData);
-//   };
-
-//   const currentStepConfig = steps[currentStep];
-//   const StepComponent = currentStepConfig.component;
-
-//   return (
-//     <div>
-//       <div className="mb-6">
-//         <div className="flex items-center justify-between">
-//           {steps.map((step, index) => (
-//             <div
-//               key={index}
-//               className="flex flex-col items-center"
-//               onClick={() => index < currentStep && setCurrentStep(index)}
-//             >
-//               <div
-//                 className={`w-8 h-8 rounded-full flex items-center justify-center ${
-//                   currentStep >= index
-//                     ? "bg-blue-500 text-white"
-//                     : "bg-gray-200 text-gray-500"
-//                 } ${index < currentStep ? "cursor-pointer" : ""}`}
-//               >
-//                 {index + 1}
-//               </div>
-//               <span className="text-xs mt-1 text-gray-600">{step.title}</span>
-//             </div>
-//           ))}
-//         </div>
-//         <div className="relative mt-2 h-1 bg-gray-200">
-//           <div
-//             className="absolute h-1 bg-blue-500 transition-all duration-300"
-//             style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
-//           />
-//         </div>
-//       </div>
-
-//       <div className="mb-6">
-//         <h2 className="text-lg font-bold mb-2">{currentStepConfig.title}</h2>
-//         {currentStepConfig.description && (
-//           <p className="text-gray-600">{currentStepConfig.description}</p>
-//         )}
-//       </div>
-
-//       <div className="mb-6">
-//         <StepComponent
-//           data={stepData[currentStep]}
-//           onChange={handleStepDataChange}
-//           allData={stepData}
-//           allKnowledge={[]} // Replace with actual knowledge array if needed
-//           onToast={() => {}} // Replace with actual toast function if needed
-//         />
-//       </div>
-
-//       <div className="flex justify-between">
-//         {currentStep > 0 ? (
-//           <button
-//             onClick={handleBack}
-//             className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-50"
-//           >
-//             Back
-//           </button>
-//         ) : (
-//           <div></div> // Empty div for spacing
-//         )}
-
-//         <button
-//           onClick={handleNext}
-//           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-//           disabled={
-//             currentStepConfig.isDisabled &&
-//             currentStepConfig.isDisabled(stepData[currentStep])
-//           }
-//         >
-//           {currentStep === steps.length - 1 ? "Complete" : "Continue"}
-//         </button>
-//       </div>
-//     </div>
-//   );
-// };
-
-// Multi-step Wizard Component
 const Wizard = ({ steps, onComplete, initialStep = 0, initialData = {} }) => {
   const [currentStep, setCurrentStep] = useState(initialStep);
 
@@ -5618,201 +6048,6 @@ Would you like me to help refine this further with more specific recommendations
     }, 2000);
   };
 
-  // Simulate real-time data updates
-  // const simulateDataUpdate = () => {
-  //   if (isSimulating) return;
-
-  //   setIsSimulating(true);
-  //   setSimulationDay((prev) => prev + 1);
-
-  //   // Only update in-progress experiments
-  //   const updatedExperiments = experiments.map((exp) => {
-  //     if (
-  //       exp.status !==
-  //       LIFECYCLE_STAGES.EXECUTION.IN_PROGRESS.label.toLowerCase()
-  //     ) {
-  //       return exp;
-  //     }
-
-  //     // Increase progress
-  //     const progressIncrement = Math.floor(Math.random() * 5) + 3; // 3-7% progress increment
-  //     const newProgress = Math.min(100, exp.progress + progressIncrement);
-
-  //     // Update days running
-  //     const newDaysRunning = exp.daysRunning + 1;
-
-  //     // If experiment is completed, add results
-  //     if (newProgress >= 100) {
-  //       // Generate random results
-  //       const improvement = Math.floor(Math.random() * 40) - 5; // -5% to +35%
-  //       const significance =
-  //         improvement > 15
-  //           ? 0.001
-  //           : improvement > 5
-  //           ? 0.03
-  //           : improvement > 0
-  //           ? 0.08
-  //           : 0.2;
-  //       const confidence = 100 - significance * 100;
-
-  //       return {
-  //         ...exp,
-  //         progress: 100,
-  //         daysRunning: newDaysRunning,
-  //         status: LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase(),
-  //         improvement,
-  //         significance,
-  //         confidence,
-  //         impact:
-  //           improvement > 0
-  //             ? `~${Math.floor(improvement * 100)} additional conversions`
-  //             : "No positive impact detected",
-  //         knowledgeStatus:
-  //           LIFECYCLE_STAGES.KNOWLEDGE.ANALYZING.label.toLowerCase(),
-  //       };
-  //     }
-
-  //     // Just update progress for ongoing experiments
-  //     return {
-  //       ...exp,
-  //       progress: newProgress,
-  //       daysRunning: newDaysRunning,
-  //     };
-  //   });
-
-  //   setExperiments(updatedExperiments);
-
-  //   // If we have a selected experiment, update it too
-  //   if (
-  //     selectedExperiment &&
-  //     selectedExperiment.status ===
-  //       LIFECYCLE_STAGES.EXECUTION.IN_PROGRESS.label.toLowerCase()
-  //   ) {
-  //     const updated = updatedExperiments.find(
-  //       (e) => e.id === selectedExperiment.id
-  //     );
-  //     if (updated) {
-  //       setSelectedExperiment(updated);
-  //     }
-  //   }
-
-  //   setIsSimulating(false);
-  //   showToast(`Simulation Day ${simulationDay + 1}: Data updated`, "info");
-  // };
-  // const simulateDataUpdate = () => {
-  //   if (isSimulating) return;
-
-  //   setIsSimulating(true);
-
-  //   // Increment simulation day
-  //   const newSimDay = simulationDay + 1;
-  //   setSimulationDay(newSimDay);
-
-  //   showLoading(`Simulating Day ${newSimDay}...`);
-
-  //   setTimeout(() => {
-  //     // Only update in-progress experiments
-  //     const updatedExperiments = experiments.map((exp) => {
-  //       if (
-  //         exp.status !==
-  //         LIFECYCLE_STAGES.EXECUTION.IN_PROGRESS.label.toLowerCase()
-  //       ) {
-  //         return exp;
-  //       }
-
-  //       // Increase progress
-  //       const progressIncrement = Math.floor(Math.random() * 5) + 3; // 3-7% progress increment
-  //       const newProgress = Math.min(100, exp.progress + progressIncrement);
-
-  //       // Update days running
-  //       const newDaysRunning = exp.daysRunning + 1;
-
-  //       // Generate new data point for trend chart
-  //       const newDataPoint = {
-  //         date: `Sim ${newSimDay}`,
-  //         standard: parseFloat((2.0 + Math.random() * 0.3).toFixed(1)),
-  //         personalized: parseFloat((2.7 + Math.random() * 0.4).toFixed(1)),
-  //       };
-
-  //       // Handle different experiment IDs
-  //       if (exp.id === "mem-001" && membershipTrends) {
-  //         membershipTrends.push(newDataPoint);
-  //       } else if (exp.id === "ypp-001" && yppTrends) {
-  //         yppTrends.push(newDataPoint);
-  //       } else if (exp.id === "eng-001" && engagementTrends) {
-  //         engagementTrends.push(newDataPoint);
-  //       }
-
-  //       // If experiment is completed, add results
-  //       if (newProgress >= 100) {
-  //         // Generate random results
-  //         const improvement = Math.floor(Math.random() * 40) - 5; // -5% to +35%
-  //         const significance =
-  //           improvement > 15
-  //             ? 0.001
-  //             : improvement > 5
-  //             ? 0.03
-  //             : improvement > 0
-  //             ? 0.08
-  //             : 0.2;
-  //         const confidence = 100 - significance * 100;
-
-  //         return {
-  //           ...exp,
-  //           progress: 100,
-  //           daysRunning: newDaysRunning,
-  //           status: LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase(),
-  //           improvement,
-  //           significance,
-  //           confidence,
-  //           impact:
-  //             improvement > 0
-  //               ? `~${Math.floor(improvement * 100)} additional conversions`
-  //               : "No positive impact detected",
-  //           knowledgeStatus:
-  //             LIFECYCLE_STAGES.KNOWLEDGE.ANALYZING.label.toLowerCase(),
-  //         };
-  //       }
-
-  //       // Just update progress for ongoing experiments
-  //       return {
-  //         ...exp,
-  //         progress: newProgress,
-  //         daysRunning: newDaysRunning,
-  //       };
-  //     });
-
-  //     setExperiments(updatedExperiments);
-
-  //     // If we have a selected experiment, update it too
-  //     if (
-  //       selectedExperiment &&
-  //       selectedExperiment.status ===
-  //         LIFECYCLE_STAGES.EXECUTION.IN_PROGRESS.label.toLowerCase()
-  //     ) {
-  //       const updated = updatedExperiments.find(
-  //         (e) => e.id === selectedExperiment.id
-  //       );
-  //       if (updated) {
-  //         setSelectedExperiment(updated);
-  //       }
-  //     }
-
-  //     // Highlight what changed
-  //     const updatedCount = updatedExperiments.filter(
-  //       (e, i) => e.daysRunning !== experiments[i].daysRunning
-  //     ).length;
-
-  //     hideLoading();
-  //     setIsSimulating(false);
-  //     showToast(
-  //       `Simulation Day ${newSimDay}: Updated ${updatedCount} experiments with new data`,
-  //       "success",
-  //       4000
-  //     );
-  //   }, 800);
-  // };
-
   const simulateDataUpdate = (days = 1) => {
     if (isSimulating) return;
 
@@ -6040,6 +6275,7 @@ Would you like me to help refine this further with more specific recommendations
   const [planningGoal, setPlanningGoal] = useState("");
   const [planningGenBusy, setPlanningGenBusy] = useState(false);
   const [planItemModalOpen, setPlanItemModalOpen] = useState(false);
+  const [planningDashboardOpen, setPlanningDashboardOpen] = useState(false);
 
   const plannedCount = roadmap.filter(
     (r) => r.status === LIFECYCLE_STAGES.PLANNING.PLANNED.label.toLowerCase()
@@ -6055,6 +6291,243 @@ Would you like me to help refine this further with more specific recommendations
     setPlanItemModalItem(item);
     setPlanItemModalOpen(true);
     addToRecent(item);
+  };
+
+  const PlanningDashboardModal = ({ isOpen, onClose }) => {
+    const planningStats = {
+      totalExperiments: roadmap.length,
+      plannedExperiments: roadmap.filter(r => r.status === LIFECYCLE_STAGES.PLANNING.PLANNED.label.toLowerCase()).length,
+      draftExperiments: roadmap.filter(r => r.status === LIFECYCLE_STAGES.PLANNING.DRAFT.label.toLowerCase()).length,
+      backlogExperiments: roadmap.filter(r => r.status === LIFECYCLE_STAGES.PLANNING.BACKLOG.label.toLowerCase()).length,
+      categoryCounts: {
+        monetization: roadmap.filter(r => r.category === "monetization").length,
+        engagement: roadmap.filter(r => r.category === "engagement").length,
+        satisfaction: roadmap.filter(r => r.category === "satisfaction").length
+      },
+      priorityCounts: {
+        high: roadmap.filter(r => r.priority === "high").length,
+        medium: roadmap.filter(r => r.priority === "medium").length,
+        low: roadmap.filter(r => r.priority === "low").length
+      },
+      ownerCounts: {}
+    };
+  
+    // Calculate experiments by owner
+    roadmap.forEach(r => {
+      if (r.owner) {
+        planningStats.ownerCounts[r.owner] = (planningStats.ownerCounts[r.owner] || 0) + 1;
+      }
+    });
+  
+    // Calculate experiments by week
+    const experimentsByWeek = [4, 6, 3, 7, 5, 8, 4, 6];
+    
+    // Calculate planned completion rate
+    const plannedCompletionRate = Math.floor(Math.random() * 20) + 70; // 70-90%
+    
+    if (!isOpen) return null;
+  
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Planning Dashboard"
+        size="xl"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h3 className="font-medium text-blue-800 mb-2">Experiment Status</h3>
+            <div className="flex items-center mb-3">
+              <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xl font-bold mr-3">
+                {planningStats.totalExperiments}
+              </div>
+              <div>
+                <p className="text-blue-700">Total Experiments</p>
+                <p className="text-sm text-blue-600">For Q2 2025</p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div>
+                <div className="flex justify-between text-sm text-blue-700">
+                  <span>Planned</span>
+                  <span>{planningStats.plannedExperiments}</span>
+                </div>
+                <div className="w-full h-2 bg-blue-100 rounded-full mt-1">
+                  <div 
+                    className="h-2 bg-blue-500 rounded-full" 
+                    style={{ width: `${(planningStats.plannedExperiments / planningStats.totalExperiments) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-sm text-blue-700">
+                  <span>Draft</span>
+                  <span>{planningStats.draftExperiments}</span>
+                </div>
+                <div className="w-full h-2 bg-blue-100 rounded-full mt-1">
+                  <div 
+                    className="h-2 bg-amber-500 rounded-full" 
+                    style={{ width: `${(planningStats.draftExperiments / planningStats.totalExperiments) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-sm text-blue-700">
+                  <span>Backlog</span>
+                  <span>{planningStats.backlogExperiments}</span>
+                </div>
+                <div className="w-full h-2 bg-blue-100 rounded-full mt-1">
+                  <div 
+                    className="h-2 bg-gray-500 rounded-full" 
+                    style={{ width: `${(planningStats.backlogExperiments / planningStats.totalExperiments) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+  
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+            <h3 className="font-medium text-green-800 mb-2">Experiment Categories</h3>
+            <div className="h-44">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: 'Monetization', value: planningStats.categoryCounts.monetization },
+                      { name: 'Engagement', value: planningStats.categoryCounts.engagement },
+                      { name: 'Satisfaction', value: planningStats.categoryCounts.satisfaction },
+                    ]}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  >
+                    <Cell fill="#10B981" />
+                    <Cell fill="#3B82F6" />
+                    <Cell fill="#6366F1" />
+                  </Pie>
+                  <Tooltip formatter={(value) => [`${value} experiments`, '']} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+  
+          <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <h3 className="font-medium text-amber-800 mb-2">Experiment Forecast</h3>
+            <div className="h-44">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={experimentsByWeek.map((count, i) => ({ week: `W${i+1}`, count }))}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="week" />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip formatter={(value) => [`${value} experiments`]} />
+                  <Bar dataKey="count" fill="#F59E0B" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <p className="text-sm text-amber-700 mt-2">Projected experiments by week for Q2</p>
+          </div>
+        </div>
+  
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="p-4 bg-white rounded-lg border">
+            <h3 className="font-medium text-gray-800 mb-2">Experiment Ownership</h3>
+            <div className="space-y-2">
+              {Object.entries(planningStats.ownerCounts)
+                .sort((a, b) => b[1] - a[1])
+                .map(([owner, count], idx) => (
+                  <div key={idx}>
+                    <div className="flex justify-between text-sm">
+                      <span>{owner}</span>
+                      <span>{count} experiments</span>
+                    </div>
+                    <div className="w-full h-2 bg-gray-100 rounded-full mt-1">
+                      <div 
+                        className="h-2 bg-indigo-500 rounded-full" 
+                        style={{ width: `${(count / planningStats.totalExperiments) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+  
+          <div className="p-4 bg-white rounded-lg border">
+            <h3 className="font-medium text-gray-800 mb-2">Priority Distribution</h3>
+            <div className="space-y-3">
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                <span className="text-sm">High Priority ({planningStats.priorityCounts.high})</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full bg-amber-500 mr-2"></div>
+                <span className="text-sm">Medium Priority ({planningStats.priorityCounts.medium})</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full bg-gray-500 mr-2"></div>
+                <span className="text-sm">Low Priority ({planningStats.priorityCounts.low})</span>
+              </div>
+            </div>
+  
+            <div className="mt-4">
+              <h4 className="text-sm font-medium text-gray-600 mb-1">OKR Alignment</h4>
+              <div className="flex space-x-2">
+                {okrData.map((okr, idx) => (
+                  <div key={idx} className="flex-1">
+                    <p className="text-xs truncate">{okr.title}</p>
+                    <div className="w-full h-2 bg-gray-100 rounded-full mt-1">
+                      <div 
+                        className="h-2 bg-amber-500 rounded-full" 
+                        style={{ width: `${okr.progress}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200 mb-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="font-medium text-indigo-800">Planned Experiment Completion</h3>
+              <p className="text-sm text-indigo-700 mt-1">
+                Tracking planned vs. actual experiment execution rate
+              </p>
+            </div>
+            <div className="flex items-center px-3 py-1 bg-white rounded border border-indigo-200">
+              <span className="text-lg font-bold text-indigo-700 mr-1">{plannedCompletionRate}%</span>
+              <span className="text-xs text-indigo-600">completion rate</span>
+            </div>
+          </div>
+  
+          <div className="mt-3 w-full h-4 bg-indigo-100 rounded-full">
+            <div 
+              className="h-4 bg-indigo-600 rounded-full" 
+              style={{ width: `${plannedCompletionRate}%` }}
+            ></div>
+          </div>
+          
+          <p className="text-xs text-indigo-600 mt-2">
+            {plannedCompletionRate >= 80 
+              ? "On track to meet quarterly experimentation targets" 
+              : "Below target execution rate - consider reducing backlog"}
+          </p>
+        </div>
+  
+        <div className="flex justify-end">
+          <button
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            onClick={onClose}
+          >
+            Close Dashboard
+          </button>
+        </div>
+      </Modal>
+    );
   };
 
   const closePlanItemModal = () => {
@@ -6104,44 +6577,6 @@ Would you like me to help refine this further with more specific recommendations
       showToast("AI-generated experiment added to backlog!", "success");
     }, 1500);
   };
-
-  // const sendToWizard = (item) => {
-  //   // Initialize wizard with data from the planning item
-  //   const wizardData = {
-  //     name: item.name,
-  //     category: item.category,
-  //     goal: item.goal,
-  //     hypothesis: item.hypothesis,
-  //     primaryMetric:
-  //       item.metrics[0] === "Conversion"
-  //         ? "conversion-rate"
-  //         : "average-session-duration",
-  //     successCriteria: `Achieve ≥15% improvement in ${item.metrics[0]} with statistical significance (p < 0.05)`,
-  //     learningAgenda: item.learningAgenda || "",
-  //     baselineRate: 2.5,
-  //     minimumEffect: 15,
-  //     okrs: item.okrs || [],
-  //     control: {
-  //       description: "Current implementation",
-  //     },
-  //     treatment: {
-  //       description: "New implementation based on the hypothesis",
-  //     },
-  //     allocation: { Control: 50, Treatment: 50 },
-  //     startDate: item.startDate,
-  //     endDate: item.endDate,
-  //     owner: item.owner,
-  //   };
-
-  //   // Start the wizard with this data
-  //   initializeWizard(wizardData);
-
-  //   // Update breadcrumbs
-  //   updateBreadcrumbs("new-experiment", "New Experiment");
-
-  //   // Close the plan item modal
-  //   closePlanItemModal();
-  // };
 
   const sendToWizard = (item) => {
     // Format dates properly for HTML date inputs
@@ -6311,11 +6746,450 @@ Would you like me to help refine this further with more specific recommendations
      --------------------------------------------------------------------------- */
   const [reviewStatusFilter, setReviewStatusFilter] = useState("all");
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [editBriefModalOpen, setEditBriefModalOpen] = useState(false);
+  const [briefToEdit, setBriefToEdit] = useState(null);
+  const [reviewGuidelinesOpen, setReviewGuidelinesOpen] = useState(false);
 
   const openReviewModal = (item) => {
     setReviewModalItem(item);
     setReviewModalOpen(true);
     addToRecent(item);
+  };
+
+  const ReviewGuidelinesModal = ({ isOpen, onClose }) => {
+    const [activeSection, setActiveSection] = useState("statistical");
+
+    if (!isOpen) return null;
+
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Experiment Review Guidelines"
+        size="lg"
+      >
+        <div className="mb-6">
+          <p className="text-gray-600">
+            These guidelines outline the criteria for reviewing experiment
+            briefs and ensuring they meet our quality standards before
+            launching.
+          </p>
+        </div>
+
+        <div className="flex flex-col md:flex-row md:space-x-4">
+          <div className="md:w-1/4 mb-4 md:mb-0">
+            <div className="bg-gray-50 p-3 rounded border">
+              <h3 className="font-medium text-gray-700 mb-3">Review Areas</h3>
+              <ul className="space-y-2">
+                {["statistical", "business", "operational", "technical"].map(
+                  (section) => (
+                    <li key={section}>
+                      <button
+                        className={`w-full text-left px-3 py-2 rounded text-sm ${
+                          activeSection === section
+                            ? "bg-blue-100 text-blue-700 font-medium"
+                            : "hover:bg-gray-100"
+                        }`}
+                        onClick={() => setActiveSection(section)}
+                      >
+                        {section.charAt(0).toUpperCase() + section.slice(1)}{" "}
+                        Design
+                      </button>
+                    </li>
+                  )
+                )}
+              </ul>
+            </div>
+          </div>
+
+          <div className="md:w-3/4">
+            <div className="bg-white p-4 rounded border">
+              {activeSection === "statistical" && (
+                <div>
+                  <h3 className="font-medium text-gray-800 text-lg mb-3">
+                    Statistical Design Guidelines
+                  </h3>
+
+                  <div className="space-y-4">
+                    <div className="p-3 border-l-4 border-blue-500 bg-blue-50">
+                      <h4 className="font-medium text-blue-700">
+                        Sample Size Requirements
+                      </h4>
+                      <p className="text-sm text-blue-600 mt-1">
+                        Ensure the experiment has adequate sample size to detect
+                        the minimum effect size with at least 80% power.
+                      </p>
+                      <ul className="list-disc list-inside text-sm text-blue-600 mt-2">
+                        <li>
+                          For conversion metrics: Minimum 2,000 users per
+                          variant
+                        </li>
+                        <li>
+                          For engagement metrics: Minimum 1,000 users per
+                          variant
+                        </li>
+                        <li>
+                          For satisfaction metrics: Minimum 500 survey responses
+                          per variant
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="p-3 bg-gray-50 rounded">
+                      <h4 className="font-medium text-gray-700">
+                        Randomization Method
+                      </h4>
+                      <p className="text-sm text-gray-600 mt-1">
+                        The experiment must use proper randomization to assign
+                        users to variants.
+                      </p>
+                      <ul className="list-disc list-inside text-sm text-gray-600 mt-2">
+                        <li>User-based randomization for most experiments</li>
+                        <li>Session-based only when appropriate</li>
+                        <li>No self-selection or opt-in designs</li>
+                      </ul>
+                    </div>
+
+                    <div className="p-3 bg-gray-50 rounded">
+                      <h4 className="font-medium text-gray-700">
+                        Success Criteria
+                      </h4>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Clear, measurable success criteria must be defined
+                        before the experiment starts.
+                      </p>
+                      <ul className="list-disc list-inside text-sm text-gray-600 mt-2">
+                        <li>Primary metric must be clearly defined</li>
+                        <li>Minimum detectable effect should be specified</li>
+                        <li>
+                          Statistical significance threshold (typically p &lt;
+                          0.05)
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="p-3 border-l-4 border-amber-500 bg-amber-50">
+                      <h4 className="font-medium text-amber-700">
+                        Common Statistical Issues
+                      </h4>
+                      <ul className="list-disc list-inside text-sm text-amber-600 mt-1">
+                        <li>
+                          Underpowered experiments (sample size too small)
+                        </li>
+                        <li>
+                          Multiple testing problem (testing too many metrics)
+                        </li>
+                        <li>Peeking at results before experiment completion</li>
+                        <li>
+                          Improper segmentation leading to false positives
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeSection === "business" && (
+                <div>
+                  <h3 className="font-medium text-gray-800 text-lg mb-3">
+                    Business Alignment Guidelines
+                  </h3>
+
+                  <div className="space-y-4">
+                    <div className="p-3 border-l-4 border-green-500 bg-green-50">
+                      <h4 className="font-medium text-green-700">
+                        Strategic Alignment
+                      </h4>
+                      <p className="text-sm text-green-600 mt-1">
+                        The experiment should clearly align with at least one
+                        current OKR or strategic initiative.
+                      </p>
+                      <ul className="list-disc list-inside text-sm text-green-600 mt-2">
+                        <li>Link to specific OKRs must be documented</li>
+                        <li>
+                          Expected impact on key business metrics must be
+                          estimated
+                        </li>
+                        <li>Alignment with quarterly priorities</li>
+                      </ul>
+                    </div>
+
+                    <div className="p-3 bg-gray-50 rounded">
+                      <h4 className="font-medium text-gray-700">
+                        Resource Justification
+                      </h4>
+                      <p className="text-sm text-gray-600 mt-1">
+                        The potential impact justifies the resources required to
+                        run the experiment.
+                      </p>
+                      <ul className="list-disc list-inside text-sm text-gray-600 mt-2">
+                        <li>Development effort estimate</li>
+                        <li>Cost of waiting for results</li>
+                        <li>Expected return on investment</li>
+                      </ul>
+                    </div>
+
+                    <div className="p-3 border-l-4 border-amber-500 bg-amber-50">
+                      <h4 className="font-medium text-amber-700">
+                        Common Business Issues
+                      </h4>
+                      <ul className="list-disc list-inside text-sm text-amber-600 mt-1">
+                        <li>Insufficient business case for experiment</li>
+                        <li>
+                          Lack of clear connection to strategic priorities
+                        </li>
+                        <li>
+                          Minimal expected impact that doesn't justify resources
+                        </li>
+                        <li>
+                          No clear plan for implementing results if successful
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeSection === "operational" && (
+                <div>
+                  <h3 className="font-medium text-gray-800 text-lg mb-3">
+                    Operational Guidelines
+                  </h3>
+
+                  <div className="space-y-4">
+                    <div className="p-3 border-l-4 border-indigo-500 bg-indigo-50">
+                      <h4 className="font-medium text-indigo-700">
+                        Experiment Duration
+                      </h4>
+                      <p className="text-sm text-indigo-600 mt-1">
+                        Ensure the experiment runs for an appropriate duration
+                        to capture reliable results.
+                      </p>
+                      <ul className="list-disc list-inside text-sm text-indigo-600 mt-2">
+                        <li>
+                          Minimum 1 week to account for day-of-week effects
+                        </li>
+                        <li>Maximum 4 weeks for most experiments</li>
+                        <li>Consider seasonal effects if relevant</li>
+                      </ul>
+                    </div>
+
+                    <div className="p-3 bg-gray-50 rounded">
+                      <h4 className="font-medium text-gray-700">
+                        Monitoring Plan
+                      </h4>
+                      <p className="text-sm text-gray-600 mt-1">
+                        A clear plan for monitoring the experiment must be in
+                        place.
+                      </p>
+                      <ul className="list-disc list-inside text-sm text-gray-600 mt-2">
+                        <li>Key health metrics to monitor</li>
+                        <li>
+                          Guardrail metrics that would trigger early stopping
+                        </li>
+                        <li>Responsible team members for monitoring</li>
+                      </ul>
+                    </div>
+
+                    <div className="p-3 bg-gray-50 rounded">
+                      <h4 className="font-medium text-gray-700">
+                        Documentation Requirements
+                      </h4>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Complete documentation must be provided before launch.
+                      </p>
+                      <ul className="list-disc list-inside text-sm text-gray-600 mt-2">
+                        <li>Hypothesis with rationale</li>
+                        <li>Success criteria and metrics</li>
+                        <li>Target audience and exclusions</li>
+                        <li>Learning agenda</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeSection === "technical" && (
+                <div>
+                  <h3 className="font-medium text-gray-800 text-lg mb-3">
+                    Technical Design Guidelines
+                  </h3>
+
+                  <div className="space-y-4">
+                    <div className="p-3 border-l-4 border-pink-500 bg-pink-50">
+                      <h4 className="font-medium text-pink-700">
+                        Implementation Requirements
+                      </h4>
+                      <p className="text-sm text-pink-600 mt-1">
+                        The technical implementation must meet these standards:
+                      </p>
+                      <ul className="list-disc list-inside text-sm text-pink-600 mt-2">
+                        <li>
+                          Use standard experimentation platform for
+                          randomization
+                        </li>
+                        <li>Proper logging of exposure events</li>
+                        <li>No interference with other running experiments</li>
+                        <li>Graceful fallback if experiment fails</li>
+                      </ul>
+                    </div>
+
+                    <div className="p-3 bg-gray-50 rounded">
+                      <h4 className="font-medium text-gray-700">
+                        Performance Impact
+                      </h4>
+                      <p className="text-sm text-gray-600 mt-1">
+                        The experiment must not significantly degrade
+                        performance.
+                      </p>
+                      <ul className="list-disc list-inside text-sm text-gray-600 mt-2">
+                        <li>Less than 50ms impact on page load time</li>
+                        <li>No significant increase in error rates</li>
+                        <li>Optimized asset loading if applicable</li>
+                      </ul>
+                    </div>
+
+                    <div className="p-3 border-l-4 border-red-500 bg-red-50">
+                      <h4 className="font-medium text-red-700">
+                        Security Considerations
+                      </h4>
+                      <p className="text-sm text-red-600 mt-1">
+                        The experiment must adhere to security standards:
+                      </p>
+                      <ul className="list-disc list-inside text-sm text-red-600 mt-2">
+                        <li>No exposure of sensitive user data</li>
+                        <li>Compliance with data privacy regulations</li>
+                        <li>Secure handling of any user inputs</li>
+                        <li>No third-party scripts without security review</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end mt-6">
+          <button
+            className="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 mr-2"
+            onClick={() => {
+              // Toggle printable version logic would go here
+              showToast("Printable version would download here", "info");
+            }}
+          >
+            Download PDF
+          </button>
+          <button
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            onClick={onClose}
+          >
+            Close Guidelines
+          </button>
+        </div>
+      </Modal>
+    );
+  };
+
+  const EditBriefModal = ({ isOpen, onClose, brief, onSave }) => {
+    const [formData, setFormData] = useState({
+      name: brief?.name || "",
+      businessGoal: brief?.businessGoal || "",
+      primaryMetric: brief?.primaryMetric || "",
+      targetAudience: brief?.targetAudience || "",
+      hypothesis: brief?.hypothesis || "",
+      successCriteria: brief?.successCriteria || "",
+      learningAgenda: brief?.learningAgenda || "",
+    });
+
+    const handleChange = (field, value) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    };
+
+    const handleSave = () => {
+      onSave(formData);
+    };
+
+    if (!isOpen || !brief) return null;
+
+    return (
+      <Modal isOpen={isOpen} onClose={onClose} title="Edit Brief" size="lg">
+        <div className="space-y-4">
+          <FormField
+            label="Brief Name"
+            value={formData.name}
+            onChange={(e) => handleChange("name", e.target.value)}
+            placeholder="Enter brief name"
+            required
+          />
+
+          <FormField
+            label="Business Goal"
+            type="textarea"
+            value={formData.businessGoal}
+            onChange={(e) => handleChange("businessGoal", e.target.value)}
+            placeholder="Define the business objective"
+            required
+          />
+
+          <FormField
+            label="Primary Metric"
+            value={formData.primaryMetric}
+            onChange={(e) => handleChange("primaryMetric", e.target.value)}
+            placeholder="The main success metric"
+            required
+          />
+
+          <FormField
+            label="Target Audience"
+            value={formData.targetAudience}
+            onChange={(e) => handleChange("targetAudience", e.target.value)}
+            placeholder="Who will be included in this experiment"
+            required
+          />
+
+          <FormField
+            label="Hypothesis"
+            type="textarea"
+            value={formData.hypothesis}
+            onChange={(e) => handleChange("hypothesis", e.target.value)}
+            placeholder="What do you expect to happen and why"
+            required
+          />
+
+          <FormField
+            label="Success Criteria"
+            value={formData.successCriteria}
+            onChange={(e) => handleChange("successCriteria", e.target.value)}
+            placeholder="How will you determine success"
+            required
+          />
+
+          <FormField
+            label="Learning Agenda"
+            type="textarea"
+            value={formData.learningAgenda}
+            onChange={(e) => handleChange("learningAgenda", e.target.value)}
+            placeholder="What do you want to learn from this experiment"
+          />
+
+          <div className="flex justify-end space-x-3 mt-6">
+            <button
+              className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-50"
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              onClick={handleSave}
+            >
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </Modal>
+    );
   };
 
   const closeReviewModal = () => {
@@ -6340,6 +7214,38 @@ Would you like me to help refine this further with more specific recommendations
       );
       closeReviewModal();
     }, 500);
+  };
+
+  const handleSaveBriefEdit = (updatedBrief) => {
+    showLoading("Saving brief changes...");
+
+    setTimeout(() => {
+      setReviews((prev) =>
+        prev.map((r) =>
+          r.id === briefToEdit.id
+            ? {
+                ...r,
+                ...updatedBrief,
+                status:
+                  LIFECYCLE_STAGES.REVIEW.UNDER_REVIEW.label.toLowerCase(),
+                feedback: [
+                  ...r.feedback,
+                  {
+                    type: "revision",
+                    status: "success",
+                    message: "Brief updated and resubmitted for review",
+                  },
+                ],
+              }
+            : r
+        )
+      );
+
+      setEditBriefModalOpen(false);
+      setBriefToEdit(null);
+      hideLoading();
+      showToast("Brief updated successfully", "success");
+    }, 800);
   };
 
   const addFeedbackToReview = (feedback) => {
@@ -6840,23 +7746,310 @@ Generated by E2E Experiment Platform`;
     }, 1000);
   };
 
-  const generateAIAnalysis = (exp) => {
+  // const generateAIAnalysis = (exp) => {
+  //   showLoading("Generating AI analysis...");
+
+  //   setTimeout(() => {
+  //     // Open AI prompt modal with the context
+  //     openAIPromptModal("analysis", exp);
+  //     hideLoading();
+  //   }, 800);
+  // };
+
+  const generateAIAnalysis = (exp, modelId = null) => {
     showLoading("Generating AI analysis...");
 
     setTimeout(() => {
-      // Open AI prompt modal with the context
-      openAIPromptModal("analysis", exp);
+      if (modelId) {
+        // If a model was selected, show a model-specific toast
+        showToast(`Using ${modelId} to analyze experiment results`, "info");
+      }
+
+      // Generate experiment-specific analysis
+      let analysisContent = "";
+
+      if (exp.category === "causal") {
+        analysisContent = `The causal inference analysis using ${
+          modelId || "difference-in-differences"
+        } methodology shows a statistically significant causal effect of ${
+          exp.improvement
+        }% (p=${exp.significance}) in ${
+          exp.primaryMetric
+        }.\n\nThe analysis controls for time trends and other potential confounding factors, providing strong evidence that the observed effect is truly caused by the treatment.\n\nKey insights:\n1. The effect is consistent across user segments, with the strongest impact seen in ${
+          exp.segmentedResults ? exp.segmentedResults[0].name : "new users"
+        }\n2. The causal mechanism appears to be ${
+          exp.hypothesis.includes("cognitive")
+            ? "reduced cognitive load"
+            : "improved user experience"
+        }\n3. The estimated effect has remained stable over the observation period\n\nRecommended next steps:\n1. ${
+          exp.improvement > 15
+            ? "Implement the changes across all users"
+            : "Test variations to strengthen the effect"
+        }\n2. Apply these design principles to related features\n3. Monitor for long-term persistence of the effect`;
+      } else if (exp.improvement < 0) {
+        analysisContent = `The ${
+          modelId || "statistical"
+        } analysis of this experiment shows a statistically ${
+          exp.significance < 0.05 ? "significant" : "non-significant"
+        } negative effect of ${exp.improvement}% on ${
+          exp.primaryMetric
+        }.\n\nThis negative result provides valuable learning opportunities about what doesn't work in this context.\n\nKey insights:\n1. The negative effect was most pronounced in ${
+          exp.segmentedResults
+            ? exp.segmentedResults[0].name
+            : "specific user segments"
+        }\n2. The hypothesis that "${
+          exp.hypothesis
+        }" was not supported by the data\n3. User behavior analysis suggests that ${
+          exp.category === "engagement"
+            ? "users found the new experience confusing"
+            : "the changes did not align with user expectations"
+        }\n\nRecommended next steps:\n1. Revert to the control version\n2. Conduct qualitative research to better understand user reactions\n3. Redesign the experiment with modifications based on these learnings`;
+      } else if (exp.category === "monetization") {
+        analysisContent = `The ${
+          modelId || "statistical"
+        } analysis of this monetization experiment shows a ${
+          exp.significance < 0.05
+            ? "statistically significant"
+            : "promising but not statistically significant"
+        } improvement of ${exp.improvement}% in ${
+          exp.primaryMetric
+        }.\n\nThe revenue impact is estimated at ${
+          exp.impact.includes("$")
+            ? exp.impact
+            : "$" + Math.floor(Math.random() * 500 + 300) + "K annually"
+        }.\n\nKey insights:\n1. The effect was strongest among ${
+          exp.segmentedResults
+            ? exp.segmentedResults[0].name
+            : "high-value user segments"
+        }\n2. The conversion funnel analysis shows the biggest improvement at the ${
+          Math.random() > 0.5 ? "consideration" : "decision"
+        } stage\n3. The improvement showed consistency across ${
+          Math.random() > 0.5 ? "geographic regions" : "device types"
+        }\n\nRecommended next steps:\n1. ${
+          exp.improvement > 10
+            ? "Roll out to all users"
+            : "Iterate on the design to enhance impact"
+        }\n2. Conduct follow-up experiments to optimize pricing strategy\n3. Apply learnings to other monetization touchpoints`;
+      } else {
+        analysisContent = `The ${modelId || "t-test"} analysis shows a ${
+          exp.significance < 0.05
+            ? "statistically significant"
+            : "positive but not statistically significant"
+        } improvement of ${exp.improvement}% in ${exp.primaryMetric} (p=${
+          exp.significance
+        }).\n\nThe experiment successfully ${
+          exp.significance < 0.05 ? "validated" : "partially supported"
+        } the hypothesis that "${exp.hypothesis}".\n\nKey insights:\n1. ${
+          exp.segmentedResults ? exp.segmentedResults[0].name : "New users"
+        } showed the strongest response (+${
+          exp.segmentedResults
+            ? exp.segmentedResults[0].improvement
+            : Math.floor(Math.random() * 10 + exp.improvement)
+        }%)\n2. The effect was consistent across ${
+          Math.random() > 0.5 ? "device types" : "user segments"
+        }\n3. Secondary metrics ${
+          Math.random() > 0.7
+            ? "showed similar improvements"
+            : "remained stable"
+        }\n\nRecommended next steps:\n1. ${
+          exp.improvement > 15
+            ? "Implement the winning variant"
+            : "Test variations to further improve results"
+        }\n2. Monitor long-term impact on retention and engagement\n3. Apply insights to future experiment designs`;
+      }
+
+      // Update the experiment with the generated analysis
+      setExperiments((prev) =>
+        prev.map((e) =>
+          e.id === exp.id ? { ...e, aiAnalysis: analysisContent } : e
+        )
+      );
+
+      // Update the selected experiment if it's currently being viewed
+      if (selectedExperiment && selectedExperiment.id === exp.id) {
+        setSelectedExperiment({
+          ...selectedExperiment,
+          aiAnalysis: analysisContent,
+        });
+      }
+
       hideLoading();
+      showToast("AI analysis generated successfully", "success");
     }, 800);
   };
 
   /* ---------------------------------------------------------------------------
      KNOWLEDGE HUB FUNCTIONALITY
      --------------------------------------------------------------------------- */
+  // Find the knowledge tab state declarations around line 3300
   const [knowledgeSearch, setKnowledgeSearch] = useState("");
   const [knowledgeCategory, setKnowledgeCategory] = useState("all");
   const [knowledgeView, setKnowledgeView] = useState("list");
   const [insightsItem, setInsightsItem] = useState(null);
+
+  // Add these new search states
+  const [searchResults, setSearchResults] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
+
+  const KnowledgeSearchResults = ({ results, onClose, onViewItem }) => {
+    if (!results) return null;
+
+    return (
+      <div className="bg-white border rounded-lg shadow-lg mb-6">
+        <div className="flex justify-between items-center p-4 border-b">
+          <h3 className="font-medium text-lg text-gray-800">{results.title}</h3>
+          <button
+            className="text-gray-500 hover:text-gray-700"
+            onClick={onClose}
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="p-4">
+          {results.type === "report" && (
+            <div className="prose max-w-none">
+              {results.content.split("\n\n").map((section, idx) => {
+                if (section.startsWith("#")) {
+                  const level = section.match(/^#+/)[0].length;
+                  const text = section.replace(/^#+\s/, "");
+
+                  return React.createElement(
+                    `h${level}`,
+                    {
+                      key: idx,
+                      className:
+                        level === 1
+                          ? "text-xl font-bold mb-4"
+                          : "text-lg font-medium mt-6 mb-3",
+                    },
+                    text
+                  );
+                }
+
+                if (section.startsWith("1.") || section.startsWith("*")) {
+                  return (
+                    <ul key={idx} className="list-disc pl-5 my-4">
+                      {section.split("\n").map((item, i) => (
+                        <li key={i} className="mb-1">
+                          {item.replace(/^\d+\.\s|\*\s/, "")}
+                        </li>
+                      ))}
+                    </ul>
+                  );
+                }
+
+                return (
+                  <p key={idx} className="mb-4">
+                    {section}
+                  </p>
+                );
+              })}
+            </div>
+          )}
+
+          {(results.type === "experiment_list" ||
+            results.type === "ranking" ||
+            results.type === "search_results") && (
+            <div>
+              <p className="text-gray-600 mb-4">{results.content}</p>
+
+              <div className="space-y-3">
+                {results.items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-3 border rounded hover:bg-gray-50 cursor-pointer transition"
+                    onClick={() => onViewItem && onViewItem(item.id)}
+                  >
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-medium text-gray-800">{item.name}</h4>
+                      <span
+                        className={`px-2 py-0.5 rounded text-sm ${
+                          item.improvement > 0
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {item.improvement > 0 ? "+" : ""}
+                        {item.improvement}%
+                      </span>
+                    </div>
+
+                    <p className="text-sm text-gray-600 mt-1">{item.summary}</p>
+
+                    {item.category && (
+                      <div className="mt-2">
+                        <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
+                          {item.category}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {results.type === "comparison" && (
+            <div>
+              <p className="text-gray-600 mb-4">{results.content}</p>
+
+              <div className="grid grid-cols-2 gap-4">
+                {[results.comparison.group1, results.comparison.group2].map(
+                  (group, idx) => (
+                    <div key={idx} className="p-4 border rounded bg-gray-50">
+                      <h4 className="font-medium text-gray-800 capitalize mb-3">
+                        {group.name} Experiments
+                      </h4>
+
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">
+                            Avg. Improvement
+                          </span>
+                          <span className="font-medium text-gray-800">
+                            {group.avgImprovement}%
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">
+                            Experiment Count
+                          </span>
+                          <span className="font-medium text-gray-800">
+                            {group.experimentCount}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Success Rate</span>
+                          <span className="font-medium text-gray-800">
+                            {group.successRate}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+          )}
+
+          {results.type === "no_results" && (
+            <div className="text-center py-8">
+              <p className="text-gray-600 mb-4">{results.content}</p>
+              <button
+                className="px-4 py-2 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                onClick={onClose}
+              >
+                Browse Knowledge Hub
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   const openKnowledgeDetails = (item) => {
     setSelectedKnowledge(item);
@@ -6879,43 +8072,164 @@ Generated by E2E Experiment Platform`;
     setShowApplyInsightsModal(false);
   };
 
-  // const applyInsightsToWizard = () => {
-  //   if (!insightsItem) return;
+  const handleKnowledgeSearch = (query) => {
+    if (!query.trim()) return;
 
-  //   // Initialize wizard data with insights
-  //   const wizardData = {
-  //     name: `Follow-up: ${insightsItem.name}`,
-  //     category: insightsItem.category,
-  //     goal: `Build on insights from "${insightsItem.name}"`,
-  //     hypothesis: `Based on prior insights: ${insightsItem.plainLanguageResult} We expect a similar or better result by...`,
-  //     primaryMetric:
-  //       insightsItem.relatedExperiments.length > 0
-  //         ? experiments.find((e) => e.id === insightsItem.relatedExperiments[0])
-  //             ?.primaryMetric || ""
-  //         : "",
-  //     successCriteria: `Improve on previous ${insightsItem.improvement}% lift with statistical significance`,
-  //     baselineRate: 3.0,
-  //     minimumEffect: 5.0,
-  //     learningAgenda: `Further explore the impact and mechanisms behind ${insightsItem.plainLanguageResult}`,
-  //     control: {
-  //       description: "Current implementation based on previous learnings",
-  //     },
-  //     treatment: {
-  //       description: "Further optimized version building on previous insights",
-  //     },
-  //     allocation: { Control: 50, Treatment: 50 },
-  //     knowledgeReference: insightsItem.id,
-  //   };
+    setIsSearching(true);
 
-  //   // Start the wizard with these values
-  //   initializeWizard(wizardData);
+    // Simulate search delay
+    setTimeout(() => {
+      // Generate search results based on query
+      let results = {
+        query: query,
+        timestamp: new Date().toISOString(),
+        type: "",
+        content: "",
+      };
 
-  //   setShowApplyInsightsModal(false);
-  //   setShowWizard(true);
+      // Determine the type of query and generate appropriate response
+      if (
+        query.toLowerCase().includes("qbr") ||
+        query.toLowerCase().includes("quarterly")
+      ) {
+        results.type = "report";
+        results.title = `Quarterly Business Review: ${
+          query.includes("Q4") ? "Q4 2024" : "Q1 2024"
+        }`;
+        results.content = `# ${results.title}\n\n## Experiment Overview\n\nIn ${
+          query.includes("Q4") ? "Q4 2024" : "Q1 2024"
+        }, we ran ${
+          Math.floor(Math.random() * 5) + 8
+        } experiments across our product areas, with ${
+          Math.floor(Math.random() * 30) + 60
+        }% showing positive results.\n\n## Key Insights\n\n1. Personalization experiments showed the highest impact (${
+          Math.floor(Math.random() * 15) + 20
+        }% improvement)\n2. Mobile conversion rates improved by ${
+          Math.floor(Math.random() * 10) + 10
+        }% through UI optimization\n3. Negative results from search personalization provided valuable learning\n\n## Business Impact\n\nEstimated additional revenue: $${
+          Math.floor(Math.random() * 500) + 500
+        }K`;
+      } else if (
+        query.toLowerCase().includes("monetization") ||
+        query.toLowerCase().includes("revenue")
+      ) {
+        results.type = "experiment_list";
+        results.title = `Monetization Experiment Insights`;
 
-  //   // Update breadcrumbs
-  //   updateBreadcrumbs("new-experiment", "New Experiment");
-  // };
+        // Filter to monetization experiments
+        const monetizationExps = knowledge.filter(
+          (k) => k.category === "monetization"
+        );
+        results.items = monetizationExps.map((k) => ({
+          id: k.id,
+          name: k.name,
+          improvement: k.improvement,
+          date: k.date,
+          summary: k.plainLanguageResult,
+        }));
+
+        results.content = `Found ${
+          monetizationExps.length
+        } monetization experiments with an average impact of ${(
+          monetizationExps.reduce((sum, k) => sum + k.improvement, 0) /
+          Math.max(1, monetizationExps.length)
+        ).toFixed(1)}%`;
+      } else if (
+        query.toLowerCase().includes("best") ||
+        query.toLowerCase().includes("top")
+      ) {
+        results.type = "ranking";
+        results.title = `Top Performing Experiments`;
+
+        // Sort all knowledge by improvement
+        const sortedExps = [...knowledge].sort(
+          (a, b) => b.improvement - a.improvement
+        );
+
+        results.items = sortedExps.slice(0, 5).map((k) => ({
+          id: k.id,
+          name: k.name,
+          improvement: k.improvement,
+          category: k.category,
+          summary: k.plainLanguageResult,
+        }));
+
+        results.content = `Here are the top ${results.items.length} experiments by performance impact. The highest improvement was ${results.items[0].improvement}% from "${results.items[0].name}".`;
+      } else if (
+        query.toLowerCase().includes("compare") ||
+        query.toLowerCase().includes("versus") ||
+        query.toLowerCase().includes("vs")
+      ) {
+        results.type = "comparison";
+        results.title = `Comparative Analysis`;
+
+        // Determine what's being compared
+        let group1 = "mobile";
+        let group2 = "desktop";
+
+        if (
+          query.toLowerCase().includes("engagement") &&
+          query.toLowerCase().includes("monetization")
+        ) {
+          group1 = "engagement";
+          group2 = "monetization";
+        }
+
+        results.comparison = {
+          group1: {
+            name: group1,
+            avgImprovement: (Math.random() * 10 + 10).toFixed(1),
+            experimentCount: Math.floor(Math.random() * 8) + 4,
+            successRate: Math.floor(Math.random() * 30 + 60),
+          },
+          group2: {
+            name: group2,
+            avgImprovement: (Math.random() * 10 + 8).toFixed(1),
+            experimentCount: Math.floor(Math.random() * 6) + 3,
+            successRate: Math.floor(Math.random() * 30 + 60),
+          },
+        };
+
+        results.content = `Comparison between ${group1} and ${group2} experiments shows that ${
+          results.comparison.group1.avgImprovement >
+          results.comparison.group2.avgImprovement
+            ? group1
+            : group2
+        } experiments have been more successful on average.`;
+      } else {
+        // Default search - look for matching knowledge items
+        const matchingItems = knowledge.filter(
+          (k) =>
+            k.name.toLowerCase().includes(query.toLowerCase()) ||
+            k.plainLanguageResult.toLowerCase().includes(query.toLowerCase()) ||
+            k.tags.some((tag) =>
+              tag.toLowerCase().includes(query.toLowerCase())
+            )
+        );
+
+        if (matchingItems.length > 0) {
+          results.type = "search_results";
+          results.title = `Search Results for "${query}"`;
+          results.items = matchingItems.map((k) => ({
+            id: k.id,
+            name: k.name,
+            improvement: k.improvement,
+            category: k.category,
+            summary: k.plainLanguageResult,
+          }));
+
+          results.content = `Found ${matchingItems.length} knowledge items related to your query.`;
+        } else {
+          results.type = "no_results";
+          results.title = `No Results Found`;
+          results.content = `No knowledge or experiments were found matching "${query}". Try a different search term or browse the knowledge base.`;
+        }
+      }
+
+      setSearchResults(results);
+      setIsSearching(false);
+    }, 1200);
+  };
 
   const applyInsightsToWizard = () => {
     if (!insightsItem) return;
@@ -8490,7 +9804,8 @@ Generated by E2E Experiment Platform`;
           LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase() && (
           <AIAnalysisComponent
             experiment={exp}
-            onRequestAnalysis={() => generateAIAnalysis(exp)}
+            isLoading={showAnalysisLoading}
+            onRequestAnalysis={(modelId) => generateAIAnalysis(exp, modelId)}
           />
         )}
         {/* Trend chart */}
@@ -8641,6 +9956,53 @@ Generated by E2E Experiment Platform`;
                 <p className="text-xs text-gray-500 mt-3">
                   The best performing variant (E) combined the new headline with
                   the simplified form for a 35% improvement.
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+        {/* Causal Inference Analysis Section */}
+        {exp.category === "causal" && exp.causalModel && (
+          <Card>
+            <h3 className="font-medium text-gray-800 mb-3">
+              Causal Inference Analysis
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              This experiment uses causal inference methods to estimate the true
+              causal effect of the treatment.
+            </p>
+
+            <div className="p-3 bg-purple-50 rounded border border-purple-200 mb-4">
+              <h4 className="text-sm font-medium text-purple-800 mb-2">
+                {exp.causalModel.type === "difference-in-differences"
+                  ? "Difference-in-Differences Analysis"
+                  : "Causal Analysis"}
+              </h4>
+              <p className="text-sm text-purple-700">
+                Estimated causal effect: +
+                {exp.causalModel.estimatedEffect.toFixed(1)}% (95% CI: [
+                {exp.causalModel.confInterval[0]}-
+                {exp.causalModel.confInterval[1]}])
+              </p>
+            </div>
+
+            <CausalInferenceChart causalModel={exp.causalModel} />
+
+            <div className="mt-4 text-sm text-gray-600">
+              <p>
+                The chart shows the actual outcomes for both groups over time,
+                with the dashed line representing the counterfactual (what would
+                have happened to the treatment group without the intervention).
+              </p>
+
+              <div className="mt-3 p-3 bg-yellow-50 rounded border border-yellow-200">
+                <h4 className="font-medium text-yellow-800 mb-1">
+                  Causal Interpretation
+                </h4>
+                <p className="text-yellow-700">
+                  Unlike regular A/B testing, this analysis accounts for time
+                  trends and other confounding factors to isolate the true
+                  causal impact of our intervention.
                 </p>
               </div>
             </div>
@@ -9359,1044 +10721,6 @@ Generated by E2E Experiment Platform`;
     );
   };
 
-  // // Render Knowledge Hub Tab
-  // const renderKnowledgeTab = () => (
-  //   <div className="container mx-auto px-6 py-8">
-  //     {/* Context Banner */}
-  //     <ContextBanner section="knowledge" />
-
-  //     <div className="flex flex-col md:flex-row md:space-x-6">
-  //       <div className="md:w-3/4">
-  //         <div className="flex justify-between items-center mb-6">
-  //           <h1 className="text-2xl font-bold text-gray-800">Knowledge Hub</h1>
-  //           <div className="flex space-x-2">
-  //             <button
-  //               onClick={() => setKnowledgeView("list")}
-  //               className={`px-3 py-1.5 rounded text-sm ${
-  //                 knowledgeView === "list"
-  //                   ? "bg-blue-100 text-blue-700 font-medium"
-  //                   : "bg-gray-100 text-gray-700"
-  //               }`}
-  //             >
-  //               List View
-  //             </button>
-  //             <button
-  //               onClick={() => setKnowledgeView("graph")}
-  //               className={`px-3 py-1.5 rounded text-sm ${
-  //                 knowledgeView === "graph"
-  //                   ? "bg-blue-100 text-blue-700 font-medium"
-  //                   : "bg-gray-100 text-gray-700"
-  //               }`}
-  //             >
-  //               Graph View
-  //             </button>
-  //           </div>
-  //         </div>
-
-  //         {/* Filters */}
-  //         <div className="bg-white border rounded p-4 mb-6">
-  //           <div className="flex flex-col md:flex-row md:space-x-3 space-y-3 md:space-y-0">
-  //             <div className="flex-grow">
-  //               <input
-  //                 type="text"
-  //                 placeholder="Search insights or tags..."
-  //                 className="w-full p-2 border rounded"
-  //                 value={knowledgeSearch}
-  //                 onChange={(e) => setKnowledgeSearch(e.target.value)}
-  //               />
-  //             </div>
-  //             <div>
-  //               <select
-  //                 className="appearance-none bg-white border rounded w-full p-2"
-  //                 value={knowledgeCategory}
-  //                 onChange={(e) => setKnowledgeCategory(e.target.value)}
-  //               >
-  //                 <option value="all">All Categories</option>
-  //                 <option value="monetization">Monetization</option>
-  //                 <option value="engagement">Engagement</option>
-  //                 <option value="satisfaction">Satisfaction</option>
-  //               </select>
-  //             </div>
-  //           </div>
-
-  //           <div className="flex flex-wrap gap-2 mt-4">
-  //             <p className="text-xs text-gray-500 mr-2 mt-1">Popular tags:</p>
-  //             {[
-  //               "personalization",
-  //               "conversion",
-  //               "multivariate",
-  //               "negative result",
-  //               "ui",
-  //             ].map((tag) => (
-  //               <button
-  //                 key={tag}
-  //                 className={`px-2 py-1 rounded-full text-xs ${
-  //                   knowledgeSearch === tag
-  //                     ? "bg-blue-100 text-blue-700"
-  //                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-  //                 }`}
-  //                 onClick={() => setKnowledgeSearch(tag)}
-  //               >
-  //                 {tag}
-  //               </button>
-  //             ))}
-  //           </div>
-  //         </div>
-
-  //         <div className="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
-  //           <h3 className="font-medium text-indigo-800 mb-2">
-  //             Knowledge Hub Overview
-  //           </h3>
-  //           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-  //             <div className="p-3 bg-white rounded border border-indigo-100">
-  //               <div className="flex items-center mb-2">
-  //                 <div className="w-8 h-8 rounded-full bg-green-100 text-green-700 flex items-center justify-center mr-2">
-  //                   <span className="text-lg">+</span>
-  //                 </div>
-  //                 <h4 className="font-medium text-gray-800">
-  //                   Positive Insights
-  //                 </h4>
-  //               </div>
-  //               <p className="text-2xl font-bold text-green-600">
-  //                 {knowledge.filter((k) => k.improvement > 0).length}
-  //               </p>
-  //               <button
-  //                 className="mt-2 text-xs text-indigo-600 hover:text-indigo-800"
-  //                 onClick={() => {
-  //                   // Simulate filtering to positive insights
-  //                   showToast("Filtering to positive insights", "info");
-  //                 }}
-  //               >
-  //                 View all positive insights →
-  //               </button>
-  //             </div>
-
-  //             <div className="p-3 bg-white rounded border border-indigo-100">
-  //               <div className="flex items-center mb-2">
-  //                 <div className="w-8 h-8 rounded-full bg-red-100 text-red-700 flex items-center justify-center mr-2">
-  //                   <span className="text-lg">-</span>
-  //                 </div>
-  //                 <h4 className="font-medium text-gray-800">
-  //                   Negative Insights
-  //                 </h4>
-  //               </div>
-  //               <p className="text-2xl font-bold text-red-600">
-  //                 {knowledge.filter((k) => k.improvement <= 0).length}
-  //               </p>
-  //               <button
-  //                 className="mt-2 text-xs text-indigo-600 hover:text-indigo-800"
-  //                 onClick={() => {
-  //                   // Simulate filtering to negative insights
-  //                   showToast("Filtering to negative insights", "info");
-  //                 }}
-  //               >
-  //                 View all negative insights →
-  //               </button>
-  //             </div>
-
-  //             <div className="p-3 bg-white rounded border border-indigo-100">
-  //               <div className="flex items-center mb-2">
-  //                 <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center mr-2">
-  //                   <span className="text-lg">✓</span>
-  //                 </div>
-  //                 <h4 className="font-medium text-gray-800">
-  //                   Applied Knowledge
-  //                 </h4>
-  //               </div>
-  //               <p className="text-2xl font-bold text-indigo-600">
-  //                 {
-  //                   knowledge.filter(
-  //                     (k) =>
-  //                       k.status ===
-  //                       LIFECYCLE_STAGES.KNOWLEDGE.APPLIED.label.toLowerCase()
-  //                   ).length
-  //                 }
-  //               </p>
-  //               <button
-  //                 className="mt-2 text-xs text-indigo-600 hover:text-indigo-800"
-  //                 onClick={() => {
-  //                   // Simulate filtering to applied knowledge
-  //                   showToast("Filtering to applied knowledge", "info");
-  //                 }}
-  //               >
-  //                 View all applied knowledge →
-  //               </button>
-  //             </div>
-  //           </div>
-
-  //           <div className="mt-4 flex items-center">
-  //             <div className="text-sm text-indigo-700 mr-3">
-  //               <span className="font-medium">Knowledge Hub Health:</span>{" "}
-  //               {knowledge.length > 5 ? "Strong" : "Building"}
-  //             </div>
-  //             <div className="flex-grow">
-  //               <div className="w-full bg-indigo-200 h-2 rounded">
-  //                 <div
-  //                   className="bg-indigo-600 h-2 rounded"
-  //                   style={{
-  //                     width: `${Math.min(100, knowledge.length * 10)}%`,
-  //                   }}
-  //                 ></div>
-  //               </div>
-  //             </div>
-  //             <div className="ml-3 text-sm text-indigo-700">
-  //               {Math.min(100, knowledge.length * 10)}%
-  //             </div>
-  //           </div>
-  //         </div>
-
-  //         {/* Main Content */}
-  //         {knowledgeView === "list" ? (
-  //           <div className="space-y-6">
-  //             {knowledge
-  //               .filter((k) => {
-  //                 const matchName = k.name
-  //                   .toLowerCase()
-  //                   .includes(knowledgeSearch.toLowerCase());
-  //                 const matchTags = k.tags.some((tag) =>
-  //                   tag.toLowerCase().includes(knowledgeSearch.toLowerCase())
-  //                 );
-  //                 const matchInsights = k.insights.some((insight) =>
-  //                   insight
-  //                     .toLowerCase()
-  //                     .includes(knowledgeSearch.toLowerCase())
-  //                 );
-  //                 const matchCat =
-  //                   knowledgeCategory === "all" ||
-  //                   k.category === knowledgeCategory;
-  //                 return (matchName || matchTags || matchInsights) && matchCat;
-  //               })
-  //               .map((item) => (
-  //                 <Card
-  //                   key={item.id}
-  //                   onClick={() => openKnowledgeDetails(item)}
-  //                 >
-  //                   <div className="flex justify-between items-start">
-  //                     <div>
-  //                       <h3 className="text-lg font-semibold text-gray-800">
-  //                         {item.name}
-  //                       </h3>
-  //                       <p className="text-sm text-gray-500 mt-1">
-  //                         {item.date} • {item.owner}
-  //                       </p>
-  //                     </div>
-  //                     <div className="flex items-center space-x-2">
-  //                       <StatusBadge
-  //                         status={item.status}
-  //                         lifecycleStage="knowledge"
-  //                       />
-  //                       <div
-  //                         className={`px-3 py-1 text-sm font-medium rounded ${
-  //                           item.improvement > 0
-  //                             ? "bg-green-100 text-green-700"
-  //                             : "bg-red-100 text-red-700"
-  //                         }`}
-  //                       >
-  //                         {item.improvement > 0
-  //                           ? `+${item.improvement}%`
-  //                           : `${item.improvement}%`}
-  //                       </div>
-  //                     </div>
-  //                   </div>
-
-  //                   <div className="mt-3">
-  //                     <h4 className="text-sm font-medium text-gray-700">
-  //                       Summary
-  //                     </h4>
-  //                     <p className="text-sm text-gray-600 mt-1">
-  //                       {item.plainLanguageResult}
-  //                     </p>
-  //                   </div>
-
-  //                   <div className="flex flex-wrap gap-1 mt-4">
-  //                     {item.tags.map((tag) => (
-  //                       <span
-  //                         key={tag}
-  //                         className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded cursor-pointer hover:bg-gray-200"
-  //                         onClick={(e) => {
-  //                           e.stopPropagation();
-  //                           setKnowledgeSearch(tag);
-  //                         }}
-  //                       >
-  //                         {tag}
-  //                       </span>
-  //                     ))}
-  //                   </div>
-
-  //                   <div className="mt-3">
-  //                     <h4 className="text-sm font-medium text-gray-700">
-  //                       Key Insights
-  //                     </h4>
-  //                     <ul className="list-disc list-inside text-sm text-gray-600 space-y-1 mt-1">
-  //                       {item.insights.slice(0, 2).map((insight, idx) => (
-  //                         <li key={idx}>{insight}</li>
-  //                       ))}
-  //                       {item.insights.length > 2 && (
-  //                         <li className="text-blue-600 list-none text-xs cursor-pointer hover:text-blue-800">
-  //                           + {item.insights.length - 2} more insights...
-  //                         </li>
-  //                       )}
-  //                     </ul>
-  //                   </div>
-
-  //                   {item.aiRecommendations && (
-  //                     <div className="mt-3 bg-purple-50 p-2 rounded border border-purple-100">
-  //                       <div className="flex items-center mb-1">
-  //                         <span className="mr-1 text-purple-700">✨</span>
-  //                         <h4 className="text-xs font-medium text-purple-700">
-  //                           AI Recommendations
-  //                         </h4>
-  //                       </div>
-  //                       <p className="text-xs text-purple-700">
-  //                         {item.aiRecommendations[0]}
-  //                       </p>
-  //                     </div>
-  //                   )}
-
-  //                   <RelatedExperiments
-  //                     experimentIds={item.relatedExperiments}
-  //                     onViewExperiment={(exp) => {
-  //                       handleTabChange("experiments");
-  //                       setTimeout(() => {
-  //                         selectExperiment(exp);
-  //                       }, 100);
-  //                     }}
-  //                   />
-
-  //                   <div className="flex items-center justify-between mt-4">
-  //                     <span
-  //                       className={`px-2 py-0.5 text-xs font-medium rounded ${
-  //                         item.category === "monetization"
-  //                           ? "bg-green-100 text-green-700"
-  //                           : "bg-blue-100 text-blue-700"
-  //                       }`}
-  //                     >
-  //                       {item.category}
-  //                     </span>
-
-  //                     <div className="flex space-x-2">
-  //                       <button
-  //                         className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200"
-  //                         onClick={(e) => {
-  //                           e.stopPropagation();
-  //                           openKnowledgeDetails(item);
-  //                         }}
-  //                       >
-  //                         View Details
-  //                       </button>
-  //                       <button
-  //                         className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200"
-  //                         onClick={(e) => {
-  //                           e.stopPropagation();
-  //                           openApplyInsights(item);
-  //                         }}
-  //                       >
-  //                         Apply Insights
-  //                       </button>
-  //                     </div>
-  //                   </div>
-  //                 </Card>
-  //               ))}
-
-  //             {knowledge.filter((k) => {
-  //               const matchName = k.name
-  //                 .toLowerCase()
-  //                 .includes(knowledgeSearch.toLowerCase());
-  //               const matchTags = k.tags.some((tag) =>
-  //                 tag.toLowerCase().includes(knowledgeSearch.toLowerCase())
-  //               );
-  //               const matchInsights = k.insights.some((insight) =>
-  //                 insight.toLowerCase().includes(knowledgeSearch.toLowerCase())
-  //               );
-  //               const matchCat =
-  //                 knowledgeCategory === "all" ||
-  //                 k.category === knowledgeCategory;
-  //               return (matchName || matchTags || matchInsights) && matchCat;
-  //             }).length === 0 && (
-  //               <div className="bg-gray-50 p-8 rounded-lg text-center">
-  //                 <p className="text-gray-600">
-  //                   No knowledge items match your search criteria.
-  //                 </p>
-  //                 <button
-  //                   onClick={() => {
-  //                     setKnowledgeSearch("");
-  //                     setKnowledgeCategory("all");
-  //                   }}
-  //                   className="mt-2 text-blue-600 hover:text-blue-800 text-sm"
-  //                 >
-  //                   Clear filters
-  //                 </button>
-  //               </div>
-  //             )}
-  //           </div>
-  //         ) : (
-  //           // <Card className="p-0">
-  //           //   <div className="w-full" style={{ height: "600px" }}>
-  //           //     {/* The updated graph data logic */}
-  //           //     <ForceGraph2D
-  //           //       graphData={(() => {
-  //           //         // Extract all experiment and OKR IDs from the data
-  //           //         const completedExperiments = experiments.filter(
-  //           //           (e) =>
-  //           //             e.status ===
-  //           //             LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase()
-  //           //         );
-
-  //           //         // Create node lists
-  //           //         const knowledgeNodes = knowledge
-  //           //           .filter((k) => {
-  //           //             if (knowledgeSearch) {
-  //           //               const matchName = k.name
-  //           //                 .toLowerCase()
-  //           //                 .includes(knowledgeSearch.toLowerCase());
-  //           //               const matchTags = k.tags.some((tag) =>
-  //           //                 tag
-  //           //                   .toLowerCase()
-  //           //                   .includes(knowledgeSearch.toLowerCase())
-  //           //               );
-  //           //               const matchInsights = k.insights.some((insight) =>
-  //           //                 insight
-  //           //                   .toLowerCase()
-  //           //                   .includes(knowledgeSearch.toLowerCase())
-  //           //               );
-  //           //               return matchName || matchTags || matchInsights;
-  //           //             }
-  //           //             if (knowledgeCategory !== "all") {
-  //           //               return k.category === knowledgeCategory;
-  //           //             }
-  //           //             return true;
-  //           //           })
-  //           //           .map((k) => ({
-  //           //             id: k.id,
-  //           //             name: `📚 ${k.name}`,
-  //           //             group: k.category,
-  //           //             type: "knowledge",
-  //           //             val: 15, // size
-  //           //           }));
-
-  //           //         const experimentNodes = completedExperiments
-  //           //           .filter((e) => {
-  //           //             if (knowledgeSearch) {
-  //           //               return e.name
-  //           //                 .toLowerCase()
-  //           //                 .includes(knowledgeSearch.toLowerCase());
-  //           //             }
-  //           //             if (knowledgeCategory !== "all") {
-  //           //               return e.category === knowledgeCategory;
-  //           //             }
-  //           //             return true;
-  //           //           })
-  //           //           .map((e) => ({
-  //           //             id: e.id,
-  //           //             name: `🧪 ${e.name}`,
-  //           //             group: e.category,
-  //           //             type: "experiment",
-  //           //             val: 10, // size
-  //           //           }));
-
-  //           //         const okrNodes = okrData
-  //           //           .filter((o) => {
-  //           //             if (knowledgeSearch) {
-  //           //               return o.title
-  //           //                 .toLowerCase()
-  //           //                 .includes(knowledgeSearch.toLowerCase());
-  //           //             }
-  //           //             return true;
-  //           //           })
-  //           //           .map((o) => ({
-  //           //             id: o.id,
-  //           //             name: `🎯 ${o.title}`,
-  //           //             group: "okr",
-  //           //             type: "okr",
-  //           //             val: 12, // size
-  //           //           }));
-
-  //           //         // Create a set of all node IDs for quick reference
-  //           //         const nodeIds = new Set([
-  //           //           ...knowledgeNodes.map((n) => n.id),
-  //           //           ...experimentNodes.map((n) => n.id),
-  //           //           ...okrNodes.map((n) => n.id),
-  //           //         ]);
-
-  //           //         // Create validated links that only connect existing nodes
-  //           //         const links = [];
-
-  //           //         // Knowledge to experiment links
-  //           //         knowledge.forEach((k) => {
-  //           //           if (k.relatedExperiments) {
-  //           //             k.relatedExperiments.forEach((expId) => {
-  //           //               if (nodeIds.has(expId)) {
-  //           //                 links.push({
-  //           //                   source: k.id,
-  //           //                   target: expId,
-  //           //                 });
-  //           //               }
-  //           //             });
-  //           //           }
-  //           //         });
-
-  //           //         // Experiment to OKR links
-  //           //         completedExperiments.forEach((e) => {
-  //           //           if (e.okrs) {
-  //           //             e.okrs.forEach((okrId) => {
-  //           //               if (nodeIds.has(okrId)) {
-  //           //                 links.push({
-  //           //                   source: e.id,
-  //           //                   target: okrId,
-  //           //                 });
-  //           //               }
-  //           //             });
-  //           //           }
-  //           //         });
-
-  //           //         return {
-  //           //           nodes: [
-  //           //             ...knowledgeNodes,
-  //           //             ...experimentNodes,
-  //           //             ...okrNodes,
-  //           //           ],
-  //           //           links: links,
-  //           //         };
-  //           //       })()}
-  //           //       nodeLabel={(node) => `${node.name} (${node.type})`}
-  //           //       nodeAutoColorBy="group"
-  //           //       linkWidth={2}
-  //           //       linkColor={() => "#999"}
-  //           //       cooldownTicks={100}
-  //           //       nodeRelSize={6}
-  //           //       onNodeClick={(node) => {
-  //           //         // Handle node click based on type
-  //           //         if (node.type === "knowledge") {
-  //           //           const item = knowledge.find((k) => k.id === node.id);
-  //           //           if (item) openKnowledgeDetails(item);
-  //           //         } else if (node.type === "experiment") {
-  //           //           handleTabChange("experiments");
-  //           //           setTimeout(() => {
-  //           //             const exp = experiments.find((e) => e.id === node.id);
-  //           //             if (exp) selectExperiment(exp);
-  //           //           }, 100);
-  //           //         } else if (node.type === "okr") {
-  //           //           // Just show a toast for now
-  //           //           showToast(
-  //           //             `Viewing OKR: ${node.name.substring(2)}`,
-  //           //             "info"
-  //           //           );
-  //           //         }
-  //           //       }}
-  //           //       onNodeHover={(node) => {
-  //           //         if (node) {
-  //           //           document.body.style.cursor = "pointer";
-  //           //         } else {
-  //           //           document.body.style.cursor = "default";
-  //           //         }
-  //           //       }}
-  //           //     />
-  //           //   </div>
-
-  //           //   <div className="p-4 bg-gray-50">
-  //           //     <h3 className="font-medium text-gray-800 mb-2">
-  //           //       Knowledge Graph Legend
-  //           //     </h3>
-  //           //     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-  //           //       <div className="flex items-center">
-  //           //         <span className="mr-2">📚</span>
-  //           //         <div>
-  //           //           <p className="font-medium">Knowledge</p>
-  //           //           <p className="text-xs text-gray-600">
-  //           //             Insights and learnings
-  //           //           </p>
-  //           //         </div>
-  //           //       </div>
-  //           //       <div className="flex items-center">
-  //           //         <span className="mr-2">🧪</span>
-  //           //         <div>
-  //           //           <p className="font-medium">Experiment</p>
-  //           //           <p className="text-xs text-gray-600">
-  //           //             Completed experiments
-  //           //           </p>
-  //           //         </div>
-  //           //       </div>
-  //           //       <div className="flex items-center">
-  //           //         <span className="mr-2">🎯</span>
-  //           //         <div>
-  //           //           <p className="font-medium">OKR</p>
-  //           //           <p className="text-xs text-gray-600">
-  //           //             Strategic objectives
-  //           //           </p>
-  //           //         </div>
-  //           //       </div>
-  //           //     </div>
-  //           //     <p className="mt-4 text-sm text-gray-600">
-  //           //       The knowledge graph visualizes relationships between insights,
-  //           //       experiments, and strategic goals. Click on any node to view
-  //           //       details or create new experiments based on existing knowledge.
-  //           //     </p>
-  //           //   </div>
-  //           // </Card>
-  //           <Card className="p-4">
-  //             <div className="mb-4">
-  //               <h3 className="font-medium text-gray-800 mb-2">
-  //                 Knowledge Graph Visualization
-  //               </h3>
-  //               <p className="text-sm text-gray-600">
-  //                 See how experiments, insights, and OKRs are connected in your
-  //                 organization's knowledge network.
-  //               </p>
-
-  //               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
-  //                 <div>
-  //                   <label className="block text-xs font-medium text-gray-700 mb-1">
-  //                     Show Node Types
-  //                   </label>
-  //                   <div className="space-y-1">
-  //                     <div className="flex items-center">
-  //                       <input
-  //                         type="checkbox"
-  //                         id="showKnowledgeNodes"
-  //                         className="mr-2"
-  //                         defaultChecked
-  //                         onChange={(e) => {
-  //                           // This would filter nodes in a real application
-  //                           showToast(
-  //                             `${
-  //                               e.target.checked ? "Showing" : "Hiding"
-  //                             } knowledge nodes`,
-  //                             "info"
-  //                           );
-  //                         }}
-  //                       />
-  //                       <label htmlFor="showKnowledgeNodes" className="text-sm">
-  //                         📚 Knowledge Items
-  //                       </label>
-  //                     </div>
-  //                     <div className="flex items-center">
-  //                       <input
-  //                         type="checkbox"
-  //                         id="showExperimentNodes"
-  //                         className="mr-2"
-  //                         defaultChecked
-  //                         onChange={(e) => {
-  //                           // This would filter nodes in a real application
-  //                           showToast(
-  //                             `${
-  //                               e.target.checked ? "Showing" : "Hiding"
-  //                             } experiment nodes`,
-  //                             "info"
-  //                           );
-  //                         }}
-  //                       />
-  //                       <label
-  //                         htmlFor="showExperimentNodes"
-  //                         className="text-sm"
-  //                       >
-  //                         🧪 Experiments
-  //                       </label>
-  //                     </div>
-  //                     <div className="flex items-center">
-  //                       <input
-  //                         type="checkbox"
-  //                         id="showOKRNodes"
-  //                         className="mr-2"
-  //                         defaultChecked
-  //                         onChange={(e) => {
-  //                           // This would filter nodes in a real application
-  //                           showToast(
-  //                             `${
-  //                               e.target.checked ? "Showing" : "Hiding"
-  //                             } OKR nodes`,
-  //                             "info"
-  //                           );
-  //                         }}
-  //                       />
-  //                       <label htmlFor="showOKRNodes" className="text-sm">
-  //                         🎯 OKRs
-  //                       </label>
-  //                     </div>
-  //                   </div>
-  //                 </div>
-
-  //                 <div>
-  //                   <label className="block text-xs font-medium text-gray-700 mb-1">
-  //                     Filter by Category
-  //                   </label>
-  //                   <select
-  //                     className="w-full p-2 border rounded text-sm"
-  //                     onChange={(e) => {
-  //                       // This would update the graph filter in a real application
-  //                       setKnowledgeCategory(e.target.value);
-  //                     }}
-  //                     value={knowledgeCategory}
-  //                   >
-  //                     <option value="all">All Categories</option>
-  //                     <option value="monetization">Monetization</option>
-  //                     <option value="engagement">Engagement</option>
-  //                     <option value="satisfaction">Satisfaction</option>
-  //                   </select>
-  //                 </div>
-
-  //                 <div>
-  //                   <label className="block text-xs font-medium text-gray-700 mb-1">
-  //                     Filter by Impact
-  //                   </label>
-  //                   <select
-  //                     className="w-full p-2 border rounded text-sm"
-  //                     onChange={(e) => {
-  //                       // This would update the graph filter in a real application
-  //                       showToast(
-  //                         `Filtering to ${e.target.value} impact items`,
-  //                         "info"
-  //                       );
-  //                     }}
-  //                   >
-  //                     <option value="all">All Impact Levels</option>
-  //                     <option value="high">High Impact</option>
-  //                     <option value="medium">Medium Impact</option>
-  //                     <option value="low">Low Impact</option>
-  //                   </select>
-  //                 </div>
-  //               </div>
-
-  //               <div className="mt-4 flex items-center justify-between">
-  //                 <div className="text-xs text-gray-600">
-  //                   {knowledgeCategory === "all"
-  //                     ? "Showing all categories"
-  //                     : `Filtering to ${knowledgeCategory} category`}
-  //                   {knowledgeSearch ? ` • Search: "${knowledgeSearch}"` : ""}
-  //                 </div>
-
-  //                 <button
-  //                   className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200"
-  //                   onClick={() => {
-  //                     setKnowledgeSearch("");
-  //                     setKnowledgeCategory("all");
-  //                     showToast("Filters reset", "info");
-  //                   }}
-  //                 >
-  //                   Reset Filters
-  //                 </button>
-  //               </div>
-  //             </div>
-
-  //             <div
-  //               className="w-full bg-gray-50 border rounded"
-  //               style={{ height: "500px" }}
-  //             >
-  //               <ForceGraph2D
-  //                 graphData={(() => {
-  //                   // Extract all experiment and OKR IDs from the data
-  //                   const completedExperiments = experiments.filter(
-  //                     (e) =>
-  //                       e.status ===
-  //                       LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase()
-  //                   );
-
-  //                   // Create node lists
-  //                   const knowledgeNodes = knowledge
-  //                     .filter((k) => {
-  //                       if (knowledgeSearch) {
-  //                         const matchName = k.name
-  //                           .toLowerCase()
-  //                           .includes(knowledgeSearch.toLowerCase());
-  //                         const matchTags = k.tags.some((tag) =>
-  //                           tag
-  //                             .toLowerCase()
-  //                             .includes(knowledgeSearch.toLowerCase())
-  //                         );
-  //                         const matchInsights = k.insights.some((insight) =>
-  //                           insight
-  //                             .toLowerCase()
-  //                             .includes(knowledgeSearch.toLowerCase())
-  //                         );
-  //                         return matchName || matchTags || matchInsights;
-  //                       }
-  //                       if (knowledgeCategory !== "all") {
-  //                         return k.category === knowledgeCategory;
-  //                       }
-  //                       return true;
-  //                     })
-  //                     .map((k) => ({
-  //                       id: k.id,
-  //                       name: `📚 ${k.name}`,
-  //                       group: k.category,
-  //                       type: "knowledge",
-  //                       val: 15, // size
-  //                     }));
-
-  //                   const experimentNodes = completedExperiments
-  //                     .filter((e) => {
-  //                       if (knowledgeSearch) {
-  //                         return e.name
-  //                           .toLowerCase()
-  //                           .includes(knowledgeSearch.toLowerCase());
-  //                       }
-  //                       if (knowledgeCategory !== "all") {
-  //                         return e.category === knowledgeCategory;
-  //                       }
-  //                       return true;
-  //                     })
-  //                     .map((e) => ({
-  //                       id: e.id,
-  //                       name: `🧪 ${e.name}`,
-  //                       group: e.category,
-  //                       type: "experiment",
-  //                       val: 10, // size
-  //                     }));
-
-  //                   const okrNodes = okrData
-  //                     .filter((o) => {
-  //                       if (knowledgeSearch) {
-  //                         return o.title
-  //                           .toLowerCase()
-  //                           .includes(knowledgeSearch.toLowerCase());
-  //                       }
-  //                       return true;
-  //                     })
-  //                     .map((o) => ({
-  //                       id: o.id,
-  //                       name: `🎯 ${o.title}`,
-  //                       group: "okr",
-  //                       type: "okr",
-  //                       val: 12, // size
-  //                     }));
-
-  //                   // Create a set of all node IDs for quick reference
-  //                   const nodeIds = new Set([
-  //                     ...knowledgeNodes.map((n) => n.id),
-  //                     ...experimentNodes.map((n) => n.id),
-  //                     ...okrNodes.map((n) => n.id),
-  //                   ]);
-
-  //                   // Create validated links that only connect existing nodes
-  //                   const links = [];
-
-  //                   // Knowledge to experiment links
-  //                   knowledge.forEach((k) => {
-  //                     if (k.relatedExperiments) {
-  //                       k.relatedExperiments.forEach((expId) => {
-  //                         if (nodeIds.has(expId)) {
-  //                           links.push({
-  //                             source: k.id,
-  //                             target: expId,
-  //                           });
-  //                         }
-  //                       });
-  //                     }
-  //                   });
-
-  //                   // Experiment to OKR links
-  //                   completedExperiments.forEach((e) => {
-  //                     if (e.okrs) {
-  //                       e.okrs.forEach((okrId) => {
-  //                         if (nodeIds.has(okrId)) {
-  //                           links.push({
-  //                             source: e.id,
-  //                             target: okrId,
-  //                           });
-  //                         }
-  //                       });
-  //                     }
-  //                   });
-
-  //                   return {
-  //                     nodes: [
-  //                       ...knowledgeNodes,
-  //                       ...experimentNodes,
-  //                       ...okrNodes,
-  //                     ],
-  //                     links: links,
-  //                   };
-  //                 })()}
-  //                 nodeLabel={(node) => `${node.name} (${node.type})`}
-  //                 nodeAutoColorBy="group"
-  //                 linkWidth={2}
-  //                 linkColor={() => "#999"}
-  //                 cooldownTicks={100}
-  //                 nodeRelSize={6}
-  //                 onNodeClick={(node) => {
-  //                   // Handle node click based on type
-  //                   if (node.type === "knowledge") {
-  //                     const item = knowledge.find((k) => k.id === node.id);
-  //                     if (item) openKnowledgeDetails(item);
-  //                   } else if (node.type === "experiment") {
-  //                     handleTabChange("experiments");
-  //                     setTimeout(() => {
-  //                       const exp = experiments.find((e) => e.id === node.id);
-  //                       if (exp) selectExperiment(exp);
-  //                     }, 100);
-  //                   } else if (node.type === "okr") {
-  //                     // Just show a toast for now
-  //                     showToast(
-  //                       `Viewing OKR: ${node.name.substring(2)}`,
-  //                       "info"
-  //                     );
-  //                   }
-  //                 }}
-  //                 onNodeHover={(node) => {
-  //                   if (node) {
-  //                     document.body.style.cursor = "pointer";
-  //                   } else {
-  //                     document.body.style.cursor = "default";
-  //                   }
-  //                 }}
-  //               />
-  //             </div>
-
-  //             <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
-  //               <h4 className="font-medium text-gray-800 mb-2">
-  //                 Knowledge Graph Legend
-  //               </h4>
-  //               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-  //                 <div className="flex items-center">
-  //                   <span className="mr-2">📚</span>
-  //                   <div>
-  //                     <p className="font-medium">Knowledge</p>
-  //                     <p className="text-xs text-gray-600">
-  //                       Insights and learnings
-  //                     </p>
-  //                   </div>
-  //                 </div>
-  //                 <div className="flex items-center">
-  //                   <span className="mr-2">🧪</span>
-  //                   <div>
-  //                     <p className="font-medium">Experiment</p>
-  //                     <p className="text-xs text-gray-600">
-  //                       Completed experiments
-  //                     </p>
-  //                   </div>
-  //                 </div>
-  //                 <div className="flex items-center">
-  //                   <span className="mr-2">🎯</span>
-  //                   <div>
-  //                     <p className="font-medium">OKR</p>
-  //                     <p className="text-xs text-gray-600">
-  //                       Strategic objectives
-  //                     </p>
-  //                   </div>
-  //                 </div>
-  //               </div>
-  //               <p className="mt-4 text-sm text-gray-600">
-  //                 The knowledge graph visualizes relationships between insights,
-  //                 experiments, and strategic goals. Click on any node to view
-  //                 details or create new experiments based on existing knowledge.
-  //               </p>
-  //             </div>
-  //           </Card>
-  //         )}
-  //       </div>
-
-  //       <div className="md:w-1/4 mt-6 md:mt-0">
-  //         {/* Recent Items */}
-  //         {renderRecentItems()}
-
-  //         {/* Stats */}
-  //         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-  //           <h3 className="text-sm font-medium text-gray-700 mb-3">
-  //             Knowledge Stats
-  //           </h3>
-  //           <div className="space-y-4">
-  //             <StatCard
-  //               title="Total Learnings"
-  //               value={knowledge.length}
-  //               color="indigo"
-  //             />
-  //             <StatCard
-  //               title="Engagement Insights"
-  //               value={
-  //                 knowledge.filter((k) => k.category === "engagement").length
-  //               }
-  //               color="blue"
-  //             />
-  //             <StatCard
-  //               title="Monetization Insights"
-  //               value={
-  //                 knowledge.filter((k) => k.category === "monetization").length
-  //               }
-  //               color="green"
-  //             />
-  //           </div>
-  //         </div>
-
-  //         {/* Impact Rating */}
-  //         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-  //           <h3 className="text-sm font-medium text-gray-700 mb-3">
-  //             Impact Rating
-  //           </h3>
-  //           <div className="space-y-3">
-  //             {["High", "Medium", "Low"].map((impact) => {
-  //               const count = knowledge.filter(
-  //                 (k) => k.businessImpact && k.businessImpact.includes(impact)
-  //               ).length;
-  //               return (
-  //                 <div key={impact}>
-  //                   <div className="flex justify-between text-sm">
-  //                     <span>{impact} Impact</span>
-  //                     <span className="font-medium">{count}</span>
-  //                   </div>
-  //                   <div className="w-full bg-gray-200 h-2 rounded mt-1">
-  //                     <div
-  //                       className={`h-2 rounded ${
-  //                         impact === "High"
-  //                           ? "bg-green-500"
-  //                           : impact === "Medium"
-  //                           ? "bg-blue-500"
-  //                           : "bg-gray-500"
-  //                       }`}
-  //                       style={{
-  //                         width: `${
-  //                           (count / Math.max(1, knowledge.length)) * 100
-  //                         }%`,
-  //                       }}
-  //                     />
-  //                   </div>
-  //                 </div>
-  //               );
-  //             })}
-  //           </div>
-  //         </div>
-
-  //         {/* Actions */}
-  //         <div className="bg-white rounded-lg shadow-sm p-4">
-  //           <h3 className="text-sm font-medium text-gray-700 mb-3">
-  //             Quick Actions
-  //           </h3>
-  //           <div className="space-y-2">
-  //             <button
-  //               className="w-full px-3 py-2 bg-blue-50 text-blue-700 rounded text-sm text-left hover:bg-blue-100 flex items-center"
-  //               onClick={() => {
-  //                 // Use a different prompt type more appropriate for insights
-  //                 openAIPromptModal("insight", {
-  //                   category:
-  //                     knowledgeCategory !== "all"
-  //                       ? knowledgeCategory
-  //                       : "general",
-  //                   search: knowledgeSearch || "",
-  //                 });
-  //               }}
-  //             >
-  //               <span className="mr-2">✨</span>
-  //               Generate New Insight
-  //             </button>
-  //             <button
-  //               className="w-full px-3 py-2 bg-green-50 text-green-700 rounded text-sm text-left hover:bg-green-100 flex items-center"
-  //               onClick={() => generateKnowledgeReport()}
-  //             >
-  //               <span className="mr-2">📊</span>
-  //               Generate Report
-  //             </button>
-  //             <button
-  //               className="w-full px-3 py-2 bg-purple-50 text-purple-700 rounded text-sm text-left hover:bg-purple-100 flex items-center"
-  //               onClick={() => generateLearningPathPlan()}
-  //             >
-  //               <span className="mr-2">🧭</span>
-  //               Generate Learning Path
-  //             </button>
-  //           </div>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   </div>
-  // );
-
   // Render Knowledge Hub Tab
   const renderKnowledgeTab = () => (
     <div className="container mx-auto px-6 py-8">
@@ -10432,7 +10756,7 @@ Generated by E2E Experiment Platform`;
           </div>
 
           {/* Filters */}
-          <div className="bg-white border rounded p-4 mb-6">
+          {/* <div className="bg-white border rounded p-4 mb-6">
             <div className="flex flex-col md:flex-row md:space-x-3 space-y-3 md:space-y-0">
               <div className="flex-grow">
                 <input
@@ -10478,6 +10802,114 @@ Generated by E2E Experiment Platform`;
                   {tag}
                 </button>
               ))}
+            </div>
+          </div> */}
+
+          {/* Filters and Knowledge Search */}
+          <div className="bg-white border rounded p-4 mb-6">
+            <div className="flex flex-col space-y-3">
+              {/* Enhanced search box with AI capabilities */}
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search insights or ask questions about your experiments..."
+                  className="w-full p-3 pr-16 border rounded"
+                  value={knowledgeSearch}
+                  onChange={(e) => setKnowledgeSearch(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      handleKnowledgeSearch(knowledgeSearch);
+                    }
+                  }}
+                />
+                <div className="absolute right-1 top-1 flex space-x-1">
+                  <button
+                    className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded"
+                    onClick={() => setKnowledgeSearch("")}
+                    title="Clear search"
+                  >
+                    ✕
+                  </button>
+                  <button
+                    className={`p-2 rounded ${
+                      isSearching
+                        ? "bg-gray-200 cursor-not-allowed"
+                        : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                    }`}
+                    onClick={() => handleKnowledgeSearch(knowledgeSearch)}
+                    disabled={isSearching}
+                    title="Search knowledge base"
+                  >
+                    {isSearching ? (
+                      <div className="w-5 h-5 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <span>🔍</span>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Regular filters */}
+              <div className="flex flex-col md:flex-row md:space-x-3 space-y-3 md:space-y-0">
+                <div className="flex-grow">
+                  <label className="block text-xs text-gray-500 mb-1">
+                    Filter by category:
+                  </label>
+                  <select
+                    className="appearance-none bg-white border rounded w-full p-2"
+                    value={knowledgeCategory}
+                    onChange={(e) => setKnowledgeCategory(e.target.value)}
+                  >
+                    <option value="all">All Categories</option>
+                    <option value="monetization">Monetization</option>
+                    <option value="engagement">Engagement</option>
+                    <option value="satisfaction">Satisfaction</option>
+                  </select>
+                </div>
+
+                <div className="flex-grow">
+                  <label className="block text-xs text-gray-500 mb-1">
+                    Try asking:
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      className="px-3 py-1 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200"
+                      onClick={() => {
+                        setKnowledgeSearch("Generate a QBR for Q4 2024");
+                        handleKnowledgeSearch("Generate a QBR for Q4 2024");
+                      }}
+                    >
+                      Generate a QBR for Q4 2024
+                    </button>
+                    <button
+                      className="px-3 py-1 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200"
+                      onClick={() => {
+                        setKnowledgeSearch(
+                          "Tell me about Q1 2024 monetization experiments"
+                        );
+                        handleKnowledgeSearch(
+                          "Tell me about Q1 2024 monetization experiments"
+                        );
+                      }}
+                    >
+                      Monetization experiments
+                    </button>
+                    <button
+                      className="px-3 py-1 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200"
+                      onClick={() => {
+                        setKnowledgeSearch(
+                          "What were our best performing experiments?"
+                        );
+                        handleKnowledgeSearch(
+                          "What were our best performing experiments?"
+                        );
+                      }}
+                    >
+                      Best performing experiments
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -10584,7 +11016,23 @@ Generated by E2E Experiment Platform`;
           </div>
 
           {/* Main Content */}
-          {knowledgeView === "list" ? (
+          {isSearching ? (
+            <div className="bg-white p-8 rounded-lg shadow-sm text-center mb-6">
+              <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-600">Searching knowledge base...</p>
+            </div>
+          ) : searchResults ? (
+            <KnowledgeSearchResults
+              results={searchResults}
+              onClose={() => setSearchResults(null)}
+              onViewItem={(itemId) => {
+                const item = knowledge.find((k) => k.id === itemId);
+                if (item) {
+                  openKnowledgeDetails(item);
+                }
+              }}
+            />
+          ) : knowledgeView === "list" ? (
             <div className="space-y-6">
               {knowledge
                 .filter((k) => {
@@ -11624,7 +12072,7 @@ Generated by E2E Experiment Platform`;
               <button
                 className="w-full px-3 py-2 bg-green-50 text-green-700 rounded text-sm text-left hover:bg-green-100 flex items-center"
                 onClick={() => {
-                  showToast("Planning dashboard would open here", "info");
+                  setPlanningDashboardOpen(true);
                 }}
               >
                 <span className="mr-2">📊</span>
@@ -11807,6 +12255,11 @@ Generated by E2E Experiment Platform`;
           </div>
         </Modal>
       )}
+      {/* Planning Dashboard Modal */}
+<PlanningDashboardModal
+  isOpen={planningDashboardOpen}
+  onClose={() => setPlanningDashboardOpen(false)}
+/>
     </div>
   );
 
@@ -11980,12 +12433,11 @@ Generated by E2E Experiment Platform`;
                         LIFECYCLE_STAGES.REVIEW.NEEDS_REVISION.label.toLowerCase() && (
                         <button
                           className="px-3 py-1.5 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200"
-                          onClick={() => {
-                            // This would normally open the experiment editor with the brief data
-                            showToast(
-                              `Edit functionality would open for "${brief.name}"`,
-                              "info"
-                            );
+                          onClick={(e) => {
+                            // Replace the toast with actual edit functionality
+                            e.stopPropagation(); // Prevent opening the review modal
+                            setBriefToEdit(brief);
+                            setEditBriefModalOpen(true);
                           }}
                         >
                           Edit Brief
@@ -12108,10 +12560,7 @@ Generated by E2E Experiment Platform`;
                 <button
                   className="w-full px-3 py-2 bg-gray-50 text-gray-700 rounded text-sm text-left hover:bg-gray-100 flex items-center"
                   onClick={() => {
-                    showToast(
-                      "Review guidelines document would open here",
-                      "info"
-                    );
+                    setReviewGuidelinesOpen(true);
                   }}
                 >
                   <span className="mr-2">📝</span>
@@ -12311,6 +12760,21 @@ Generated by E2E Experiment Platform`;
             </div>
           </Modal>
         )}
+        {/* Edit Brief Modal */}
+        <EditBriefModal
+          isOpen={editBriefModalOpen}
+          onClose={() => {
+            setEditBriefModalOpen(false);
+            setBriefToEdit(null);
+          }}
+          brief={briefToEdit}
+          onSave={handleSaveBriefEdit}
+        />
+        {/* Review Guidelines Modal */}
+        <ReviewGuidelinesModal
+          isOpen={reviewGuidelinesOpen}
+          onClose={() => setReviewGuidelinesOpen(false)}
+        />
       </div>
     );
   };
@@ -12738,97 +13202,6 @@ Generated by E2E Experiment Platform`;
     );
   };
 
-  // OKR Modal
-  // const renderOKRModal = () => {
-  //   if (!showOKRModal) return null;
-
-  //   return (
-  //     <Modal
-  //       isOpen={showOKRModal}
-  //       onClose={() => setShowOKRModal(false)}
-  //       title="Add New OKR"
-  //       size="md"
-  //     >
-  //       <div className="space-y-4">
-  //         <div>
-  //           <label className="block text-sm font-medium text-gray-700 mb-1">
-  //             Title *
-  //           </label>
-  //           <input
-  //             type="text"
-  //             value={newOKRTitle}
-  //             onChange={(e) => setNewOKRTitle(e.target.value)}
-  //             className="w-full p-2 border rounded"
-  //             placeholder="e.g. Increase Engagement by 20%"
-  //           />
-  //         </div>
-  //         <div>
-  //           <label className="block text-sm font-medium text-gray-700 mb-1">
-  //             Description
-  //           </label>
-  //           <textarea
-  //             value={newOKRDesc}
-  //             onChange={(e) => setNewOKRDesc(e.target.value)}
-  //             className="w-full p-2 border rounded"
-  //             rows={3}
-  //             placeholder="Describe the objective..."
-  //           />
-  //         </div>
-  //         <div>
-  //           <label className="block text-sm font-medium text-gray-700 mb-1">
-  //             Key Results
-  //           </label>
-  //           <div className="space-y-2">
-  //             {newKeyResults.map((kr, index) => (
-  //               <div key={index} className="flex items-center space-x-2">
-  //                 <div className="flex-grow p-2 border rounded bg-gray-50">
-  //                   {kr}
-  //                 </div>
-  //                 <button
-  //                   className="p-2 bg-red-100 text-red-700 rounded hover:bg-red-200"
-  //                   onClick={() => removeKeyResult(index)}
-  //                 >
-  //                   ✕
-  //                 </button>
-  //               </div>
-  //             ))}
-  //             <div className="flex items-center space-x-2">
-  //               <input
-  //                 type="text"
-  //                 value={newKeyResult}
-  //                 onChange={(e) => setNewKeyResult(e.target.value)}
-  //                 className="flex-grow p-2 border rounded"
-  //                 placeholder="e.g. Achieve 15% increase in daily active users"
-  //                 onKeyPress={(e) => {
-  //                   if (e.key === "Enter" && newKeyResult.trim()) {
-  //                     addKeyResult();
-  //                     e.preventDefault();
-  //                   }
-  //                 }}
-  //               />
-  //               <button
-  //                 className="p-2 bg-gray-100 rounded hover:bg-gray-200"
-  //                 onClick={addKeyResult}
-  //               >
-  //                 +
-  //               </button>
-  //             </div>
-  //           </div>
-  //           <p className="text-xs text-gray-500 mt-1">
-  //             Add measurable results to track progress
-  //           </p>
-  //         </div>
-  //         <button
-  //           onClick={addOKR}
-  //           className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-  //         >
-  //           Save OKR
-  //         </button>
-  //       </div>
-  //     </Modal>
-  //   );
-  // };
-  // Define OKRModal as a proper React component
   const OKRModal = ({
     isOpen,
     onClose,
@@ -13087,32 +13460,6 @@ Generated by E2E Experiment Platform`;
         size="lg"
       >
         {!aiResponse ? (
-          // <AIPromptInterface
-          //   onSubmit={handleAIPromptSubmit}
-          //   placeholder={
-          //     aiPromptPurpose === "hypothesis"
-          //       ? "Describe your experiment idea or context..."
-          //       : aiPromptPurpose === "analysis"
-          //       ? "What would you like to know about this experiment?"
-          //       : aiPromptPurpose === "learningAgenda"
-          //       ? "What do you want to learn from this experiment?"
-          //       : aiPromptPurpose === "successCriteria"
-          //       ? "What metrics matter most for your experiment?"
-          //       : "How can I help with your experiment?"
-          //   }
-          //   isLoading={isGeneratingAI}
-          //   buttonText={
-          //     aiPromptPurpose === "hypothesis"
-          //       ? "Generate Hypothesis"
-          //       : aiPromptPurpose === "analysis"
-          //       ? "Analyze Results"
-          //       : aiPromptPurpose === "learningAgenda"
-          //       ? "Generate Learning Agenda"
-          //       : aiPromptPurpose === "successCriteria"
-          //       ? "Generate Success Criteria"
-          //       : "Generate"
-          //   }
-          // />
           <div>
             <div className="bg-purple-50 p-4 rounded-lg border border-purple-200 mb-4">
               <h4 className="text-sm font-medium text-purple-800 mb-2">
@@ -13571,71 +13918,6 @@ Generated by E2E Experiment Platform`;
       </div>
     );
   };
-
-  // Wizard Component
-  // const renderWizard = () => {
-  //   if (!showWizard) return null;
-
-  //   const wizardSteps = [
-  //     {
-  //       title: "Basics",
-  //       component: WizardBasicInfoStep,
-  //       initialData: {
-  //         name: "",
-  //         category: "",
-  //         startDate: "",
-  //         endDate: "",
-  //         owner: "",
-  //         team: [],
-  //       },
-  //     },
-  //     {
-  //       title: "Goals & Metrics",
-  //       component: WizardGoalsMetricsStep,
-  //       initialData: {
-  //         goal: "",
-  //         primaryMetric: "",
-  //         audiences: [],
-  //         hypothesis: "",
-  //         successCriteria: "",
-  //         learningAgenda: "",
-  //         baselineRate: 2.5,
-  //         minimumEffect: 10,
-  //       },
-  //     },
-  //     {
-  //       title: "Variants",
-  //       component: WizardVariantsStep,
-  //       initialData: {
-  //         control: {},
-  //         treatment: {},
-  //         allocation: { Control: 50, Treatment: 50 },
-  //       },
-  //     },
-  //     {
-  //       title: "Review",
-  //       component: WizardReviewStep,
-  //       initialData: {
-  //         notes: "",
-  //       },
-  //     },
-  //   ];
-
-  //   return (
-  //     <Modal
-  //       isOpen={showWizard}
-  //       onClose={() => setShowWizard(false)}
-  //       title="Create New Experiment Brief"
-  //       size="xl"
-  //     >
-  //       <Wizard
-  //         steps={wizardSteps}
-  //         onComplete={handleWizardFinalSubmit}
-  //         initialStep={0}
-  //       />
-  //     </Modal>
-  //   );
-  // };
 
   const renderWizard = () => {
     if (!showWizard) return null;
