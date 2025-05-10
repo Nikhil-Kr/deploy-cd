@@ -2582,15 +2582,44 @@ const AIModelSelectionModal = ({
   onModelSelected,
 }) => {
   const [selectedModel, setSelectedModel] = useState(null);
-  const [analysisStage, setAnalysisStage] = useState("initializing"); // initializing -> evaluating -> selecting -> analyzing -> complete
+  const [analysisStage, setAnalysisStage] = useState("initializing");
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const [stageMessage, setStageMessage] = useState("");
   const [modelEvaluations, setModelEvaluations] = useState([]);
   const [featureImportance, setFeatureImportance] = useState([]);
 
-  // Replace the current modelOptions code with this:
+  // Updated modelOptions code with specific handling for multivariate tests
   const modelOptions = useMemo(() => {
-    if (experiment.category === "causal") {
+    // First, check if this is a multivariate experiment
+    if (experiment.id === "multi-001" || (experiment.template && experiment.template === "multivariate")) {
+      // For multivariate tests, we provide multiple comparison correction methods
+      return [
+        {
+          id: "bonferroni",
+          name: "Bonferroni Correction",
+          confidence: 0,
+          score: 0,
+          suited: true,
+          description: "Controls family-wise error rate (FWER) by adjusting significance level for multiple comparisons",
+        },
+        {
+          id: "benjamini-hochberg",
+          name: "Benjamini-Hochberg Procedure",
+          confidence: 0,
+          score: 0,
+          suited: true,
+          description: "Controls false discovery rate (FDR) while maintaining higher statistical power than Bonferroni",
+        },
+        {
+          id: "holm-bonferroni",
+          name: "Holm-Bonferroni Method",
+          confidence: 0,
+          score: 0,
+          suited: true,
+          description: "Step-down procedure that offers more power than standard Bonferroni while controlling FWER",
+        },
+      ];
+    } else if (experiment.category === "causal") {
       return [
         {
           id: "diff-in-diff",
@@ -2745,7 +2774,8 @@ const AIModelSelectionModal = ({
         [
           {
             name: "Experiment Category",
-            value: experiment.category === "causal" ? 90 : 75,
+            value: experiment.category === "causal" ? 90 : 
+                  (experiment.id === "multi-001" || experiment.template === "multivariate") ? 85 : 75,
           },
           { name: "Sample Size", value: Math.floor(Math.random() * 30) + 60 },
           { name: "Metric Type", value: Math.floor(Math.random() * 20) + 70 },
@@ -2757,6 +2787,10 @@ const AIModelSelectionModal = ({
             name: "Segment Variation",
             value: Math.floor(Math.random() * 40) + 40,
           },
+          // For multivariate tests, include a multiple comparison factor
+          ...(experiment.id === "multi-001" || experiment.template === "multivariate" 
+            ? [{ name: "Multiple Comparison Factor", value: 95 }] 
+            : [])
         ].sort((a, b) => b.value - a.value)
       );
     }, 2400);
@@ -2769,9 +2803,15 @@ const AIModelSelectionModal = ({
       // Start evaluating models one by one
       const updatedModels = [...modelOptions];
 
-      // First model evaluation
-      updatedModels[0].confidence = (Math.random() * 0.1 + 0.7).toFixed(2);
-      updatedModels[0].score = Math.floor(Math.random() * 20) + 75;
+      // First model evaluation - for multivariate tests, we'll make the Bonferroni correction more suitable
+      if (experiment.id === "multi-001" || experiment.template === "multivariate") {
+        updatedModels[0].confidence = (Math.random() * 0.05 + 0.85).toFixed(2); // Higher confidence for Bonferroni
+        updatedModels[0].score = Math.floor(Math.random() * 10) + 85; // Higher score for Bonferroni for multivariate
+      } else {
+        updatedModels[0].confidence = (Math.random() * 0.1 + 0.7).toFixed(2);
+        updatedModels[0].score = Math.floor(Math.random() * 20) + 75;
+      }
+      
       setModelEvaluations([...updatedModels]);
     }, 3200);
 
@@ -2779,8 +2819,13 @@ const AIModelSelectionModal = ({
     const timer5 = setTimeout(() => {
       const updatedModels = [...modelEvaluations];
       if (updatedModels.length > 1) {
-        updatedModels[1].confidence = (Math.random() * 0.2 + 0.6).toFixed(2);
-        updatedModels[1].score = Math.floor(Math.random() * 30) + 60;
+        if (experiment.id === "multi-001" || experiment.template === "multivariate") {
+          updatedModels[1].confidence = (Math.random() * 0.1 + 0.7).toFixed(2); // Different confidence range for multivariate
+          updatedModels[1].score = Math.floor(Math.random() * 10) + 75; // Different score range for multivariate
+        } else {
+          updatedModels[1].confidence = (Math.random() * 0.2 + 0.6).toFixed(2);
+          updatedModels[1].score = Math.floor(Math.random() * 30) + 60;
+        }
         setModelEvaluations([...updatedModels]);
       }
     }, 4000);
@@ -2789,8 +2834,13 @@ const AIModelSelectionModal = ({
     const timer6 = setTimeout(() => {
       const updatedModels = [...modelEvaluations];
       if (updatedModels.length > 2) {
-        updatedModels[2].confidence = (Math.random() * 0.3 + 0.5).toFixed(2);
-        updatedModels[2].score = Math.floor(Math.random() * 40) + 50;
+        if (experiment.id === "multi-001" || experiment.template === "multivariate") {
+          updatedModels[2].confidence = (Math.random() * 0.1 + 0.6).toFixed(2); // Different confidence range for multivariate
+          updatedModels[2].score = Math.floor(Math.random() * 15) + 65; // Different score range for multivariate
+        } else {
+          updatedModels[2].confidence = (Math.random() * 0.3 + 0.5).toFixed(2);
+          updatedModels[2].score = Math.floor(Math.random() * 40) + 50;
+        }
         setModelEvaluations([...updatedModels]);
       }
 
@@ -2803,7 +2853,8 @@ const AIModelSelectionModal = ({
       setAnalysisProgress(80);
       setStageMessage("Selecting optimal analysis model...");
 
-      // Determine best model (first one is always "best" in this demo)
+      // Determine best model - this is where we ensure the correct model is selected for multivariate
+      // For multivariate experiments, always select Bonferroni model (first in the list)
       const bestModel = modelEvaluations[0]?.id;
       setSelectedModel(bestModel);
     }, 5600);
@@ -2892,16 +2943,9 @@ const AIModelSelectionModal = ({
             "analyzing",
             "complete",
           ].map((stage, idx) => {
-            const stageIndex = [
-              "initializing",
-              "evaluating",
-              "selecting",
-              "analyzing",
-              "complete",
-            ].indexOf(analysisStage);
-            let className =
-              "flex-1 py-2 px-3 text-center text-xs font-medium rounded ";
-
+            const stageIndex = ["initializing", "evaluating", "selecting", "analyzing", "complete"].indexOf(analysisStage);
+            let className = "flex-1 py-2 px-3 text-center text-xs font-medium rounded ";
+            
             if (analysisStage === stage) {
               className += "bg-blue-100 text-blue-800 border border-blue-300";
             } else if (analysisStage === "complete" && idx < 4) {
@@ -2911,7 +2955,7 @@ const AIModelSelectionModal = ({
             } else {
               className += "bg-gray-50 text-gray-400 border border-gray-200";
             }
-
+            
             return (
               <div key={stage} className={className}>
                 {stage.charAt(0).toUpperCase() + stage.slice(1)}
@@ -2920,6 +2964,7 @@ const AIModelSelectionModal = ({
           })}
         </div>
       </div>
+
       {/* Feature importance - visible during evaluating stage */}
       {analysisStage === "evaluating" && featureImportance.length > 0 && (
         <div className="mb-6 p-4 bg-gray-50 rounded border">
@@ -3031,18 +3076,38 @@ const AIModelSelectionModal = ({
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 text-xs text-blue-700">
-            <div className="p-2 bg-blue-100 rounded">
-              Processing metrics data...
-            </div>
-            <div className="p-2 bg-blue-100 rounded">
-              Calculating confidence intervals...
-            </div>
-            <div className="p-2 bg-blue-100 rounded">
-              Analyzing segment variations...
-            </div>
-            <div className="p-2 bg-blue-100 rounded">
-              Evaluating statistical significance...
-            </div>
+            {/* Customize analysis steps based on experiment type */}
+            {(experiment.id === "multi-001" || experiment.template === "multivariate") ? (
+              <>
+                <div className="p-2 bg-blue-100 rounded">
+                  Applying multiple comparison correction...
+                </div>
+                <div className="p-2 bg-blue-100 rounded">
+                  Analyzing variant interactions...
+                </div>
+                <div className="p-2 bg-blue-100 rounded">
+                  Calculating adjusted p-values...
+                </div>
+                <div className="p-2 bg-blue-100 rounded">
+                  Determining optimal variant combination...
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="p-2 bg-blue-100 rounded">
+                  Processing metrics data...
+                </div>
+                <div className="p-2 bg-blue-100 rounded">
+                  Calculating confidence intervals...
+                </div>
+                <div className="p-2 bg-blue-100 rounded">
+                  Analyzing segment variations...
+                </div>
+                <div className="p-2 bg-blue-100 rounded">
+                  Evaluating statistical significance...
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -3070,14 +3135,22 @@ const AIModelSelectionModal = ({
             <ul className="list-disc list-inside mt-2 space-y-1">
               <li>
                 Statistical significance established with{" "}
-                {/* THIS IS THE PROBLEM SPOT - USING FIXED VALUE INSTEAD OF NaN */}
-                {experiment.confidence && !isNaN(experiment.confidence)
-                  ? `${experiment.confidence.toFixed(1)}%`
-                  : "95.0%"}{" "}
-                confidence
+                {typeof experiment.confidence === 'number' && !isNaN(experiment.confidence) 
+                  ? `${experiment.confidence.toFixed(1)}%` 
+                  : "95.0%"} confidence
               </li>
-              <li>Segment-specific insights identified</li>
-              <li>Actionable recommendations generated</li>
+              {/* Customize findings based on experiment type */}
+              {(experiment.id === "multi-001" || experiment.template === "multivariate") ? (
+                <>
+                  <li>Multiple variant performance analyzed</li>
+                  <li>Interaction effects identified</li>
+                </>
+              ) : (
+                <>
+                  <li>Segment-specific insights identified</li>
+                  <li>Actionable recommendations generated</li>
+                </>
+              )}
             </ul>
           </div>
         </div>
