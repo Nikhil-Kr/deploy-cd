@@ -2444,58 +2444,6 @@ const AIHypothesisGenerator = ({
   );
 };
 
-// // AI Analysis Component
-// const AIAnalysisComponent = ({
-//   experiment,
-//   isLoading = false,
-//   onRequestAnalysis,
-// }) => {
-//   return (
-//     <div className="border rounded-lg bg-gray-50 p-4">
-//       <h3 className="font-medium text-gray-800 mb-2">AI Analysis</h3>
-
-//       {experiment.aiAnalysis ? (
-//         <div className="bg-white p-4 rounded border">
-//           <div className="prose max-w-none text-sm">
-//             {experiment.aiAnalysis.split("\n").map((paragraph, idx) =>
-//               paragraph ? (
-//                 <p key={idx} className="mb-2">
-//                   {paragraph}
-//                 </p>
-//               ) : (
-//                 <br key={idx} />
-//               )
-//             )}
-//           </div>
-//         </div>
-//       ) : (
-//         <div className="text-center py-6">
-//           {isLoading ? (
-//             <div className="flex flex-col items-center">
-//               <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-3"></div>
-//               <p className="text-gray-600">Analyzing experiment data...</p>
-//             </div>
-//           ) : (
-//             <>
-//               <p className="text-gray-600 mb-4">
-//                 Request AI-powered insights and recommendations based on your
-//                 experiment results.
-//               </p>
-//               <button
-//                 onClick={onRequestAnalysis}
-//                 className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 flex items-center mx-auto"
-//               >
-//                 <span className="mr-2">✨</span>
-//                 Generate AI Analysis
-//               </button>
-//             </>
-//           )}
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
 const AIAnalysisComponent = ({
   experiment,
   isLoading = false,
@@ -2591,7 +2539,10 @@ const AIModelSelectionModal = ({
   // Updated modelOptions code with specific handling for multivariate tests
   const modelOptions = useMemo(() => {
     // First, check if this is a multivariate experiment
-    if (experiment.id === "multi-001" || (experiment.template && experiment.template === "multivariate")) {
+    if (
+      experiment.id === "multi-001" ||
+      (experiment.template && experiment.template === "multivariate")
+    ) {
       // For multivariate tests, we provide multiple comparison correction methods
       return [
         {
@@ -2600,7 +2551,8 @@ const AIModelSelectionModal = ({
           confidence: 0,
           score: 0,
           suited: true,
-          description: "Controls family-wise error rate (FWER) by adjusting significance level for multiple comparisons",
+          description:
+            "Controls family-wise error rate (FWER) by adjusting significance level for multiple comparisons",
         },
         {
           id: "benjamini-hochberg",
@@ -2608,7 +2560,8 @@ const AIModelSelectionModal = ({
           confidence: 0,
           score: 0,
           suited: true,
-          description: "Controls false discovery rate (FDR) while maintaining higher statistical power than Bonferroni",
+          description:
+            "Controls false discovery rate (FDR) while maintaining higher statistical power than Bonferroni",
         },
         {
           id: "holm-bonferroni",
@@ -2616,7 +2569,8 @@ const AIModelSelectionModal = ({
           confidence: 0,
           score: 0,
           suited: true,
-          description: "Step-down procedure that offers more power than standard Bonferroni while controlling FWER",
+          description:
+            "Step-down procedure that offers more power than standard Bonferroni while controlling FWER",
         },
       ];
     } else if (experiment.category === "causal") {
@@ -2774,8 +2728,13 @@ const AIModelSelectionModal = ({
         [
           {
             name: "Experiment Category",
-            value: experiment.category === "causal" ? 90 : 
-                  (experiment.id === "multi-001" || experiment.template === "multivariate") ? 85 : 75,
+            value:
+              experiment.category === "causal"
+                ? 90
+                : experiment.id === "multi-001" ||
+                  experiment.template === "multivariate"
+                ? 85
+                : 75,
           },
           { name: "Sample Size", value: Math.floor(Math.random() * 30) + 60 },
           { name: "Metric Type", value: Math.floor(Math.random() * 20) + 70 },
@@ -2788,9 +2747,10 @@ const AIModelSelectionModal = ({
             value: Math.floor(Math.random() * 40) + 40,
           },
           // For multivariate tests, include a multiple comparison factor
-          ...(experiment.id === "multi-001" || experiment.template === "multivariate" 
-            ? [{ name: "Multiple Comparison Factor", value: 95 }] 
-            : [])
+          ...(experiment.id === "multi-001" ||
+          experiment.template === "multivariate"
+            ? [{ name: "Multiple Comparison Factor", value: 95 }]
+            : []),
         ].sort((a, b) => b.value - a.value)
       );
     }, 2400);
@@ -2804,14 +2764,17 @@ const AIModelSelectionModal = ({
       const updatedModels = [...modelOptions];
 
       // First model evaluation - for multivariate tests, we'll make the Bonferroni correction more suitable
-      if (experiment.id === "multi-001" || experiment.template === "multivariate") {
+      if (
+        experiment.id === "multi-001" ||
+        experiment.template === "multivariate"
+      ) {
         updatedModels[0].confidence = (Math.random() * 0.05 + 0.85).toFixed(2); // Higher confidence for Bonferroni
         updatedModels[0].score = Math.floor(Math.random() * 10) + 85; // Higher score for Bonferroni for multivariate
       } else {
         updatedModels[0].confidence = (Math.random() * 0.1 + 0.7).toFixed(2);
         updatedModels[0].score = Math.floor(Math.random() * 20) + 75;
       }
-      
+
       setModelEvaluations([...updatedModels]);
     }, 3200);
 
@@ -2819,7 +2782,10 @@ const AIModelSelectionModal = ({
     const timer5 = setTimeout(() => {
       const updatedModels = [...modelEvaluations];
       if (updatedModels.length > 1) {
-        if (experiment.id === "multi-001" || experiment.template === "multivariate") {
+        if (
+          experiment.id === "multi-001" ||
+          experiment.template === "multivariate"
+        ) {
           updatedModels[1].confidence = (Math.random() * 0.1 + 0.7).toFixed(2); // Different confidence range for multivariate
           updatedModels[1].score = Math.floor(Math.random() * 10) + 75; // Different score range for multivariate
         } else {
@@ -2834,7 +2800,10 @@ const AIModelSelectionModal = ({
     const timer6 = setTimeout(() => {
       const updatedModels = [...modelEvaluations];
       if (updatedModels.length > 2) {
-        if (experiment.id === "multi-001" || experiment.template === "multivariate") {
+        if (
+          experiment.id === "multi-001" ||
+          experiment.template === "multivariate"
+        ) {
           updatedModels[2].confidence = (Math.random() * 0.1 + 0.6).toFixed(2); // Different confidence range for multivariate
           updatedModels[2].score = Math.floor(Math.random() * 15) + 65; // Different score range for multivariate
         } else {
@@ -2943,9 +2912,16 @@ const AIModelSelectionModal = ({
             "analyzing",
             "complete",
           ].map((stage, idx) => {
-            const stageIndex = ["initializing", "evaluating", "selecting", "analyzing", "complete"].indexOf(analysisStage);
-            let className = "flex-1 py-2 px-3 text-center text-xs font-medium rounded ";
-            
+            const stageIndex = [
+              "initializing",
+              "evaluating",
+              "selecting",
+              "analyzing",
+              "complete",
+            ].indexOf(analysisStage);
+            let className =
+              "flex-1 py-2 px-3 text-center text-xs font-medium rounded ";
+
             if (analysisStage === stage) {
               className += "bg-blue-100 text-blue-800 border border-blue-300";
             } else if (analysisStage === "complete" && idx < 4) {
@@ -2955,7 +2931,7 @@ const AIModelSelectionModal = ({
             } else {
               className += "bg-gray-50 text-gray-400 border border-gray-200";
             }
-            
+
             return (
               <div key={stage} className={className}>
                 {stage.charAt(0).toUpperCase() + stage.slice(1)}
@@ -3077,7 +3053,8 @@ const AIModelSelectionModal = ({
           </div>
           <div className="grid grid-cols-2 gap-3 text-xs text-blue-700">
             {/* Customize analysis steps based on experiment type */}
-            {(experiment.id === "multi-001" || experiment.template === "multivariate") ? (
+            {experiment.id === "multi-001" ||
+            experiment.template === "multivariate" ? (
               <>
                 <div className="p-2 bg-blue-100 rounded">
                   Applying multiple comparison correction...
@@ -3135,12 +3112,15 @@ const AIModelSelectionModal = ({
             <ul className="list-disc list-inside mt-2 space-y-1">
               <li>
                 Statistical significance established with{" "}
-                {typeof experiment.confidence === 'number' && !isNaN(experiment.confidence) 
-                  ? `${experiment.confidence.toFixed(1)}%` 
-                  : "95.0%"} confidence
+                {typeof experiment.confidence === "number" &&
+                !isNaN(experiment.confidence)
+                  ? `${experiment.confidence.toFixed(1)}%`
+                  : "95.0%"}{" "}
+                confidence
               </li>
               {/* Customize findings based on experiment type */}
-              {(experiment.id === "multi-001" || experiment.template === "multivariate") ? (
+              {experiment.id === "multi-001" ||
+              experiment.template === "multivariate" ? (
                 <>
                   <li>Multiple variant performance analyzed</li>
                   <li>Interaction effects identified</li>
@@ -5484,16 +5464,6 @@ const WizardGoalsMetricsStep = ({ data, onChange, allData }) => {
         />
       </FormGroup>
 
-      {/* <FormGroup
-        title="Learning Agenda"
-        description="What specific questions are you trying to answer with this experiment?"
-      >
-        <LearningAgendaBuilder
-          initialValue={data.learningAgenda || ""}
-          onChange={(agenda) => handleChange("learningAgenda", agenda)}
-        />
-      </FormGroup> */}
-
       <FormGroup
         title="Learning Agenda"
         description="What specific questions are you trying to answer with this experiment?"
@@ -5939,12 +5909,6 @@ export default function E2ExperimentPlatform() {
   };
 
   // AI Assistant Modal Handler
-  // const openAIPromptModal = (purpose, context = {}) => {
-  //   setAiPromptPurpose(purpose);
-  //   setAiPromptContext(context);
-  //   setAiResponse("");
-  //   setShowAIPromptModal(true);
-  // };
   const openAIPromptModal = (purpose, context = {}) => {
     setAiPromptPurpose(purpose);
     setAiPromptContext(context);
@@ -7899,16 +7863,6 @@ Generated by E2E Experiment Platform`;
     }, 1000);
   };
 
-  // const generateAIAnalysis = (exp) => {
-  //   showLoading("Generating AI analysis...");
-
-  //   setTimeout(() => {
-  //     // Open AI prompt modal with the context
-  //     openAIPromptModal("analysis", exp);
-  //     hideLoading();
-  //   }, 800);
-  // };
-
   const generateAIAnalysis = (exp, modelId = null) => {
     showLoading("Generating AI analysis...");
 
@@ -8816,33 +8770,6 @@ Generated by E2E Experiment Platform`;
     team: [],
   });
 
-  // const initializeWizard = (initialData = {}) => {
-  //   setWizardData({
-  //     name: "",
-  //     category: "",
-  //     startDate: "",
-  //     endDate: "",
-  //     goal: "",
-  //     primaryMetric: "",
-  //     targetAudience: "",
-  //     hypothesis: "",
-  //     successCriteria: "",
-  //     learningAgenda: "",
-  //     controlDetails: "",
-  //     treatmentDetails: "",
-  //     template: "standard",
-  //     control: {},
-  //     treatment: {},
-  //     allocation: { Control: 50, Treatment: 50 },
-  //     owner: "",
-  //     team: [],
-  //     ...initialData,
-  //   });
-
-  //   setWizardStep(1);
-  //   setShowWizard(true);
-  // };
-
   const initializeWizard = (initialData = {}) => {
     // Log the initialization for debugging
     console.log("Initializing wizard with data:", initialData);
@@ -9237,14 +9164,7 @@ Generated by E2E Experiment Platform`;
           <h1 className="text-2xl font-bold text-gray-800">
             Current Experiments
           </h1>
-          {/* <button
-            onClick={simulateDataUpdate}
-            className="px-3 py-2 bg-green-500 text-white rounded flex items-center text-sm"
-            disabled={isSimulating}
-          >
-            <span className="mr-1">📊</span>
-            Simulate Day +1
-          </button> */}
+
           <div className="relative inline-block">
             {isSimulating ? (
               <button
@@ -9775,83 +9695,7 @@ Generated by E2E Experiment Platform`;
             )}
           </Card>
         </div>
-        {/* Results section - only shown for completed experiments */}
-        {/* {exp.status ===
-          LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase() && (
-          <Card
-            className={
-              exp.improvement > 0
-                ? "bg-green-50 border-green-200"
-                : "bg-red-50 border-red-200"
-            }
-          >
-            <div className="flex justify-between items-start">
-              <h3 className="font-medium text-gray-800 mb-2">Results</h3>
-              {exp.improvement != null && (
-                <span
-                  className={`px-3 py-1 rounded text-sm font-medium ${
-                    exp.improvement > 0
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {exp.improvement > 0 ? "+" : ""}
-                  {exp.improvement}% Impact
-                </span>
-              )}
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <div className="p-3 bg-white rounded shadow-sm">
-                <h4 className="text-xs font-medium text-gray-600">
-                  Improvement
-                </h4>
-                <p
-                  className={`text-2xl font-bold ${
-                    exp.improvement > 0 ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {exp.improvement > 0 ? "+" : ""}
-                  {exp.improvement}%
-                </p>
-              </div>
-              <div className="p-3 bg-white rounded shadow-sm">
-                <h4 className="text-xs font-medium text-gray-600">
-                  Significance
-                </h4>
-                <p className="text-2xl font-bold text-gray-800">
-                  p={exp.significance}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {exp.significance < 0.05
-                    ? "Statistically significant"
-                    : "Not significant"}
-                </p>
-              </div>
-              <div className="p-3 bg-white rounded shadow-sm">
-                <h4 className="text-xs font-medium text-gray-600">
-                  Confidence
-                </h4>
-                <p className="text-2xl font-bold text-gray-800">
-                  {exp.confidence}%
-                </p>
-              </div>
-            </div>
-
-            <StatResultExplainer
-              improvement={exp.improvement}
-              significance={exp.significance || 0}
-              confidence={exp.confidence || 0}
-            />
-
-            <div className="mt-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">
-                Business Impact
-              </h4>
-              <p className="text-sm text-gray-800">{exp.impact}</p>
-            </div>
-          </Card>
-        )} */}
         {exp.status ===
           LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase() && (
           <Card
@@ -10312,34 +10156,6 @@ Generated by E2E Experiment Platform`;
           </Card>
         )}
         {/* Experiment variations */}
-        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <h3 className="font-medium text-gray-800 mb-3">Control Group</h3>
-          <img
-            src={exp.controlImage}
-            alt="Control"
-            className="rounded w-full h-auto object-cover border"
-          />
-          {exp.control && exp.control.description && (
-            <div className="mt-3 p-3 bg-gray-50 rounded">
-              <p className="text-sm text-gray-700">{exp.control.description}</p>
-            </div>
-          )}
-        </Card>
-          <Card>
-            <h3 className="font-medium text-gray-800 mb-3">Treatment Group</h3>
-            <img
-              src={exp.treatmentImage}
-              alt="Treatment"
-              className="rounded w-full h-auto object-cover border"
-            />
-            {exp.treatment && exp.treatment.description && (
-              <div className="mt-3 p-3 bg-blue-50 rounded">
-                <p className="text-sm text-blue-700">{exp.treatment.description}</p>
-              </div>
-            )}
-          </Card>
-        </div> */}
         <Card>
           <h3 className="font-medium text-gray-800 mb-3">
             Experiment Variants
@@ -10411,42 +10227,6 @@ Generated by E2E Experiment Platform`;
               </div>
             </div>
           ) : (
-            // <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            //   <div>
-            //     <h4 className="text-sm font-medium text-gray-700 mb-2">
-            //       Control Group
-            //     </h4>
-            //     <img
-            //       src={exp.controlImage}
-            //       alt="Control"
-            //       className="rounded w-full h-auto object-cover border"
-            //     />
-            //     {exp.control && exp.control.description && (
-            //       <div className="mt-3 p-3 bg-gray-50 rounded">
-            //         <p className="text-sm text-gray-700">
-            //           {exp.control.description}
-            //         </p>
-            //       </div>
-            //     )}
-            //   </div>
-            //   <div>
-            //     <h4 className="text-sm font-medium text-gray-700 mb-2">
-            //       Treatment Group
-            //     </h4>
-            //     <img
-            //       src={exp.treatmentImage}
-            //       alt="Treatment"
-            //       className="rounded w-full h-auto object-cover border"
-            //     />
-            //     {exp.treatment && exp.treatment.description && (
-            //       <div className="mt-3 p-3 bg-blue-50 rounded">
-            //         <p className="text-sm text-blue-700">
-            //           {exp.treatment.description}
-            //         </p>
-            //       </div>
-            //     )}
-            //   </div>
-            // </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <h3 className="font-medium text-gray-800 mb-3">
@@ -10935,28 +10715,6 @@ Generated by E2E Experiment Platform`;
               </>
             )}
 
-            {/* {exp.status ===
-              LIFECYCLE_STAGES.EXECUTION.PAUSED.label.toLowerCase() && (
-              <button
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                onClick={() => resumeExperiment(exp)}
-              >
-                Resume Experiment
-              </button>
-            )} */}
-
-            {/* {exp.status ===
-              LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase() && (
-              <button
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                onClick={() => addExperimentToKnowledge(exp)}
-                disabled={exp.knowledgeStatus !== null}
-              >
-                {exp.knowledgeStatus === null
-                  ? "Add to Knowledge Hub"
-                  : "Already in Knowledge Hub"}
-              </button>
-            )} */}
             <div className="flex justify-between mt-4">
               <div>
                 {exp.status ===
@@ -11004,24 +10762,6 @@ Generated by E2E Experiment Platform`;
               </div>
 
               <div className="space-x-2">
-                {/* {exp.status ===
-                  LIFECYCLE_STAGES.EXECUTION.IN_PROGRESS.label.toLowerCase() && (
-                  <>
-                    <button
-                      className="px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600"
-                      onClick={() => pauseExperiment(exp)}
-                    >
-                      Pause Experiment
-                    </button>
-                    <button
-                      className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                      onClick={() => completeExperiment(exp)}
-                    >
-                      Mark as Completed
-                    </button>
-                  </>
-                )} */}
-
                 {exp.status ===
                   LIFECYCLE_STAGES.EXECUTION.PAUSED.label.toLowerCase() && (
                   <button
@@ -11094,56 +10834,6 @@ Generated by E2E Experiment Platform`;
               </button>
             </div>
           </div>
-
-          {/* Filters */}
-          {/* <div className="bg-white border rounded p-4 mb-6">
-            <div className="flex flex-col md:flex-row md:space-x-3 space-y-3 md:space-y-0">
-              <div className="flex-grow">
-                <input
-                  type="text"
-                  placeholder="Search insights or tags..."
-                  className="w-full p-2 border rounded"
-                  value={knowledgeSearch}
-                  onChange={(e) => setKnowledgeSearch(e.target.value)}
-                />
-              </div>
-              <div>
-                <select
-                  className="appearance-none bg-white border rounded w-full p-2"
-                  value={knowledgeCategory}
-                  onChange={(e) => setKnowledgeCategory(e.target.value)}
-                >
-                  <option value="all">All Categories</option>
-                  <option value="monetization">Monetization</option>
-                  <option value="engagement">Engagement</option>
-                  <option value="satisfaction">Satisfaction</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2 mt-4">
-              <p className="text-xs text-gray-500 mr-2 mt-1">Popular tags:</p>
-              {[
-                "personalization",
-                "conversion",
-                "multivariate",
-                "negative result",
-                "ui",
-              ].map((tag) => (
-                <button
-                  key={tag}
-                  className={`px-2 py-1 rounded-full text-xs ${
-                    knowledgeSearch === tag
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                  onClick={() => setKnowledgeSearch(tag)}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-          </div> */}
 
           {/* Filters and Knowledge Search */}
           <div className="bg-white border rounded p-4 mb-6">
@@ -13866,59 +13556,6 @@ Generated by E2E Experiment Platform`;
               }
             />
 
-            {/* <div className="flex justify-end space-x-3 mt-4">
-              <button
-                onClick={() => setShowAIPromptModal(false)}
-                className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-50"
-              >
-                Close
-              </button>
-              <button
-                onClick={() => {
-                  // Apply the AI response to the appropriate field
-                  if (aiPromptPurpose === "hypothesis") {
-                    setWizardData((prev) => ({
-                      ...prev,
-                      hypothesis: aiResponse,
-                    }));
-                  } else if (aiPromptPurpose === "analysis") {
-                    setExperiments((prev) =>
-                      prev.map((e) =>
-                        e.id === aiPromptContext.id
-                          ? { ...e, aiAnalysis: aiResponse }
-                          : e
-                      )
-                    );
-
-                    if (
-                      selectedExperiment &&
-                      selectedExperiment.id === aiPromptContext.id
-                    ) {
-                      setSelectedExperiment((prev) => ({
-                        ...prev,
-                        aiAnalysis: aiResponse,
-                      }));
-                    }
-                  } else if (aiPromptPurpose === "learningAgenda") {
-                    setWizardData((prev) => ({
-                      ...prev,
-                      learningAgenda: aiResponse,
-                    }));
-                  } else if (aiPromptPurpose === "successCriteria") {
-                    setWizardData((prev) => ({
-                      ...prev,
-                      successCriteria: aiResponse,
-                    }));
-                  }
-
-                  setShowAIPromptModal(false);
-                  showToast("AI suggestion applied", "success");
-                }}
-                className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
-              >
-                Apply Suggestion
-              </button>
-            </div> */}
             <div className="flex justify-end space-x-3 mt-4">
               <button
                 onClick={() => setShowAIPromptModal(false)}
