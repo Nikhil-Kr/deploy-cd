@@ -72,7 +72,7 @@ The E2E Experiment Platform is built with modern web technologies:
 git clone https://github.com/Nikhil-Kr/deploy-cd.git
 
 # Navigate to the project directory
-cd e2e-experiment-platform
+cd deploy-cd
 
 # Install dependencies
 npm install
