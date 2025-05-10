@@ -1,70 +1,81 @@
-# Getting Started with Create React App
+# E2E Experiment Platform
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+An end-to-end experimentation platform that empowers teams to plan, execute, analyze, and build knowledge through controlled experiments.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 🧠 Overview
 
-### `npm start`
+**E2E Experiment Platform** transforms experimentation from isolated activities into a strategic capability by connecting the entire experimentation lifecycle. From initial idea to knowledge application, the platform provides a unified environment for planning, reviewing, executing, and learning from experiments.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🔑 Key Features
 
-### `npm test`
+### 🧭 Complete Experimentation Lifecycle
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **Planning**: Kanban and timeline views for planning experiments, with AI-assisted ideation  
+- **Reviews**: Structured review workflow with feedback tracking and approval process  
+- **Execution**: Real-time monitoring with simulation capabilities for forecasting  
+- **Knowledge Management**: Centralized repository for experiment insights and learnings  
 
-### `npm run build`
+### 🤖 AI-Powered Assistance
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- **Hypothesis Generation**: AI creates high-quality hypotheses based on business objectives  
+- **Results Analysis**: Automated analysis of experiment results with segment identification  
+- **Learning Agenda Creation**: AI helps build structured learning agendas  
+- **Insight Recommendations**: Suggests next steps and follow-up experiments based on results  
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 🎯 Strategic Alignment
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- **OKR Integration**: Direct connection between business objectives and experiments  
+- **Learning Path Generation**: Strategic roadmap of experiments to build knowledge systematically  
+- **Knowledge Graph**: Visual representation of relationships between experiments, knowledge, and objectives  
 
-### `npm run eject`
+### 📊 Advanced Analytics
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- **Statistical Rigor**: Comprehensive statistical tooling including power analysis and significance testing  
+- **Segment Analysis**: Detailed breakdown of how different user segments respond to experiments  
+- **Causal Inference**: Specialized tools for causal analysis beyond standard A/B testing  
+- **Multivariate Testing**: Full support for complex multivariate experiment design and analysis  
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### 👥 Role-Based Views
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- **Product Manager View**: Comprehensive workflow tools and planning features  
+- **Data Scientist View**: Enhanced statistical information and analysis capabilities  
+- **Executive View**: Business impact focus with strategic alignment visualization  
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### 🔄 End-to-End Workflow
 
-## Learn More
+- **Experiment Wizard**: Guided workflow for creating well-designed experiments  
+- **Implementation Tracking**: Post-experiment decision documentation and task tracking  
+- **Knowledge Application**: Apply past learnings directly to new experiment planning  
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 🏗️ Architecture
 
-### Code Splitting
+The E2E Experiment Platform is built with modern web technologies:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- **Frontend**: React with recharts for data visualization  
+- **UI Components**: Custom component library with responsive design  
+- **State Management**: React hooks and context for state management  
+- **Data Visualization**: Recharts, ForceGraph2D, and custom visualization components  
+- **Collaborative Features**: Real-time updates and shared experiment views  
 
-### Analyzing the Bundle Size
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 🚀 Installation
 
-### Making a Progressive Web App
+```bash
+# Clone the repository
+git clone https://github.com/Nikhil-Kr/deploy-cd.git
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+# Navigate to the project directory
+cd e2e-experiment-platform
 
-### Advanced Configuration
+# Install dependencies
+npm install
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+# Start the development server
+npm start
