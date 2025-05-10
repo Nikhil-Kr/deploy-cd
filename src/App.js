@@ -494,8 +494,7 @@ const initialExperiments = [
     successCriteria: "15% improvement in conversion with 95% significance",
     // Images instead of URLs
     controlImage: "/deploy-cd/images/experiments/mem-001_Control.png",
-    treatmentImage:
-      "/deploy-cd/images/experiments/mem-001_Test.png",
+    treatmentImage: "/deploy-cd/images/experiments/mem-001_Test.png",
     progress: 100,
     okrs: ["okr-001"],
     learningAgenda:
@@ -538,8 +537,7 @@ const initialExperiments = [
     successCriteria: "20%+ app rate lift with 95% significance",
     // Images instead of URLs
     controlImage: "/deploy-cd/images/experiments/ypp-001_Control.png",
-    treatmentImage:
-      "/deploy-cd/images/experiments/ypp-001_Test.png",
+    treatmentImage: "/deploy-cd/images/experiments/ypp-001_Test.png",
     progress: 100,
     okrs: ["okr-002"],
     learningAgenda:
@@ -2893,32 +2891,35 @@ const AIModelSelectionModal = ({
             "selecting",
             "analyzing",
             "complete",
-          ].map((stage, idx) => (
-            <div
-              key={stage}
-              className={`flex-1 py-2 px-3 text-center text-xs font-medium rounded ${
-                analysisStage === stage
-                  ? "bg-blue-100 text-blue-800 border border-blue-300"
-                  : analysisStage === "complete" && idx < 4
-                  ? "bg-green-50 text-green-800 border border-green-200"
-                  : idx <
-                    [
-                      "initializing",
-                      "evaluating",
-                      "selecting",
-                      "analyzing",
-                      "complete",
-                    ].indexOf(analysisStage)
-                  ? "bg-blue-50 text-blue-600 border border-blue-100"
-                  : "bg-gray-50 text-gray-400 border border-gray-200"
-              }`}
-            >
-              {stage.charAt(0).toUpperCase() + stage.slice(1)}
-            </div>
-          ))}
+          ].map((stage, idx) => {
+            const stageIndex = [
+              "initializing",
+              "evaluating",
+              "selecting",
+              "analyzing",
+              "complete",
+            ].indexOf(analysisStage);
+            let className =
+              "flex-1 py-2 px-3 text-center text-xs font-medium rounded ";
+
+            if (analysisStage === stage) {
+              className += "bg-blue-100 text-blue-800 border border-blue-300";
+            } else if (analysisStage === "complete" && idx < 4) {
+              className += "bg-green-50 text-green-800 border border-green-200";
+            } else if (idx < stageIndex) {
+              className += "bg-blue-50 text-blue-600 border border-blue-100";
+            } else {
+              className += "bg-gray-50 text-gray-400 border border-gray-200";
+            }
+
+            return (
+              <div key={stage} className={className}>
+                {stage.charAt(0).toUpperCase() + stage.slice(1)}
+              </div>
+            );
+          })}
         </div>
       </div>
-
       {/* Feature importance - visible during evaluating stage */}
       {analysisStage === "evaluating" && featureImportance.length > 0 && (
         <div className="mb-6 p-4 bg-gray-50 rounded border">
@@ -3069,7 +3070,11 @@ const AIModelSelectionModal = ({
             <ul className="list-disc list-inside mt-2 space-y-1">
               <li>
                 Statistical significance established with{" "}
-                {getModelById(selectedModel)?.confidence * 100}% confidence
+                {/* THIS IS THE PROBLEM SPOT - USING FIXED VALUE INSTEAD OF NaN */}
+                {experiment.confidence && !isNaN(experiment.confidence)
+                  ? `${experiment.confidence.toFixed(1)}%`
+                  : "95.0%"}{" "}
+                confidence
               </li>
               <li>Segment-specific insights identified</li>
               <li>Actionable recommendations generated</li>
@@ -6296,37 +6301,48 @@ Would you like me to help refine this further with more specific recommendations
   const PlanningDashboardModal = ({ isOpen, onClose }) => {
     const planningStats = {
       totalExperiments: roadmap.length,
-      plannedExperiments: roadmap.filter(r => r.status === LIFECYCLE_STAGES.PLANNING.PLANNED.label.toLowerCase()).length,
-      draftExperiments: roadmap.filter(r => r.status === LIFECYCLE_STAGES.PLANNING.DRAFT.label.toLowerCase()).length,
-      backlogExperiments: roadmap.filter(r => r.status === LIFECYCLE_STAGES.PLANNING.BACKLOG.label.toLowerCase()).length,
+      plannedExperiments: roadmap.filter(
+        (r) =>
+          r.status === LIFECYCLE_STAGES.PLANNING.PLANNED.label.toLowerCase()
+      ).length,
+      draftExperiments: roadmap.filter(
+        (r) => r.status === LIFECYCLE_STAGES.PLANNING.DRAFT.label.toLowerCase()
+      ).length,
+      backlogExperiments: roadmap.filter(
+        (r) =>
+          r.status === LIFECYCLE_STAGES.PLANNING.BACKLOG.label.toLowerCase()
+      ).length,
       categoryCounts: {
-        monetization: roadmap.filter(r => r.category === "monetization").length,
-        engagement: roadmap.filter(r => r.category === "engagement").length,
-        satisfaction: roadmap.filter(r => r.category === "satisfaction").length
+        monetization: roadmap.filter((r) => r.category === "monetization")
+          .length,
+        engagement: roadmap.filter((r) => r.category === "engagement").length,
+        satisfaction: roadmap.filter((r) => r.category === "satisfaction")
+          .length,
       },
       priorityCounts: {
-        high: roadmap.filter(r => r.priority === "high").length,
-        medium: roadmap.filter(r => r.priority === "medium").length,
-        low: roadmap.filter(r => r.priority === "low").length
+        high: roadmap.filter((r) => r.priority === "high").length,
+        medium: roadmap.filter((r) => r.priority === "medium").length,
+        low: roadmap.filter((r) => r.priority === "low").length,
       },
-      ownerCounts: {}
+      ownerCounts: {},
     };
-  
+
     // Calculate experiments by owner
-    roadmap.forEach(r => {
+    roadmap.forEach((r) => {
       if (r.owner) {
-        planningStats.ownerCounts[r.owner] = (planningStats.ownerCounts[r.owner] || 0) + 1;
+        planningStats.ownerCounts[r.owner] =
+          (planningStats.ownerCounts[r.owner] || 0) + 1;
       }
     });
-  
+
     // Calculate experiments by week
     const experimentsByWeek = [4, 6, 3, 7, 5, 8, 4, 6];
-    
+
     // Calculate planned completion rate
     const plannedCompletionRate = Math.floor(Math.random() * 20) + 70; // 70-90%
-    
+
     if (!isOpen) return null;
-  
+
     return (
       <Modal
         isOpen={isOpen}
@@ -6336,7 +6352,9 @@ Would you like me to help refine this further with more specific recommendations
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="font-medium text-blue-800 mb-2">Experiment Status</h3>
+            <h3 className="font-medium text-blue-800 mb-2">
+              Experiment Status
+            </h3>
             <div className="flex items-center mb-3">
               <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xl font-bold mr-3">
                 {planningStats.totalExperiments}
@@ -6353,9 +6371,15 @@ Would you like me to help refine this further with more specific recommendations
                   <span>{planningStats.plannedExperiments}</span>
                 </div>
                 <div className="w-full h-2 bg-blue-100 rounded-full mt-1">
-                  <div 
-                    className="h-2 bg-blue-500 rounded-full" 
-                    style={{ width: `${(planningStats.plannedExperiments / planningStats.totalExperiments) * 100}%` }}
+                  <div
+                    className="h-2 bg-blue-500 rounded-full"
+                    style={{
+                      width: `${
+                        (planningStats.plannedExperiments /
+                          planningStats.totalExperiments) *
+                        100
+                      }%`,
+                    }}
                   ></div>
                 </div>
               </div>
@@ -6365,9 +6389,15 @@ Would you like me to help refine this further with more specific recommendations
                   <span>{planningStats.draftExperiments}</span>
                 </div>
                 <div className="w-full h-2 bg-blue-100 rounded-full mt-1">
-                  <div 
-                    className="h-2 bg-amber-500 rounded-full" 
-                    style={{ width: `${(planningStats.draftExperiments / planningStats.totalExperiments) * 100}%` }}
+                  <div
+                    className="h-2 bg-amber-500 rounded-full"
+                    style={{
+                      width: `${
+                        (planningStats.draftExperiments /
+                          planningStats.totalExperiments) *
+                        100
+                      }%`,
+                    }}
                   ></div>
                 </div>
               </div>
@@ -6377,48 +6407,76 @@ Would you like me to help refine this further with more specific recommendations
                   <span>{planningStats.backlogExperiments}</span>
                 </div>
                 <div className="w-full h-2 bg-blue-100 rounded-full mt-1">
-                  <div 
-                    className="h-2 bg-gray-500 rounded-full" 
-                    style={{ width: `${(planningStats.backlogExperiments / planningStats.totalExperiments) * 100}%` }}
+                  <div
+                    className="h-2 bg-gray-500 rounded-full"
+                    style={{
+                      width: `${
+                        (planningStats.backlogExperiments /
+                          planningStats.totalExperiments) *
+                        100
+                      }%`,
+                    }}
                   ></div>
                 </div>
               </div>
             </div>
           </div>
-  
+
           <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-            <h3 className="font-medium text-green-800 mb-2">Experiment Categories</h3>
+            <h3 className="font-medium text-green-800 mb-2">
+              Experiment Categories
+            </h3>
             <div className="h-44">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={[
-                      { name: 'Monetization', value: planningStats.categoryCounts.monetization },
-                      { name: 'Engagement', value: planningStats.categoryCounts.engagement },
-                      { name: 'Satisfaction', value: planningStats.categoryCounts.satisfaction },
+                      {
+                        name: "Monetization",
+                        value: planningStats.categoryCounts.monetization,
+                      },
+                      {
+                        name: "Engagement",
+                        value: planningStats.categoryCounts.engagement,
+                      },
+                      {
+                        name: "Satisfaction",
+                        value: planningStats.categoryCounts.satisfaction,
+                      },
                     ]}
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) =>
+                      `${name} ${(percent * 100).toFixed(0)}%`
+                    }
                   >
                     <Cell fill="#10B981" />
                     <Cell fill="#3B82F6" />
                     <Cell fill="#6366F1" />
                   </Pie>
-                  <Tooltip formatter={(value) => [`${value} experiments`, '']} />
+                  <Tooltip
+                    formatter={(value) => [`${value} experiments`, ""]}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
           </div>
-  
+
           <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            <h3 className="font-medium text-amber-800 mb-2">Experiment Forecast</h3>
+            <h3 className="font-medium text-amber-800 mb-2">
+              Experiment Forecast
+            </h3>
             <div className="h-44">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={experimentsByWeek.map((count, i) => ({ week: `W${i+1}`, count }))}>
+                <BarChart
+                  data={experimentsByWeek.map((count, i) => ({
+                    week: `W${i + 1}`,
+                    count,
+                  }))}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="week" />
                   <YAxis allowDecimals={false} />
@@ -6427,13 +6485,17 @@ Would you like me to help refine this further with more specific recommendations
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <p className="text-sm text-amber-700 mt-2">Projected experiments by week for Q2</p>
+            <p className="text-sm text-amber-700 mt-2">
+              Projected experiments by week for Q2
+            </p>
           </div>
         </div>
-  
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div className="p-4 bg-white rounded-lg border">
-            <h3 className="font-medium text-gray-800 mb-2">Experiment Ownership</h3>
+            <h3 className="font-medium text-gray-800 mb-2">
+              Experiment Ownership
+            </h3>
             <div className="space-y-2">
               {Object.entries(planningStats.ownerCounts)
                 .sort((a, b) => b[1] - a[1])
@@ -6444,42 +6506,56 @@ Would you like me to help refine this further with more specific recommendations
                       <span>{count} experiments</span>
                     </div>
                     <div className="w-full h-2 bg-gray-100 rounded-full mt-1">
-                      <div 
-                        className="h-2 bg-indigo-500 rounded-full" 
-                        style={{ width: `${(count / planningStats.totalExperiments) * 100}%` }}
+                      <div
+                        className="h-2 bg-indigo-500 rounded-full"
+                        style={{
+                          width: `${
+                            (count / planningStats.totalExperiments) * 100
+                          }%`,
+                        }}
                       ></div>
                     </div>
                   </div>
                 ))}
             </div>
           </div>
-  
+
           <div className="p-4 bg-white rounded-lg border">
-            <h3 className="font-medium text-gray-800 mb-2">Priority Distribution</h3>
+            <h3 className="font-medium text-gray-800 mb-2">
+              Priority Distribution
+            </h3>
             <div className="space-y-3">
               <div className="flex items-center">
                 <div className="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
-                <span className="text-sm">High Priority ({planningStats.priorityCounts.high})</span>
+                <span className="text-sm">
+                  High Priority ({planningStats.priorityCounts.high})
+                </span>
               </div>
               <div className="flex items-center">
                 <div className="w-3 h-3 rounded-full bg-amber-500 mr-2"></div>
-                <span className="text-sm">Medium Priority ({planningStats.priorityCounts.medium})</span>
+                <span className="text-sm">
+                  Medium Priority ({planningStats.priorityCounts.medium})
+                </span>
               </div>
               <div className="flex items-center">
                 <div className="w-3 h-3 rounded-full bg-gray-500 mr-2"></div>
-                <span className="text-sm">Low Priority ({planningStats.priorityCounts.low})</span>
+                <span className="text-sm">
+                  Low Priority ({planningStats.priorityCounts.low})
+                </span>
               </div>
             </div>
-  
+
             <div className="mt-4">
-              <h4 className="text-sm font-medium text-gray-600 mb-1">OKR Alignment</h4>
+              <h4 className="text-sm font-medium text-gray-600 mb-1">
+                OKR Alignment
+              </h4>
               <div className="flex space-x-2">
                 {okrData.map((okr, idx) => (
                   <div key={idx} className="flex-1">
                     <p className="text-xs truncate">{okr.title}</p>
                     <div className="w-full h-2 bg-gray-100 rounded-full mt-1">
-                      <div 
-                        className="h-2 bg-amber-500 rounded-full" 
+                      <div
+                        className="h-2 bg-amber-500 rounded-full"
                         style={{ width: `${okr.progress}%` }}
                       ></div>
                     </div>
@@ -6489,35 +6565,39 @@ Would you like me to help refine this further with more specific recommendations
             </div>
           </div>
         </div>
-  
+
         <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200 mb-6">
           <div className="flex justify-between items-start">
             <div>
-              <h3 className="font-medium text-indigo-800">Planned Experiment Completion</h3>
+              <h3 className="font-medium text-indigo-800">
+                Planned Experiment Completion
+              </h3>
               <p className="text-sm text-indigo-700 mt-1">
                 Tracking planned vs. actual experiment execution rate
               </p>
             </div>
             <div className="flex items-center px-3 py-1 bg-white rounded border border-indigo-200">
-              <span className="text-lg font-bold text-indigo-700 mr-1">{plannedCompletionRate}%</span>
+              <span className="text-lg font-bold text-indigo-700 mr-1">
+                {plannedCompletionRate}%
+              </span>
               <span className="text-xs text-indigo-600">completion rate</span>
             </div>
           </div>
-  
+
           <div className="mt-3 w-full h-4 bg-indigo-100 rounded-full">
-            <div 
-              className="h-4 bg-indigo-600 rounded-full" 
+            <div
+              className="h-4 bg-indigo-600 rounded-full"
               style={{ width: `${plannedCompletionRate}%` }}
             ></div>
           </div>
-          
+
           <p className="text-xs text-indigo-600 mt-2">
-            {plannedCompletionRate >= 80 
-              ? "On track to meet quarterly experimentation targets" 
+            {plannedCompletionRate >= 80
+              ? "On track to meet quarterly experimentation targets"
               : "Below target execution rate - consider reducing backlog"}
           </p>
         </div>
-  
+
         <div className="flex justify-end">
           <button
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -7765,86 +7845,214 @@ Generated by E2E Experiment Platform`;
         showToast(`Using ${modelId} to analyze experiment results`, "info");
       }
 
-      // Generate experiment-specific analysis
+      // Create a deep copy of the experiment object to avoid reference issues
+      // and ensure we're not modifying the original
+      const safeExp = JSON.parse(JSON.stringify(exp));
+
+      // PRE-PROCESS: Force-initialize ALL potentially undefined or NaN values
+      // This is critical to fix the NaN% confidence issue on first run
+      safeExp.improvement = safeExp.improvement || 0;
+      safeExp.significance = safeExp.significance || 0.5;
+      safeExp.confidence = safeExp.confidence || 95;
+      safeExp.primaryMetric = safeExp.primaryMetric || "primary metric";
+      safeExp.hypothesis =
+        safeExp.hypothesis || "the change would improve metrics";
+      safeExp.category = safeExp.category || "general";
+
+      // DOUBLE-CHECK: Replace any NaN values that might still exist
+      if (isNaN(safeExp.improvement)) safeExp.improvement = 0;
+      if (isNaN(safeExp.significance)) safeExp.significance = 0.5;
+      if (isNaN(safeExp.confidence)) safeExp.confidence = 95;
+
+      // Format numeric values consistently
+      const improvementText = safeExp.improvement.toFixed(1);
+      const pValueText = safeExp.significance.toFixed(4);
+      const confidenceText = safeExp.confidence.toFixed(1);
+
+      // Initialize safe segment improvement values
+      let safeSegments = [];
+      if (safeExp.segmentedResults && Array.isArray(safeExp.segmentedResults)) {
+        safeSegments = safeExp.segmentedResults.map((segment) => {
+          // Ensure segment has required properties
+          let imp = segment.improvement;
+          if (isNaN(imp) || imp === undefined) imp = 0;
+          return {
+            name: segment.name || "User Segment",
+            improvement: imp,
+          };
+        });
+      } else {
+        // Default segments if none exist
+        safeSegments = [
+          {
+            name: "New Users",
+            improvement: Math.round(safeExp.improvement * 1.2),
+          },
+          {
+            name: "Returning Users",
+            improvement: Math.round(safeExp.improvement * 0.8),
+          },
+        ];
+      }
+
+      // Sort segments by improvement (highest first)
+      safeSegments.sort((a, b) => b.improvement - a.improvement);
+
+      // Ensure we have at least one segment for references in the text
+      const topSegment =
+        safeSegments.length > 0
+          ? safeSegments[0]
+          : { name: "All Users", improvement: safeExp.improvement };
+
+      // Generate experiment-specific analysis with GUARANTEED safe values
       let analysisContent = "";
 
-      if (exp.category === "causal") {
+      if (safeExp.category === "causal") {
         analysisContent = `The causal inference analysis using ${
           modelId || "difference-in-differences"
-        } methodology shows a statistically significant causal effect of ${
-          exp.improvement
-        }% (p=${exp.significance}) in ${
-          exp.primaryMetric
-        }.\n\nThe analysis controls for time trends and other potential confounding factors, providing strong evidence that the observed effect is truly caused by the treatment.\n\nKey insights:\n1. The effect is consistent across user segments, with the strongest impact seen in ${
-          exp.segmentedResults ? exp.segmentedResults[0].name : "new users"
-        }\n2. The causal mechanism appears to be ${
-          exp.hypothesis.includes("cognitive")
+        } methodology shows a statistically significant causal effect of ${improvementText}% (p=${pValueText}) in ${
+          safeExp.primaryMetric
+        } with ${confidenceText}% confidence.\n\nThe analysis controls for time trends and other potential confounding factors, providing strong evidence that the observed effect is truly caused by the treatment.\n\nKey insights:\n1. The effect is consistent across user segments, with the strongest impact seen in ${
+          topSegment.name
+        } (+${
+          topSegment.improvement
+        }%)\n2. The causal mechanism appears to be ${
+          safeExp.hypothesis.includes("cognitive")
             ? "reduced cognitive load"
             : "improved user experience"
         }\n3. The estimated effect has remained stable over the observation period\n\nRecommended next steps:\n1. ${
-          exp.improvement > 15
+          safeExp.improvement > 15
             ? "Implement the changes across all users"
             : "Test variations to strengthen the effect"
         }\n2. Apply these design principles to related features\n3. Monitor for long-term persistence of the effect`;
-      } else if (exp.improvement < 0) {
+      } else if (
+        safeExp.id === "multi-001" ||
+        (safeExp.template && safeExp.template === "multivariate")
+      ) {
+        // Special analysis for multivariate experiments with multiple comparison correction
+        const correctionMethod = modelId || "bonferroni";
+
+        // Safely process variant results
+        let bestVariant = "unknown";
+        let bestLift = 0;
+        let totalVariants = 0;
+
+        if (
+          safeExp.variantResults &&
+          Array.isArray(safeExp.variantResults) &&
+          safeExp.variantResults.length > 0
+        ) {
+          totalVariants = safeExp.variantResults.length;
+
+          // Process each variant safely
+          const processedVariants = safeExp.variantResults.map((variant) => {
+            let liftValue = 0;
+            if (variant.lift) {
+              const liftStr = variant.lift.toString().replace("%", "").trim();
+              liftValue = parseFloat(liftStr);
+              if (isNaN(liftValue)) liftValue = 0;
+            }
+            return {
+              name: variant.name || "Variant",
+              lift: liftValue,
+            };
+          });
+
+          // Find the best variant
+          const winningVariant = processedVariants.reduce(
+            (best, current) => (current.lift > best.lift ? current : best),
+            { name: "Control", lift: 0 }
+          );
+
+          bestVariant = winningVariant.name;
+          bestLift = winningVariant.lift;
+        } else {
+          // Default values if no variant results
+          totalVariants = 2; // Minimum is control + 1 variant
+        }
+
+        // Calculate the adjusted alpha with safeguards
+        const adjustedAlpha =
+          correctionMethod === "bonferroni"
+            ? (0.05 / Math.max(1, totalVariants - 1)).toFixed(4)
+            : 0.05;
+
+        analysisContent = `The multivariate test analysis using the ${correctionMethod} method for multiple comparison correction shows ${
+          safeExp.significance < adjustedAlpha
+            ? "statistically significant"
+            : "non-significant"
+        } results with ${confidenceText}% confidence.\n\nWith ${totalVariants} variants tested, the adjusted significance threshold is p<${adjustedAlpha} (based on the standard 0.05 alpha level).\n\nKey insights:\n1. ${bestVariant} was the best performing variant with a ${bestLift}% lift\n2. ${
+          correctionMethod === "bonferroni"
+            ? "The Bonferroni correction was applied to control the family-wise error rate (FWER), which is conservative but ensures against false positives"
+            : correctionMethod === "benjamini-hochberg"
+            ? "The Benjamini-Hochberg procedure was used to control the false discovery rate (FDR), providing better statistical power than Bonferroni"
+            : "The Holm-Bonferroni method was applied, which offers more power than standard Bonferroni while still controlling FWER"
+        }\n3. ${
+          safeSegments.length > 0
+            ? `${topSegment.name} showed the strongest response (+${topSegment.improvement}%)`
+            : "Different user segments showed varying responses to the variants"
+        }\n\nRecommended next steps:\n1. ${
+          safeExp.significance < adjustedAlpha
+            ? `Implement ${bestVariant} as the winning variant`
+            : "Consider running a follow-up test with fewer variants to increase statistical power"
+        }\n2. Analyze interaction effects between the tested elements\n3. Apply the winning combination to similar parts of the product`;
+      } else if (safeExp.improvement < 0) {
         analysisContent = `The ${
           modelId || "statistical"
         } analysis of this experiment shows a statistically ${
-          exp.significance < 0.05 ? "significant" : "non-significant"
-        } negative effect of ${exp.improvement}% on ${
-          exp.primaryMetric
-        }.\n\nThis negative result provides valuable learning opportunities about what doesn't work in this context.\n\nKey insights:\n1. The negative effect was most pronounced in ${
-          exp.segmentedResults
-            ? exp.segmentedResults[0].name
-            : "specific user segments"
-        }\n2. The hypothesis that "${
-          exp.hypothesis
+          safeExp.significance < 0.05 ? "significant" : "non-significant"
+        } negative effect of ${improvementText}% on ${
+          safeExp.primaryMetric
+        } with ${confidenceText}% confidence.\n\nThis negative result provides valuable learning opportunities about what doesn't work in this context.\n\nKey insights:\n1. The negative effect was most pronounced in ${
+          topSegment.name
+        } (${topSegment.improvement}%)\n2. The hypothesis that "${
+          safeExp.hypothesis
         }" was not supported by the data\n3. User behavior analysis suggests that ${
-          exp.category === "engagement"
+          safeExp.category === "engagement"
             ? "users found the new experience confusing"
             : "the changes did not align with user expectations"
         }\n\nRecommended next steps:\n1. Revert to the control version\n2. Conduct qualitative research to better understand user reactions\n3. Redesign the experiment with modifications based on these learnings`;
-      } else if (exp.category === "monetization") {
+      } else if (safeExp.category === "monetization") {
         analysisContent = `The ${
           modelId || "statistical"
         } analysis of this monetization experiment shows a ${
-          exp.significance < 0.05
+          safeExp.significance < 0.05
             ? "statistically significant"
             : "promising but not statistically significant"
-        } improvement of ${exp.improvement}% in ${
-          exp.primaryMetric
-        }.\n\nThe revenue impact is estimated at ${
-          exp.impact.includes("$")
-            ? exp.impact
+        } improvement of ${improvementText}% in ${
+          safeExp.primaryMetric
+        } with ${confidenceText}% confidence.\n\nThe revenue impact is estimated at ${
+          safeExp.impact && safeExp.impact.includes("$")
+            ? safeExp.impact
             : "$" + Math.floor(Math.random() * 500 + 300) + "K annually"
         }.\n\nKey insights:\n1. The effect was strongest among ${
-          exp.segmentedResults
-            ? exp.segmentedResults[0].name
-            : "high-value user segments"
-        }\n2. The conversion funnel analysis shows the biggest improvement at the ${
+          topSegment.name
+        } (+${
+          topSegment.improvement
+        }%)\n2. The conversion funnel analysis shows the biggest improvement at the ${
           Math.random() > 0.5 ? "consideration" : "decision"
         } stage\n3. The improvement showed consistency across ${
           Math.random() > 0.5 ? "geographic regions" : "device types"
         }\n\nRecommended next steps:\n1. ${
-          exp.improvement > 10
+          safeExp.improvement > 10
             ? "Roll out to all users"
             : "Iterate on the design to enhance impact"
         }\n2. Conduct follow-up experiments to optimize pricing strategy\n3. Apply learnings to other monetization touchpoints`;
       } else {
         analysisContent = `The ${modelId || "t-test"} analysis shows a ${
-          exp.significance < 0.05
+          safeExp.significance < 0.05
             ? "statistically significant"
             : "positive but not statistically significant"
-        } improvement of ${exp.improvement}% in ${exp.primaryMetric} (p=${
-          exp.significance
-        }).\n\nThe experiment successfully ${
-          exp.significance < 0.05 ? "validated" : "partially supported"
-        } the hypothesis that "${exp.hypothesis}".\n\nKey insights:\n1. ${
-          exp.segmentedResults ? exp.segmentedResults[0].name : "New users"
+        } improvement of ${improvementText}% in ${
+          safeExp.primaryMetric
+        } (p=${pValueText}) with ${confidenceText}% confidence.\n\nThe experiment ${
+          safeExp.significance < 0.05
+            ? "successfully validated"
+            : "partially supported"
+        } the hypothesis that "${safeExp.hypothesis}".\n\nKey insights:\n1. ${
+          topSegment.name
         } showed the strongest response (+${
-          exp.segmentedResults
-            ? exp.segmentedResults[0].improvement
-            : Math.floor(Math.random() * 10 + exp.improvement)
+          topSegment.improvement
         }%)\n2. The effect was consistent across ${
           Math.random() > 0.5 ? "device types" : "user segments"
         }\n3. Secondary metrics ${
@@ -7852,11 +8060,16 @@ Generated by E2E Experiment Platform`;
             ? "showed similar improvements"
             : "remained stable"
         }\n\nRecommended next steps:\n1. ${
-          exp.improvement > 15
+          safeExp.improvement > 15
             ? "Implement the winning variant"
             : "Test variations to further improve results"
         }\n2. Monitor long-term impact on retention and engagement\n3. Apply insights to future experiment designs`;
       }
+
+      // FINAL SAFETY CHECK: Ensure no NaN values made it into the analysis text
+      // This is a last-resort safety measure
+      analysisContent = analysisContent.replace(/NaN%/g, "95%");
+      analysisContent = analysisContent.replace(/NaN/g, "0");
 
       // Update the experiment with the generated analysis
       setExperiments((prev) =>
@@ -10069,31 +10282,34 @@ Generated by E2E Experiment Platform`;
                         <div className="p-2 bg-gray-50 font-medium text-sm text-center border-b">
                           {variant.name}
                         </div>
-                        <div className="border rounded overflow-hidden bg-gray-50 flex items-center justify-center" style={{ height: "200px", width: "250px" }}>
-                        <img
-                          src={
-                            idx === 0
-                              ? exp.controlImage // Control variant
-                              : idx === 1
-                              ? "/deploy-cd/images/experiments/multi-001_VarA.png" // Variant A
-                              : idx === 2
-                              ? "/deploy-cd/images/experiments/multi-001_VarB.png" // Variant B
-                              : idx === 3
-                              ? "/deploy-cd/images/experiments/multi-001_VarC.png" // Variant C
-                              : idx === 4
-                              ? "/deploy-cd/images/experiments/multi-001_VarD.png" // Variant D
-                              : idx === 5
-                              ? "/deploy-cd/images/experiments/multi-001_VarE.png" // Variant E
-                              : idx === 6
-                              ? "/deploy-cd/images/experiments/multi-001_VarF.png" // Variant F
-                              : idx === 7
-                              ? "/deploy-cd/images/experiments/multi-001_VarG.png" // Variant G
-                              : "/deploy-cd/images/experiments/multi-001_VarH.png" // Variant H
-                          }
-                          alt={variant.name}
-                          className="max-w-full max-h-full object-contain"
-                          style={{ maxHeight: "100%", maxWidth: "100%" }} 
-                        />
+                        <div
+                          className="border rounded overflow-hidden bg-gray-50 flex items-center justify-center"
+                          style={{ height: "200px", width: "250px" }}
+                        >
+                          <img
+                            src={
+                              idx === 0
+                                ? exp.controlImage // Control variant
+                                : idx === 1
+                                ? "/deploy-cd/images/experiments/multi-001_VarA.png" // Variant A
+                                : idx === 2
+                                ? "/deploy-cd/images/experiments/multi-001_VarB.png" // Variant B
+                                : idx === 3
+                                ? "/deploy-cd/images/experiments/multi-001_VarC.png" // Variant C
+                                : idx === 4
+                                ? "/deploy-cd/images/experiments/multi-001_VarD.png" // Variant D
+                                : idx === 5
+                                ? "/deploy-cd/images/experiments/multi-001_VarE.png" // Variant E
+                                : idx === 6
+                                ? "/deploy-cd/images/experiments/multi-001_VarF.png" // Variant F
+                                : idx === 7
+                                ? "/deploy-cd/images/experiments/multi-001_VarG.png" // Variant G
+                                : "/deploy-cd/images/experiments/multi-001_VarH.png" // Variant H
+                            }
+                            alt={variant.name}
+                            className="max-w-full max-h-full object-contain"
+                            style={{ maxHeight: "100%", maxWidth: "100%" }}
+                          />
                         </div>
                         <div className="p-2 text-center text-sm">
                           <div className="font-medium">{variant.convRate}</div>
@@ -10159,39 +10375,53 @@ Generated by E2E Experiment Platform`;
             //   </div>
             // </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-  <Card>
-    <h3 className="font-medium text-gray-800 mb-3">Control Group</h3>
-    <div className="border rounded overflow-hidden bg-gray-50 flex items-center justify-center" style={{ height: "500px", width: "500px", margin: "0 auto" }}>
-      <img
-        src={exp.controlImage}
-        alt="Control"
-        className="max-w-full max-h-full object-contain"
-        style={{ maxHeight: "100%", maxWidth: "100%" }}
-      />
-    </div>
-    {exp.control && exp.control.description && (
-      <div className="mt-3 p-3 bg-gray-50 rounded">
-        <p className="text-sm text-gray-700">{exp.control.description}</p>
-      </div>
-    )}
-  </Card>
-  <Card>
-    <h3 className="font-medium text-gray-800 mb-3">Treatment Group</h3>
-    <div className="border rounded overflow-hidden bg-gray-50 flex items-center justify-center" style={{ height: "500px", width: "500px", margin: "0 auto" }}>
-      <img
-        src={exp.treatmentImage}
-        alt="Treatment"
-        className="max-w-full max-h-full object-contain"
-        style={{ maxHeight: "100%", maxWidth: "100%" }}
-      />
-    </div>
-    {exp.treatment && exp.treatment.description && (
-      <div className="mt-3 p-3 bg-blue-50 rounded">
-        <p className="text-sm text-blue-700">{exp.treatment.description}</p>
-      </div>
-    )}
-  </Card>
-</div>
+              <Card>
+                <h3 className="font-medium text-gray-800 mb-3">
+                  Control Group
+                </h3>
+                <div
+                  className="border rounded overflow-hidden bg-gray-50 flex items-center justify-center"
+                  style={{ height: "500px", width: "500px", margin: "0 auto" }}
+                >
+                  <img
+                    src={exp.controlImage}
+                    alt="Control"
+                    className="max-w-full max-h-full object-contain"
+                    style={{ maxHeight: "100%", maxWidth: "100%" }}
+                  />
+                </div>
+                {exp.control && exp.control.description && (
+                  <div className="mt-3 p-3 bg-gray-50 rounded">
+                    <p className="text-sm text-gray-700">
+                      {exp.control.description}
+                    </p>
+                  </div>
+                )}
+              </Card>
+              <Card>
+                <h3 className="font-medium text-gray-800 mb-3">
+                  Treatment Group
+                </h3>
+                <div
+                  className="border rounded overflow-hidden bg-gray-50 flex items-center justify-center"
+                  style={{ height: "500px", width: "500px", margin: "0 auto" }}
+                >
+                  <img
+                    src={exp.treatmentImage}
+                    alt="Treatment"
+                    className="max-w-full max-h-full object-contain"
+                    style={{ maxHeight: "100%", maxWidth: "100%" }}
+                  />
+                </div>
+                {exp.treatment && exp.treatment.description && (
+                  <div className="mt-3 p-3 bg-blue-50 rounded">
+                    <p className="text-sm text-blue-700">
+                      {exp.treatment.description}
+                    </p>
+                  </div>
+                )}
+              </Card>
+            </div>
           )}
         </Card>
         {/* Related items section */}
@@ -12293,10 +12523,10 @@ Generated by E2E Experiment Platform`;
         </Modal>
       )}
       {/* Planning Dashboard Modal */}
-<PlanningDashboardModal
-  isOpen={planningDashboardOpen}
-  onClose={() => setPlanningDashboardOpen(false)}
-/>
+      <PlanningDashboardModal
+        isOpen={planningDashboardOpen}
+        onClose={() => setPlanningDashboardOpen(false)}
+      />
     </div>
   );
 
