@@ -3915,47 +3915,120 @@ const OKRSelector = ({ onChange, selectedOKRs = [], okrData = [] }) => {
 };
 
 // Power Calculator Component
-const PowerCalculator = ({ onCalculate }) => {
-  const [testType, setTestType] = useState("traditional");
-  const [effectSize, setEffectSize] = useState("");
-  const [stdDev, setStdDev] = useState("");
+const PowerCalculator = ({
+  onCalculate,
+  experimentType = "traditional",
+  variantCount = 2,
+}) => {
+  const [testType, setTestType] = useState(experimentType);
+  const [effectSize, setEffectSize] = useState("10");
+  const [stdDev, setStdDev] = useState("1");
+  const [baselineRate, setBaselineRate] = useState("2.5");
   const [power, setPower] = useState(0.8);
   const [alpha, setAlpha] = useState(0.05);
   const [sampleSize, setSampleSize] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [variants, setVariants] = useState(variantCount);
+  const [totalSampleSize, setTotalSampleSize] = useState(null);
+
+  // Add effect to recalculate when any input changes
+  useEffect(() => {
+    if (effectSize && (stdDev || baselineRate)) {
+      calculateSampleSize();
+    }
+  }, [testType, effectSize, stdDev, baselineRate, power, alpha, variants]);
 
   const calculateSampleSize = () => {
     setLoading(true);
 
-    // Simulate calculation delay
+    // Short timeout to show the loading state
     setTimeout(() => {
-      const zAlpha = 1.96; // For 95% confidence
-      const zBeta = 0.84; // For 80% power
-      const sigma = parseFloat(stdDev) || 1;
-      const d = parseFloat(effectSize) || 0.1;
+      // Calculate differently based on test type
+      let baseN;
 
-      let baseN = ((zAlpha + zBeta) ** 2 * sigma ** 2) / d ** 2;
-
-      // Adjustments based on test type
       if (testType === "multivariate") {
-        baseN *= 1.5;
+        // For multivariate, we need to account for multiple comparisons
+        const zAlpha = 1.96; // For 95% confidence
+        const zBeta = 0.84; // For 80% power
+        const sigma = parseFloat(stdDev) || 1;
+        const d = parseFloat(effectSize) / 100 || 0.1; // Convert from percentage
+
+        // Calculate base sample size
+        baseN = ((zAlpha + zBeta) ** 2 * sigma ** 2) / d ** 2;
+
+        // Adjust for number of variants (Bonferroni correction)
+        // Each variant adds a comparison against control
+        const comparisons = Math.max(1, variants - 1);
+
+        // Adjust alpha for multiple comparisons
+        const adjustedAlpha = alpha / comparisons;
+
+        // Recalculate with adjusted alpha
+        const zAdjustedAlpha = 1.96 + 0.1 * Math.log(comparisons); // Approximation
+        baseN = ((zAdjustedAlpha + zBeta) ** 2 * sigma ** 2) / d ** 2;
+
+        // Apply a multiplier based on variant count
+        baseN *= 1 + comparisons * 0.1;
       } else if (testType === "nontraditional") {
-        baseN *= 1.2;
+        // Non-parametric calculations
+        const zAlpha = 1.96;
+        const zBeta = 0.84;
+        const base = parseFloat(baselineRate) / 100;
+        const mde = parseFloat(effectSize) / 100;
+
+        // Calculate using baseline conversion and MDE
+        const p1 = base;
+        const p2 = base * (1 + mde);
+        const pBar = (p1 + p2) / 2;
+
+        baseN =
+          (2 * pBar * (1 - pBar) * (zAlpha + zBeta) ** 2) / (p2 - p1) ** 2;
+        baseN *= 1.2; // Add 20% for non-parametric adjustment
+      } else {
+        // Traditional A/B test calculation
+        const zAlpha = 1.96;
+        const zBeta = 0.84;
+        const base = parseFloat(baselineRate) / 100;
+        const mde = parseFloat(effectSize) / 100;
+
+        // Standard calculation for conversion rate tests
+        const p1 = base;
+        const p2 = base * (1 + mde);
+        const pBar = (p1 + p2) / 2;
+
+        baseN =
+          (2 * pBar * (1 - pBar) * (zAlpha + zBeta) ** 2) / (p2 - p1) ** 2;
       }
 
       const result = Math.ceil(baseN);
       setSampleSize(result);
+
+      // Calculate total sample size
+      let total;
+      if (testType === "multivariate") {
+        // For multivariate, need one control group and multiple treatment groups
+        total = result * variants;
+      } else {
+        // For traditional A/B tests, need one control and one treatment
+        total = result * 2;
+      }
+      setTotalSampleSize(total);
+
       setLoading(false);
 
       if (onCalculate) {
         onCalculate({
           sampleSize: result,
-          effectSize: d,
+          totalSampleSize: total,
+          effectSize: parseFloat(effectSize),
+          baselineRate: parseFloat(baselineRate),
           power,
           alpha,
+          testType,
+          variants: variants,
         });
       }
-    }, 800);
+    }, 500);
   };
 
   return (
@@ -3973,38 +4046,73 @@ const PowerCalculator = ({ onCalculate }) => {
           <option value="nontraditional">Non-Traditional Test</option>
           <option value="multivariate">Multivariate Test</option>
         </select>
+
+        <p className="text-xs text-gray-500 mt-1">
+          {testType === "traditional"
+            ? "Standard A/B testing comparing control vs one treatment"
+            : testType === "multivariate"
+            ? "Tests multiple variants simultaneously with Bonferroni correction"
+            : "Non-parametric testing for non-normal distributions"}
+        </p>
+      </div>
+
+      {testType === "multivariate" && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Number of Variants (including control)
+          </label>
+          <input
+            type="number"
+            min="2"
+            max="10"
+            value={variants}
+            onChange={(e) => setVariants(parseInt(e.target.value) || 2)}
+            className="w-full p-2 border rounded"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            More variants will require larger sample sizes to maintain
+            statistical power
+          </p>
+        </div>
+      )}
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          {testType === "traditional" || testType === "multivariate"
+            ? "Baseline Conversion Rate (%)"
+            : "Baseline Metric Value"}
+        </label>
+        <input
+          type="number"
+          step="0.1"
+          min="0.1"
+          max="99.9"
+          value={baselineRate}
+          onChange={(e) => setBaselineRate(e.target.value)}
+          className="w-full p-2 border rounded"
+          placeholder="e.g. 2.5 for 2.5%"
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Your current conversion rate or metric before any changes
+        </p>
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Expected Effect Size
-          <span className="text-xs text-gray-500 ml-1">(0.1-1.0)</span>
+          Minimum Detectable Effect (%)
         </label>
         <input
           type="number"
-          step="0.01"
-          min="0.01"
-          max="1.0"
+          step="0.1"
+          min="0.1"
           value={effectSize}
           onChange={(e) => setEffectSize(e.target.value)}
           className="w-full p-2 border rounded"
-          placeholder="e.g. 0.2 (small), 0.5 (medium), 0.8 (large)"
+          placeholder="e.g. 10 for 10%"
         />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Standard Deviation
-        </label>
-        <input
-          type="number"
-          step="0.01"
-          min="0.01"
-          value={stdDev}
-          onChange={(e) => setStdDev(e.target.value)}
-          className="w-full p-2 border rounded"
-          placeholder="e.g. 1.0"
-        />
+        <p className="text-xs text-gray-500 mt-1">
+          The smallest effect you want to be able to detect with confidence
+        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -4013,32 +4121,37 @@ const PowerCalculator = ({ onCalculate }) => {
             Desired Power
             <span className="text-xs text-gray-500 ml-1">(0-1)</span>
           </label>
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            max="1"
-            value={power}
-            onChange={(e) => setPower(e.target.value)}
+          <select
             className="w-full p-2 border rounded"
-            placeholder="e.g. 0.8"
-          />
+            value={power}
+            onChange={(e) => setPower(parseFloat(e.target.value))}
+          >
+            <option value="0.7">70%</option>
+            <option value="0.8">80% (Recommended)</option>
+            <option value="0.9">90%</option>
+            <option value="0.95">95%</option>
+          </select>
+          <p className="text-xs text-gray-500 mt-1">
+            Probability of detecting an effect if it exists
+          </p>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Alpha (Significance)
             <span className="text-xs text-gray-500 ml-1">(0-1)</span>
           </label>
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            max="1"
-            value={alpha}
-            onChange={(e) => setAlpha(e.target.value)}
+          <select
             className="w-full p-2 border rounded"
-            placeholder="e.g. 0.05"
-          />
+            value={alpha}
+            onChange={(e) => setAlpha(parseFloat(e.target.value))}
+          >
+            <option value="0.1">0.1 (90% confidence)</option>
+            <option value="0.05">0.05 (95% confidence)</option>
+            <option value="0.01">0.01 (99% confidence)</option>
+          </select>
+          <p className="text-xs text-gray-500 mt-1">
+            Acceptable probability of false positive
+          </p>
         </div>
       </div>
 
@@ -4060,16 +4173,46 @@ const PowerCalculator = ({ onCalculate }) => {
       {sampleSize !== null && (
         <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
           <h3 className="font-medium text-green-800 mb-2">Results</h3>
-          <div className="flex justify-between items-center">
-            <span className="text-green-700">Recommended Sample Size:</span>
-            <span className="text-2xl font-bold text-green-700">
-              {sampleSize} per variant
-            </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h4 className="text-sm font-medium text-green-700">
+                Per Variant
+              </h4>
+              <div className="flex justify-between items-center">
+                <span className="text-green-700">Recommended Sample Size:</span>
+                <span className="text-2xl font-bold text-green-700">
+                  {sampleSize.toLocaleString()}
+                </span>
+              </div>
+            </div>
+            <div>
+              <h4 className="text-sm font-medium text-green-700">Total</h4>
+              <div className="flex justify-between items-center">
+                <span className="text-green-700">Total Sample Size:</span>
+                <span className="text-2xl font-bold text-green-700">
+                  {totalSampleSize.toLocaleString()}
+                </span>
+              </div>
+            </div>
           </div>
-          <p className="text-sm text-green-600 mt-2">
-            With {sampleSize} samples per variant, you have a {power * 100}%
-            chance of detecting an effect size of {effectSize} if it exists.
-          </p>
+
+          <div className="mt-3 p-3 bg-white rounded border border-green-100">
+            <p className="text-sm text-green-600">
+              With {sampleSize.toLocaleString()} samples per variant (
+              {totalSampleSize.toLocaleString()} total), you have a{" "}
+              {power * 100}% chance of detecting an effect size of {effectSize}%{" "}
+              {testType === "multivariate" ? `across ${variants} variants` : ""}{" "}
+              if it exists.
+            </p>
+
+            {testType === "multivariate" && (
+              <p className="text-sm text-green-600 mt-2">
+                <strong>Note:</strong> For multivariate tests, the calculation
+                includes a Bonferroni correction to account for {variants - 1}{" "}
+                comparisons against the control.
+              </p>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -4078,6 +4221,41 @@ const PowerCalculator = ({ onCalculate }) => {
 
 // Variant Designer Component (continued)
 const VariantDesigner = ({ control, treatment, onChange }) => {
+  const [controlPreview, setControlPreview] = useState(
+    control.imagePreview || null
+  );
+  const [treatmentPreview, setTreatmentPreview] = useState(
+    treatment.imagePreview || null
+  );
+
+  const handleControlFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setControlPreview(e.target.result);
+        handleControlChange("imagePreview", e.target.result);
+      };
+      reader.readAsDataURL(file);
+
+      handleControlChange("imageFile", file);
+    }
+  };
+
+  const handleTreatmentFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setTreatmentPreview(e.target.result);
+        handleTreatmentChange("imagePreview", e.target.result);
+      };
+      reader.readAsDataURL(file);
+
+      handleTreatmentChange("imageFile", file);
+    }
+  };
+
   const handleControlChange = (field, value) => {
     onChange({
       control: { ...control, [field]: value },
@@ -4139,14 +4317,43 @@ const VariantDesigner = ({ control, treatment, onChange }) => {
 
         <div className="mb-3">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Image Preview
+            Control Image
           </label>
           <div className="border rounded p-2 bg-white">
-            <img
-              src="/api/placeholder/400/200?text=Control+Variant"
-              alt="Control Variant"
-              className="w-full h-auto"
-            />
+            {controlPreview ? (
+              <div className="relative">
+                <img
+                  src={controlPreview}
+                  alt="Control Variant"
+                  className="w-full h-auto max-h-48 object-contain"
+                />
+                <div className="absolute top-2 right-2">
+                  <button
+                    className="p-1 bg-red-100 text-red-700 rounded-full hover:bg-red-200"
+                    onClick={() => {
+                      setControlPreview(null);
+                      handleControlChange("imageFile", null);
+                      handleControlChange("imagePreview", null);
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-48 bg-gray-50">
+                <p className="text-gray-500 mb-2">No image uploaded</p>
+                <label className="px-4 py-2 bg-blue-50 text-blue-700 rounded cursor-pointer hover:bg-blue-100">
+                  Upload Image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleControlFileChange}
+                  />
+                </label>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -4202,14 +4409,43 @@ const VariantDesigner = ({ control, treatment, onChange }) => {
 
         <div className="mb-3">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Image Preview
+            Treatment Image
           </label>
           <div className="border rounded p-2 bg-white">
-            <img
-              src="/api/placeholder/400/200?text=Treatment+Variant"
-              alt="Treatment Variant"
-              className="w-full h-auto"
-            />
+            {treatmentPreview ? (
+              <div className="relative">
+                <img
+                  src={treatmentPreview}
+                  alt="Treatment Variant"
+                  className="w-full h-auto max-h-48 object-contain"
+                />
+                <div className="absolute top-2 right-2">
+                  <button
+                    className="p-1 bg-red-100 text-red-700 rounded-full hover:bg-red-200"
+                    onClick={() => {
+                      setTreatmentPreview(null);
+                      handleTreatmentChange("imageFile", null);
+                      handleTreatmentChange("imagePreview", null);
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-48 bg-gray-50">
+                <p className="text-gray-500 mb-2">No image uploaded</p>
+                <label className="px-4 py-2 bg-blue-50 text-blue-700 rounded cursor-pointer hover:bg-blue-100">
+                  Upload Image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleTreatmentFileChange}
+                  />
+                </label>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -4219,16 +4455,31 @@ const VariantDesigner = ({ control, treatment, onChange }) => {
 
 // Multivariate Designer Component
 const MultivariateDesigner = ({ variants, onChange }) => {
-  // Add a new variant
+  // Add a state to track available elements
+  const [availableElements, setAvailableElements] = useState([
+    { id: "headline", name: "Headline" },
+    { id: "cta", name: "Call to Action" },
+    { id: "layout", name: "Layout" },
+    { id: "image", name: "Image" },
+    { id: "color", name: "Color Scheme" },
+    { id: "typography", name: "Typography" },
+  ]);
+
+  // Add a new variant with unique ID
   const addVariant = () => {
-    const newVariantId = `variant${variants.length}`;
+    const timestamp = Date.now();
+    const newVariantId = `variant-${timestamp}`;
+    const newVariantNumber = variants.length;
+
     onChange([
       ...variants,
       {
         id: newVariantId,
-        name: `Variant ${variants.length}`,
+        name: `Variant ${newVariantNumber}`,
         description: "",
         elements: [],
+        imagePreview: null,
+        imageFile: null,
       },
     ]);
   };
@@ -4243,6 +4494,73 @@ const MultivariateDesigner = ({ variants, onChange }) => {
     onChange(
       variants.map((v) => (v.id === variantId ? { ...v, [field]: value } : v))
     );
+  };
+
+  // Add element toggle handler
+  const toggleElement = (variantId, elementId) => {
+    const variant = variants.find((v) => v.id === variantId);
+    if (!variant) return;
+
+    const elements = [...(variant.elements || [])];
+    const elementIndex = elements.indexOf(elementId);
+
+    if (elementIndex === -1) {
+      // Add element
+      elements.push(elementId);
+    } else {
+      // Remove element
+      elements.splice(elementIndex, 1);
+    }
+
+    updateVariant(variantId, "elements", elements);
+  };
+
+  // Handle image upload for variants
+  const handleVariantImageUpload = (variantId, e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        updateVariant(variantId, "imagePreview", e.target.result);
+        updateVariant(variantId, "imageFile", file);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Remove variant image
+  const removeVariantImage = (variantId) => {
+    updateVariant(variantId, "imagePreview", null);
+    updateVariant(variantId, "imageFile", null);
+  };
+
+  // Validate variants to ensure at least one element differs
+  const validateVariants = () => {
+    // Check if any variant has elements
+    const hasElementChanges = variants
+      .slice(1)
+      .some((v) => Array.isArray(v.elements) && v.elements.length > 0);
+
+    // Check if any variant has an image
+    const hasImageChanges = variants
+      .slice(1)
+      .some((v) => v.imagePreview !== null);
+
+    return hasElementChanges || hasImageChanges;
+  };
+
+  // Generate variant preview text based on modified elements
+  const getVariantSummary = (variant) => {
+    if (!variant.elements || variant.elements.length === 0) {
+      return "No modifications";
+    }
+
+    return `Modified: ${variant.elements
+      .map((el) => {
+        const element = availableElements.find((e) => e.id === el);
+        return element ? element.name : el;
+      })
+      .join(", ")}`;
   };
 
   return (
@@ -4285,14 +4603,41 @@ const MultivariateDesigner = ({ variants, onChange }) => {
 
           <div className="mb-3">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Image Preview
+              Control Image
             </label>
             <div className="border rounded p-2 bg-white">
-              <img
-                src="/api/placeholder/400/150?text=Control+Variant"
-                alt="Control Variant"
-                className="w-full h-auto"
-              />
+              {variants[0]?.imagePreview ? (
+                <div className="relative">
+                  <img
+                    src={variants[0].imagePreview}
+                    alt="Control Variant"
+                    className="w-full h-auto max-h-48 object-contain"
+                  />
+                  <div className="absolute top-2 right-2">
+                    <button
+                      className="p-1 bg-red-100 text-red-700 rounded-full hover:bg-red-200"
+                      onClick={() => removeVariantImage(variants[0].id)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-48 bg-gray-50">
+                  <p className="text-gray-500 mb-2">No image uploaded</p>
+                  <label className="px-4 py-2 bg-blue-50 text-blue-700 rounded cursor-pointer hover:bg-blue-100">
+                    Upload Image
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) =>
+                        handleVariantImageUpload(variants[0].id, e)
+                      }
+                    />
+                  </label>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -4341,105 +4686,72 @@ const MultivariateDesigner = ({ variants, onChange }) => {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Changes from Control
               </label>
-              <div className="space-y-2">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`element1-${variant.id}`}
-                    checked={variant.elements?.includes("headline")}
-                    onChange={(e) => {
-                      const elements = [...(variant.elements || [])];
-                      if (e.target.checked) {
-                        elements.push("headline");
-                      } else {
-                        const index = elements.indexOf("headline");
-                        if (index !== -1) elements.splice(index, 1);
-                      }
-                      updateVariant(variant.id, "elements", elements);
-                    }}
-                    className="mr-2"
-                  />
-                  <label htmlFor={`element1-${variant.id}`} className="text-sm">
-                    Modified Headline
-                  </label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`element2-${variant.id}`}
-                    checked={variant.elements?.includes("cta")}
-                    onChange={(e) => {
-                      const elements = [...(variant.elements || [])];
-                      if (e.target.checked) {
-                        elements.push("cta");
-                      } else {
-                        const index = elements.indexOf("cta");
-                        if (index !== -1) elements.splice(index, 1);
-                      }
-                      updateVariant(variant.id, "elements", elements);
-                    }}
-                    className="mr-2"
-                  />
-                  <label htmlFor={`element2-${variant.id}`} className="text-sm">
-                    Modified CTA
-                  </label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`element3-${variant.id}`}
-                    checked={variant.elements?.includes("layout")}
-                    onChange={(e) => {
-                      const elements = [...(variant.elements || [])];
-                      if (e.target.checked) {
-                        elements.push("layout");
-                      } else {
-                        const index = elements.indexOf("layout");
-                        if (index !== -1) elements.splice(index, 1);
-                      }
-                      updateVariant(variant.id, "elements", elements);
-                    }}
-                    className="mr-2"
-                  />
-                  <label htmlFor={`element3-${variant.id}`} className="text-sm">
-                    Modified Layout
-                  </label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`element4-${variant.id}`}
-                    checked={variant.elements?.includes("image")}
-                    onChange={(e) => {
-                      const elements = [...(variant.elements || [])];
-                      if (e.target.checked) {
-                        elements.push("image");
-                      } else {
-                        const index = elements.indexOf("image");
-                        if (index !== -1) elements.splice(index, 1);
-                      }
-                      updateVariant(variant.id, "elements", elements);
-                    }}
-                    className="mr-2"
-                  />
-                  <label htmlFor={`element4-${variant.id}`} className="text-sm">
-                    Modified Image
-                  </label>
-                </div>
+              <div className="grid grid-cols-2 gap-2">
+                {availableElements.map((element) => (
+                  <div key={element.id} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`element-${element.id}-${variant.id}`}
+                      checked={variant.elements?.includes(element.id) || false}
+                      onChange={() => toggleElement(variant.id, element.id)}
+                      className="mr-2"
+                    />
+                    <label
+                      htmlFor={`element-${element.id}-${variant.id}`}
+                      className="text-sm"
+                    >
+                      Modified {element.name}
+                    </label>
+                  </div>
+                ))}
               </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Select which elements are modified in this variant
+              </p>
             </div>
 
             <div className="mb-3">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Image Preview
+                Variant Image
               </label>
               <div className="border rounded p-2 bg-white">
-                <img
-                  src={`/api/placeholder/400/150?text=Variant+${index + 1}`}
-                  alt={`Variant ${index + 1}`}
-                  className="w-full h-auto"
-                />
+                {variant.imagePreview ? (
+                  <div className="relative">
+                    <img
+                      src={variant.imagePreview}
+                      alt={variant.name}
+                      className="w-full h-auto max-h-48 object-contain"
+                    />
+                    <div className="absolute top-2 right-2">
+                      <button
+                        className="p-1 bg-red-100 text-red-700 rounded-full hover:bg-red-200"
+                        onClick={() => removeVariantImage(variant.id)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-48 bg-gray-50">
+                    <p className="text-gray-500 mb-2">No image uploaded</p>
+                    <label className="px-4 py-2 bg-blue-50 text-blue-700 rounded cursor-pointer hover:bg-blue-100">
+                      Upload Image
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) =>
+                          handleVariantImageUpload(variant.id, e)
+                        }
+                      />
+                    </label>
+                  </div>
+                )}
               </div>
+            </div>
+
+            <div className="p-3 bg-blue-100 rounded text-sm text-blue-700">
+              {getVariantSummary(variant)}
             </div>
           </div>
         ))}
@@ -4462,6 +4774,13 @@ const MultivariateDesigner = ({ variants, onChange }) => {
           Note: Testing more combinations increases sample size requirements and
           analysis complexity.
         </p>
+
+        {!validateVariants() && variants.length > 1 && (
+          <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700">
+            Warning: At least one variant must have different elements or a
+            different image from the control.
+          </div>
+        )}
       </div>
     </div>
   );
@@ -4469,12 +4788,25 @@ const MultivariateDesigner = ({ variants, onChange }) => {
 
 // Traffic Allocator Component
 const TrafficAllocator = ({ allocation, onChange, minPercentage = 5 }) => {
+  // Add state to track currently dragging variant
+  const [draggingVariant, setDraggingVariant] = useState(null);
+
+  // Update drag handlers
+  const handleDragStart = (group) => {
+    setDraggingVariant(group);
+  };
+
+  const handleDragEnd = () => {
+    setDraggingVariant(null);
+  };
+
   // Ensure allocation is valid
   const validateAllocation = (newAllocation) => {
     // Make sure all values are at least minPercentage
     const validatedAllocation = { ...newAllocation };
     const groups = Object.keys(validatedAllocation);
 
+    // First pass: enforce minimum percentages
     for (const group of groups) {
       if (validatedAllocation[group] < minPercentage) {
         validatedAllocation[group] = minPercentage;
@@ -4486,63 +4818,150 @@ const TrafficAllocator = ({ allocation, onChange, minPercentage = 5 }) => {
       (sum, val) => sum + val,
       0
     );
+
     if (total !== 100) {
-      // Scale proportionally
-      const scaleFactor = 100 / total;
-      for (const group of groups) {
-        validatedAllocation[group] = Math.round(
-          validatedAllocation[group] * scaleFactor
+      // If the sum is not 100, adjust the values proportionally
+      // We need to respect the minimum values when scaling
+
+      // Calculate how much we can adjust each group
+      const adjustableGroups = groups.filter(
+        (g) => validatedAllocation[g] > minPercentage
+      );
+
+      if (adjustableGroups.length > 0) {
+        // Calculate the total adjustable amount
+        const adjustableTotal = adjustableGroups.reduce(
+          (sum, g) => sum + (validatedAllocation[g] - minPercentage),
+          0
         );
+
+        // Calculate the target adjustable amount
+        const targetAdjustable =
+          100 - (groups.length - adjustableGroups.length) * minPercentage;
+
+        // Scale the adjustable groups
+        for (const group of adjustableGroups) {
+          const adjustableAmount = validatedAllocation[group] - minPercentage;
+          const scaledAdjustable =
+            adjustableAmount * (targetAdjustable / adjustableTotal);
+          validatedAllocation[group] = minPercentage + scaledAdjustable;
+        }
+      } else {
+        // If all groups are at minimum, we need a different approach
+        // Just distribute equally
+        const equalShare = 100 / groups.length;
+        for (const group of groups) {
+          validatedAllocation[group] = equalShare;
+        }
+      }
+
+      // Round to integers and fix any rounding errors
+      for (const group of groups) {
+        validatedAllocation[group] = Math.round(validatedAllocation[group]);
       }
 
       // Handle rounding errors
-      const newTotal = Object.values(validatedAllocation).reduce(
+      const roundedTotal = Object.values(validatedAllocation).reduce(
         (sum, val) => sum + val,
         0
       );
-      if (newTotal !== 100) {
-        const diff = 100 - newTotal;
-        // Add/subtract the difference from the largest group
-        const largestGroup = groups.reduce((a, b) =>
-          validatedAllocation[a] > validatedAllocation[b] ? a : b
+
+      if (roundedTotal !== 100) {
+        const diff = 100 - roundedTotal;
+        // Find the largest adjustable group to add/subtract the difference
+        const sortedGroups = [...groups].sort(
+          (a, b) => validatedAllocation[b] - validatedAllocation[a]
         );
-        validatedAllocation[largestGroup] += diff;
+
+        for (const group of sortedGroups) {
+          if (validatedAllocation[group] + diff >= minPercentage) {
+            validatedAllocation[group] += diff;
+            break;
+          }
+        }
       }
     }
 
     return validatedAllocation;
   };
 
+  // Enhanced slider handling with live updates
   const handleSliderChange = (group, value) => {
     // Calculate new allocation
     const newAllocation = { ...allocation };
+    const previousValue = newAllocation[group];
     newAllocation[group] = value;
 
-    // Adjust other groups proportionally
+    // Get the difference to distribute
+    const difference = previousValue - value;
+
+    // Adjust other groups proportionally based on their current allocation
     const otherGroups = Object.keys(newAllocation).filter((g) => g !== group);
     const otherTotal = otherGroups.reduce(
       (sum, g) => sum + newAllocation[g],
       0
     );
-    const targetOtherTotal = 100 - value;
 
+    // Distribute the difference proportionally
     if (otherTotal > 0) {
-      const scaleFactor = targetOtherTotal / otherTotal;
       for (const g of otherGroups) {
-        newAllocation[g] = Math.round(newAllocation[g] * scaleFactor);
+        // Calculate proportional adjustment
+        const proportion = newAllocation[g] / otherTotal;
+        const adjustment = Math.round(difference * proportion);
+
+        // Apply adjustment ensuring minimum values
+        newAllocation[g] = Math.max(
+          minPercentage,
+          newAllocation[g] + adjustment
+        );
       }
     }
 
-    onChange(validateAllocation(newAllocation));
+    // Validate to ensure total is 100% and minimums are respected
+    const validatedAllocation = validateAllocation(newAllocation);
+    onChange(validatedAllocation);
   };
 
-  const calculateColor = (percentage) => {
-    // Return a different color based on percentage
-    if (percentage < 20) return "bg-red-500";
-    if (percentage < 40) return "bg-orange-500";
-    if (percentage < 60) return "bg-yellow-500";
-    if (percentage < 80) return "bg-green-500";
-    return "bg-blue-500";
+  // Handle direct input change
+  const handleInputChange = (group, inputValue) => {
+    const value = parseInt(inputValue, 10) || minPercentage;
+    // Use the slider change handler to distribute the difference
+    handleSliderChange(group, value);
+  };
+
+  // Generate unique but consistent colors for each variant
+  const calculateColor = (group) => {
+    // Base colors for basic variants
+    const baseColors = {
+      Control: "bg-gray-500",
+      Treatment: "bg-blue-500",
+    };
+
+    // For variants beyond the basic ones, generate colors
+    if (baseColors[group]) {
+      return baseColors[group];
+    }
+
+    // For multivariate tests, generate variant colors
+    const variantNumber = parseInt(group.replace(/[^\d]/g, "")) || 0;
+    const colors = [
+      "bg-green-500",
+      "bg-purple-500",
+      "bg-yellow-500",
+      "bg-red-500",
+      "bg-indigo-500",
+      "bg-pink-500",
+      "bg-teal-500",
+      "bg-orange-500",
+      "bg-lime-500",
+    ];
+
+    return colors[variantNumber % colors.length];
+  };
+
+  // Generate text color that contrasts with background
+  const getTextColor = (group) => {
+    return "text-white"; // For simplicity, use white text on all colors
   };
 
   return (
@@ -4560,7 +4979,19 @@ const TrafficAllocator = ({ allocation, onChange, minPercentage = 5 }) => {
           <div key={group}>
             <div className="flex justify-between items-center mb-1">
               <label className="font-medium text-sm">{group}</label>
-              <span className="text-sm font-medium">{percentage}%</span>
+              <div className="flex items-center">
+                <input
+                  type="number"
+                  min={minPercentage}
+                  max={
+                    100 - (Object.keys(allocation).length - 1) * minPercentage
+                  }
+                  value={percentage}
+                  onChange={(e) => handleInputChange(group, e.target.value)}
+                  className="w-16 p-1 border rounded text-right mr-2"
+                />
+                <span className="text-sm font-medium">%</span>
+              </div>
             </div>
             <div className="relative h-8">
               <input
@@ -4572,34 +5003,85 @@ const TrafficAllocator = ({ allocation, onChange, minPercentage = 5 }) => {
                   handleSliderChange(group, parseInt(e.target.value))
                 }
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                onMouseDown={() => handleDragStart(group)}
+                onMouseUp={handleDragEnd}
+                onTouchStart={() => handleDragStart(group)}
+                onTouchEnd={handleDragEnd}
               />
               <div className="absolute inset-0 bg-gray-200 rounded h-2 top-3">
                 <div
                   className={`absolute left-0 ${calculateColor(
-                    percentage
-                  )} h-2 rounded`}
+                    group
+                  )} h-2 rounded transition-all duration-300`}
                   style={{ width: `${percentage}%` }}
                 ></div>
               </div>
+              <div
+                className={`absolute w-4 h-4 rounded-full bg-white border-2 ${
+                  draggingVariant === group
+                    ? "border-blue-600 shadow-lg"
+                    : "border-gray-400"
+                } top-1`}
+                style={{
+                  left: `calc(${percentage}% - 8px)`,
+                  transition:
+                    draggingVariant === group ? "none" : "left 0.3s ease-out",
+                }}
+              ></div>
             </div>
           </div>
         ))}
       </div>
 
       <div className="mt-6 p-4 bg-blue-50 rounded border border-blue-200">
-        <h4 className="font-medium text-blue-800 mb-2">Distribution Preview</h4>
-        <div className="h-8 bg-gray-200 rounded-lg overflow-hidden flex">
+        <h4 className="font-medium text-blue-800 mb-2">Traffic Distribution</h4>
+        <div className="h-12 bg-gray-200 rounded-lg overflow-hidden flex">
           {Object.entries(allocation).map(([group, percentage], index) => (
             <div
               key={group}
-              className={`h-full ${calculateColor(percentage)}`}
+              className={`h-full ${calculateColor(
+                group
+              )} relative group transition-all duration-300`}
               style={{ width: `${percentage}%` }}
             >
-              <div className="h-full flex items-center justify-center text-white text-xs font-medium">
-                {percentage > 10 ? `${group} ${percentage}%` : ""}
-              </div>
+              {percentage > 8 && (
+                <div
+                  className={`h-full flex items-center justify-center ${getTextColor(
+                    group
+                  )} text-xs font-medium`}
+                >
+                  {group} {percentage}%
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity"></div>
             </div>
           ))}
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          {Object.entries(allocation).map(([group, percentage]) => (
+            <div key={group} className="flex items-center">
+              <div
+                className={`w-3 h-3 rounded-full ${calculateColor(group)} mr-1`}
+              ></div>
+              <span className="text-xs text-blue-700">
+                {group}: {percentage}%
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-2 text-xs text-blue-700">
+          <p>
+            Each variant must have at least {minPercentage}% traffic allocation.
+            Total must equal 100%.
+          </p>
+          {Object.keys(allocation).length > 2 && (
+            <p className="mt-1">
+              For multivariate tests, consider allocating more traffic to the
+              control group for reliable comparisons.
+            </p>
+          )}
         </div>
       </div>
     </div>
@@ -4607,110 +5089,282 @@ const TrafficAllocator = ({ allocation, onChange, minPercentage = 5 }) => {
 };
 
 // Sample Size Calculator Component
-const SampleSizeCalculator = ({
-  conversionRate,
-  minimumDetectableEffect,
-  onChange,
-}) => {
+const SampleSizeCalculator = ({ onChange, experimentType = "traditional", initialData = {} }) => {
+  const [testType, setTestType] = useState(initialData.testType || experimentType);
+  const [effectSize, setEffectSize] = useState(initialData.effectSize || "10");
+  const [baselineRate, setBaselineRate] = useState(initialData.baselineRate || "2.5");
+  const [power, setPower] = useState(initialData.power || 0.8);
+  const [alpha, setAlpha] = useState(initialData.alpha || 0.05);
+  const [variants, setVariants] = useState(initialData.variants || 2);
   const [sampleSize, setSampleSize] = useState(null);
+  const [totalSampleSize, setTotalSampleSize] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [durationEstimate, setDurationEstimate] = useState('');
+  const [trafficEstimate, setTrafficEstimate] = useState('');
 
-  const calculate = () => {
+  // Calculate sample size whenever inputs change
+  useEffect(() => {
+    calculateSampleSize();
+  }, [testType, effectSize, baselineRate, power, alpha, variants]);
+
+  const calculateSampleSize = () => {
     setLoading(true);
 
-    // Simulate calculation
+    // Short timeout to simulate calculation
     setTimeout(() => {
-      // Basic A/B test sample size calculation
-      const baseRate = conversionRate / 100;
-      const mde = minimumDetectableEffect / 100;
-      const alpha = 0.05; // Significance level
-      const beta = 0.2; // 1 - power (power = 0.8)
+      try {
+        // Calculate differently based on test type
+        let baseN;
+        
+        if (testType === "multivariate") {
+          // For multivariate, we need to account for multiple comparisons
+          const zAlpha = 1.96; // For 95% confidence
+          const zBeta = 0.84; // For 80% power
+          const base = parseFloat(baselineRate) / 100 || 0.025;
+          const mde = parseFloat(effectSize) / 100 || 0.1;
+          
+          // Standard calculation for conversion rate tests
+          const p1 = base;
+          const p2 = base * (1 + mde);
+          const pBar = (p1 + p2) / 2;
+          
+          baseN = (2 * pBar * (1 - pBar) * (zAlpha + zBeta) ** 2) / ((p2 - p1) ** 2);
+          
+          // Adjust for number of variants (Bonferroni correction)
+          const comparisons = Math.max(1, variants - 1);
+          
+          // Adjust alpha for multiple comparisons
+          const adjustedAlpha = alpha / comparisons;
+          
+          // Recalculate with adjusted alpha
+          const zAdjustedAlpha = 1.96 + (0.1 * Math.log(comparisons)); // Approximation
+          baseN = ((zAdjustedAlpha + zBeta) ** 2 * pBar * (1 - pBar)) / ((p2 - p1) ** 2);
+          
+          // Apply a multiplier based on variant count
+          baseN *= (1 + (comparisons * 0.1));
+        }
+        else if (testType === "nontraditional") {
+          // Non-parametric calculations
+          const zAlpha = 1.96;
+          const zBeta = 0.84;
+          const base = parseFloat(baselineRate) / 100 || 0.025;
+          const mde = parseFloat(effectSize) / 100 || 0.1;
+          
+          // Calculate using baseline conversion and MDE
+          const p1 = base;
+          const p2 = base * (1 + mde);
+          const pBar = (p1 + p2) / 2;
+          
+          baseN = (2 * pBar * (1 - pBar) * (zAlpha + zBeta) ** 2) / ((p2 - p1) ** 2);
+          baseN *= 1.2; // Add 20% for non-parametric adjustment
+        }
+        else {
+          // Traditional A/B test calculation
+          const zAlpha = 1.96;
+          const zBeta = 0.84;
+          const base = parseFloat(baselineRate) / 100 || 0.025;
+          const mde = parseFloat(effectSize) / 100 || 0.1;
+          
+          // Standard calculation for conversion rate tests
+          const p1 = base;
+          const p2 = base * (1 + mde);
+          const pBar = (p1 + p2) / 2;
+          
+          baseN = (2 * pBar * (1 - pBar) * (zAlpha + zBeta) ** 2) / ((p2 - p1) ** 2);
+        }
 
-      // Z-scores
-      const zAlpha = 1.96; // For 95% confidence
-      const zBeta = 0.84; // For 80% power
+        // Round up to the nearest whole number
+        const result = Math.ceil(baseN);
+        setSampleSize(result);
+        
+        // Calculate total sample size
+        let total;
+        if (testType === "multivariate") {
+          // For multivariate, need one control group and multiple treatment groups
+          total = result * variants;
+        } else {
+          // For traditional A/B tests, need one control and one treatment
+          total = result * 2;
+        }
+        setTotalSampleSize(total);
+        
+        // Calculate estimated duration based on daily traffic and conversion rate
+        const dailyTraffic = 5000; // Assumed daily traffic
+        const conversionRate = parseFloat(baselineRate) / 100;
+        const dailyConversions = dailyTraffic * conversionRate;
+        const daysNeeded = Math.ceil(total / dailyConversions);
+        
+        // Format duration into weeks and days
+        const weeks = Math.floor(daysNeeded / 7);
+        const days = daysNeeded % 7;
+        let durationText = '';
+        
+        if (weeks > 0) {
+          durationText += `${weeks} week${weeks > 1 ? 's' : ''}`;
+          if (days > 0) {
+            durationText += ` and ${days} day${days > 1 ? 's' : ''}`;
+          }
+        } else {
+          durationText = `${days} day${days > 1 ? 's' : ''}`;
+        }
+        
+        setDurationEstimate(durationText);
+        setTrafficEstimate(`${Math.round(total * 100 / conversionRate).toLocaleString()} visitors`);
+        
+        setLoading(false);
 
-      // Sample size calculation
-      const p1 = baseRate;
-      const p2 = baseRate * (1 + mde);
-      const pBar = (p1 + p2) / 2;
-      const variance = pBar * (1 - pBar);
-
-      const n = Math.ceil(
-        (2 * variance * (zAlpha + zBeta) ** 2) / (p2 - p1) ** 2
-      );
-
-      setSampleSize(n);
-      setLoading(false);
-
-      if (onChange) {
-        onChange(n);
+        // Notify parent component
+        if (onChange) {
+          onChange({
+            sampleSize: result,
+            totalSampleSize: total,
+            effectSize: parseFloat(effectSize),
+            baselineRate: parseFloat(baselineRate),
+            power,
+            alpha,
+            testType,
+            variants,
+            durationEstimate: durationText,
+            trafficEstimate: `${Math.round(total * 100 / conversionRate).toLocaleString()} visitors`
+          });
+        }
+      } catch (error) {
+        console.error("Error calculating sample size:", error);
+        setLoading(false);
       }
     }, 500);
   };
 
-  useEffect(() => {
-    if (conversionRate && minimumDetectableEffect) {
-      calculate();
-    }
-  }, [conversionRate, minimumDetectableEffect]);
-
   return (
     <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-      <h3 className="font-medium text-gray-800 mb-2">Sample Size Calculator</h3>
+      <h3 className="font-medium text-gray-800 mb-4">Sample Size Calculator</h3>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Test Type
+          </label>
+          <select
+            className="w-full p-2 border rounded"
+            value={testType}
+            onChange={(e) => {
+              setTestType(e.target.value);
+              // Reset variants to 2 if switching from multivariate to another type
+              if (e.target.value !== "multivariate" && variants > 2) {
+                setVariants(2);
+              }
+            }}
+          >
+            <option value="traditional">Traditional A/B Test</option>
+            <option value="nontraditional">Non-Traditional Test</option>
+            <option value="multivariate">Multivariate Test</option>
+          </select>
+        </div>
+        
+        {testType === "multivariate" && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Number of Variants
+            </label>
+            <input
+              type="number"
+              min="2"
+              max="10"
+              step="1"
+              value={variants}
+              onChange={(e) => setVariants(parseInt(e.target.value) || 2)}
+              className="w-full p-2 border rounded"
+            />
+          </div>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Baseline Conversion Rate (%)
           </label>
-          <input
-            type="number"
-            min="0.1"
-            max="99.9"
-            step="0.1"
-            value={conversionRate}
-            onChange={(e) =>
-              onChange &&
-              onChange(parseFloat(e.target.value), minimumDetectableEffect)
-            }
-            className="w-full p-2 border rounded"
-          />
+          <div className="flex items-center">
+            <input
+              type="number"
+              min="0.01"
+              max="100"
+              step="0.1"
+              value={baselineRate}
+              onChange={(e) => setBaselineRate(e.target.value)}
+              className="w-full p-2 border rounded"
+            />
+            <span className="ml-2">%</span>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Your current conversion rate before testing
+          </p>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Minimum Detectable Effect (%)
           </label>
-          <input
-            type="number"
-            min="1"
-            max="100"
-            step="1"
-            value={minimumDetectableEffect}
-            onChange={(e) =>
-              onChange && onChange(conversionRate, parseFloat(e.target.value))
-            }
-            className="w-full p-2 border rounded"
-          />
+          <div className="flex items-center">
+            <input
+              type="number"
+              min="1"
+              max="100"
+              step="1"
+              value={effectSize}
+              onChange={(e) => setEffectSize(e.target.value)}
+              className="w-full p-2 border rounded"
+            />
+            <span className="ml-2">%</span>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Smallest relative change you want to reliably detect
+          </p>
         </div>
       </div>
 
-      <div className="flex justify-between items-center">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
-          <p className="text-sm text-gray-600">
-            Assumptions: 95% confidence level, 80% power
-          </p>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Statistical Power
+          </label>
+          <select
+            className="w-full p-2 border rounded"
+            value={power}
+            onChange={(e) => setPower(parseFloat(e.target.value))}
+          >
+            <option value="0.7">70%</option>
+            <option value="0.8">80% (Recommended)</option>
+            <option value="0.9">90%</option>
+            <option value="0.95">95%</option>
+          </select>
         </div>
 
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Confidence Level
+          </label>
+          <select
+            className="w-full p-2 border rounded"
+            value={1 - alpha}
+            onChange={(e) => setAlpha(1 - parseFloat(e.target.value))}
+          >
+            <option value="0.9">90%</option>
+            <option value="0.95">95% (Recommended)</option>
+            <option value="0.99">99%</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="flex justify-end mb-4">
         <button
-          onClick={calculate}
-          className="px-3 py-1.5 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm flex items-center"
+          onClick={calculateSampleSize}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center"
           disabled={loading}
         >
           {loading ? (
             <>
-              <span className="animate-spin h-3 w-3 border-2 border-t-transparent border-white rounded-full mr-1"></span>
+              <span className="animate-spin h-4 w-4 border-2 border-t-transparent border-white rounded-full mr-2"></span>
               Calculating...
             </>
           ) : (
@@ -4720,22 +5374,49 @@ const SampleSizeCalculator = ({
       </div>
 
       {sampleSize !== null && (
-        <div className="mt-4 p-3 bg-green-50 rounded border border-green-200">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-sm font-medium text-green-800">
-                Required Sample Size:
-              </p>
-              <p className="text-xs text-green-700 mt-1">
-                To detect a {minimumDetectableEffect}% effect with 80% power.
-              </p>
+        <div className="mt-4 p-4 bg-blue-50 rounded border border-blue-200">
+          <h4 className="font-medium text-blue-800 mb-3">Sample Size Requirements</h4>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white p-3 rounded border border-blue-100">
+              <p className="text-sm text-gray-600">Required per variant:</p>
+              <p className="text-xl font-bold text-blue-700">{sampleSize.toLocaleString()} conversions</p>
             </div>
-            <div className="text-2xl font-bold text-green-700">
-              {sampleSize.toLocaleString()} per variant
+            
+            <div className="bg-white p-3 rounded border border-blue-100">
+              <p className="text-sm text-gray-600">Total sample size:</p>
+              <p className="text-xl font-bold text-blue-700">{totalSampleSize.toLocaleString()} conversions</p>
             </div>
+          </div>
+          
+          <div className="mt-4 space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-blue-700">Estimated traffic required:</span>
+              <span className="text-sm font-medium text-blue-800">{trafficEstimate}</span>
+            </div>
+            
+            <div className="flex justify-between">
+              <span className="text-sm text-blue-700">Estimated duration:</span>
+              <span className="text-sm font-medium text-blue-800">{durationEstimate}</span>
+            </div>
+          </div>
+          
+          <div className="mt-4 text-xs text-blue-600">
+            <p>
+              These estimates are based on a baseline conversion rate of {baselineRate}% and assumed 
+              daily traffic of 5,000 visitors. Actual duration may vary based on traffic fluctuations.
+            </p>
           </div>
         </div>
       )}
+      
+      <div className="mt-4 p-3 bg-gray-100 rounded text-xs text-gray-600">
+        <p>
+          <strong>Note:</strong> Higher statistical power and confidence levels require larger sample sizes 
+          but provide more reliable results. For {testType === "multivariate" ? "multivariate tests" : "A/B tests"}, 
+          we recommend 80% power and 95% confidence.
+        </p>
+      </div>
     </div>
   );
 };
