@@ -5089,18 +5089,26 @@ const TrafficAllocator = ({ allocation, onChange, minPercentage = 5 }) => {
 };
 
 // Sample Size Calculator Component
-const SampleSizeCalculator = ({ onChange, experimentType = "traditional", initialData = {} }) => {
-  const [testType, setTestType] = useState(initialData.testType || experimentType);
+const SampleSizeCalculator = ({
+  onChange,
+  experimentType = "traditional",
+  initialData = {},
+}) => {
+  const [testType, setTestType] = useState(
+    initialData.testType || experimentType
+  );
   const [effectSize, setEffectSize] = useState(initialData.effectSize || "10");
-  const [baselineRate, setBaselineRate] = useState(initialData.baselineRate || "2.5");
+  const [baselineRate, setBaselineRate] = useState(
+    initialData.baselineRate || "2.5"
+  );
   const [power, setPower] = useState(initialData.power || 0.8);
   const [alpha, setAlpha] = useState(initialData.alpha || 0.05);
   const [variants, setVariants] = useState(initialData.variants || 2);
   const [sampleSize, setSampleSize] = useState(null);
   const [totalSampleSize, setTotalSampleSize] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [durationEstimate, setDurationEstimate] = useState('');
-  const [trafficEstimate, setTrafficEstimate] = useState('');
+  const [durationEstimate, setDurationEstimate] = useState("");
+  const [trafficEstimate, setTrafficEstimate] = useState("");
 
   // Calculate sample size whenever inputs change
   useEffect(() => {
@@ -5115,68 +5123,71 @@ const SampleSizeCalculator = ({ onChange, experimentType = "traditional", initia
       try {
         // Calculate differently based on test type
         let baseN;
-        
+
         if (testType === "multivariate") {
           // For multivariate, we need to account for multiple comparisons
           const zAlpha = 1.96; // For 95% confidence
           const zBeta = 0.84; // For 80% power
           const base = parseFloat(baselineRate) / 100 || 0.025;
           const mde = parseFloat(effectSize) / 100 || 0.1;
-          
+
           // Standard calculation for conversion rate tests
           const p1 = base;
           const p2 = base * (1 + mde);
           const pBar = (p1 + p2) / 2;
-          
-          baseN = (2 * pBar * (1 - pBar) * (zAlpha + zBeta) ** 2) / ((p2 - p1) ** 2);
-          
+
+          baseN =
+            (2 * pBar * (1 - pBar) * (zAlpha + zBeta) ** 2) / (p2 - p1) ** 2;
+
           // Adjust for number of variants (Bonferroni correction)
           const comparisons = Math.max(1, variants - 1);
-          
+
           // Adjust alpha for multiple comparisons
           const adjustedAlpha = alpha / comparisons;
-          
+
           // Recalculate with adjusted alpha
-          const zAdjustedAlpha = 1.96 + (0.1 * Math.log(comparisons)); // Approximation
-          baseN = ((zAdjustedAlpha + zBeta) ** 2 * pBar * (1 - pBar)) / ((p2 - p1) ** 2);
-          
+          const zAdjustedAlpha = 1.96 + 0.1 * Math.log(comparisons); // Approximation
+          baseN =
+            ((zAdjustedAlpha + zBeta) ** 2 * pBar * (1 - pBar)) /
+            (p2 - p1) ** 2;
+
           // Apply a multiplier based on variant count
-          baseN *= (1 + (comparisons * 0.1));
-        }
-        else if (testType === "nontraditional") {
+          baseN *= 1 + comparisons * 0.1;
+        } else if (testType === "nontraditional") {
           // Non-parametric calculations
           const zAlpha = 1.96;
           const zBeta = 0.84;
           const base = parseFloat(baselineRate) / 100 || 0.025;
           const mde = parseFloat(effectSize) / 100 || 0.1;
-          
+
           // Calculate using baseline conversion and MDE
           const p1 = base;
           const p2 = base * (1 + mde);
           const pBar = (p1 + p2) / 2;
-          
-          baseN = (2 * pBar * (1 - pBar) * (zAlpha + zBeta) ** 2) / ((p2 - p1) ** 2);
+
+          baseN =
+            (2 * pBar * (1 - pBar) * (zAlpha + zBeta) ** 2) / (p2 - p1) ** 2;
           baseN *= 1.2; // Add 20% for non-parametric adjustment
-        }
-        else {
+        } else {
           // Traditional A/B test calculation
           const zAlpha = 1.96;
           const zBeta = 0.84;
           const base = parseFloat(baselineRate) / 100 || 0.025;
           const mde = parseFloat(effectSize) / 100 || 0.1;
-          
+
           // Standard calculation for conversion rate tests
           const p1 = base;
           const p2 = base * (1 + mde);
           const pBar = (p1 + p2) / 2;
-          
-          baseN = (2 * pBar * (1 - pBar) * (zAlpha + zBeta) ** 2) / ((p2 - p1) ** 2);
+
+          baseN =
+            (2 * pBar * (1 - pBar) * (zAlpha + zBeta) ** 2) / (p2 - p1) ** 2;
         }
 
         // Round up to the nearest whole number
         const result = Math.ceil(baseN);
         setSampleSize(result);
-        
+
         // Calculate total sample size
         let total;
         if (testType === "multivariate") {
@@ -5187,30 +5198,34 @@ const SampleSizeCalculator = ({ onChange, experimentType = "traditional", initia
           total = result * 2;
         }
         setTotalSampleSize(total);
-        
+
         // Calculate estimated duration based on daily traffic and conversion rate
         const dailyTraffic = 5000; // Assumed daily traffic
         const conversionRate = parseFloat(baselineRate) / 100;
         const dailyConversions = dailyTraffic * conversionRate;
         const daysNeeded = Math.ceil(total / dailyConversions);
-        
+
         // Format duration into weeks and days
         const weeks = Math.floor(daysNeeded / 7);
         const days = daysNeeded % 7;
-        let durationText = '';
-        
+        let durationText = "";
+
         if (weeks > 0) {
-          durationText += `${weeks} week${weeks > 1 ? 's' : ''}`;
+          durationText += `${weeks} week${weeks > 1 ? "s" : ""}`;
           if (days > 0) {
-            durationText += ` and ${days} day${days > 1 ? 's' : ''}`;
+            durationText += ` and ${days} day${days > 1 ? "s" : ""}`;
           }
         } else {
-          durationText = `${days} day${days > 1 ? 's' : ''}`;
+          durationText = `${days} day${days > 1 ? "s" : ""}`;
         }
-        
+
         setDurationEstimate(durationText);
-        setTrafficEstimate(`${Math.round(total * 100 / conversionRate).toLocaleString()} visitors`);
-        
+        setTrafficEstimate(
+          `${Math.round(
+            (total * 100) / conversionRate
+          ).toLocaleString()} visitors`
+        );
+
         setLoading(false);
 
         // Notify parent component
@@ -5225,7 +5240,9 @@ const SampleSizeCalculator = ({ onChange, experimentType = "traditional", initia
             testType,
             variants,
             durationEstimate: durationText,
-            trafficEstimate: `${Math.round(total * 100 / conversionRate).toLocaleString()} visitors`
+            trafficEstimate: `${Math.round(
+              (total * 100) / conversionRate
+            ).toLocaleString()} visitors`,
           });
         }
       } catch (error) {
@@ -5238,7 +5255,7 @@ const SampleSizeCalculator = ({ onChange, experimentType = "traditional", initia
   return (
     <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
       <h3 className="font-medium text-gray-800 mb-4">Sample Size Calculator</h3>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -5260,7 +5277,7 @@ const SampleSizeCalculator = ({ onChange, experimentType = "traditional", initia
             <option value="multivariate">Multivariate Test</option>
           </select>
         </div>
-        
+
         {testType === "multivariate" && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -5375,46 +5392,60 @@ const SampleSizeCalculator = ({ onChange, experimentType = "traditional", initia
 
       {sampleSize !== null && (
         <div className="mt-4 p-4 bg-blue-50 rounded border border-blue-200">
-          <h4 className="font-medium text-blue-800 mb-3">Sample Size Requirements</h4>
-          
+          <h4 className="font-medium text-blue-800 mb-3">
+            Sample Size Requirements
+          </h4>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-white p-3 rounded border border-blue-100">
               <p className="text-sm text-gray-600">Required per variant:</p>
-              <p className="text-xl font-bold text-blue-700">{sampleSize.toLocaleString()} conversions</p>
+              <p className="text-xl font-bold text-blue-700">
+                {sampleSize.toLocaleString()} conversions
+              </p>
             </div>
-            
+
             <div className="bg-white p-3 rounded border border-blue-100">
               <p className="text-sm text-gray-600">Total sample size:</p>
-              <p className="text-xl font-bold text-blue-700">{totalSampleSize.toLocaleString()} conversions</p>
+              <p className="text-xl font-bold text-blue-700">
+                {totalSampleSize.toLocaleString()} conversions
+              </p>
             </div>
           </div>
-          
+
           <div className="mt-4 space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-blue-700">Estimated traffic required:</span>
-              <span className="text-sm font-medium text-blue-800">{trafficEstimate}</span>
+              <span className="text-sm text-blue-700">
+                Estimated traffic required:
+              </span>
+              <span className="text-sm font-medium text-blue-800">
+                {trafficEstimate}
+              </span>
             </div>
-            
+
             <div className="flex justify-between">
               <span className="text-sm text-blue-700">Estimated duration:</span>
-              <span className="text-sm font-medium text-blue-800">{durationEstimate}</span>
+              <span className="text-sm font-medium text-blue-800">
+                {durationEstimate}
+              </span>
             </div>
           </div>
-          
+
           <div className="mt-4 text-xs text-blue-600">
             <p>
-              These estimates are based on a baseline conversion rate of {baselineRate}% and assumed 
-              daily traffic of 5,000 visitors. Actual duration may vary based on traffic fluctuations.
+              These estimates are based on a baseline conversion rate of{" "}
+              {baselineRate}% and assumed daily traffic of 5,000 visitors.
+              Actual duration may vary based on traffic fluctuations.
             </p>
           </div>
         </div>
       )}
-      
+
       <div className="mt-4 p-3 bg-gray-100 rounded text-xs text-gray-600">
         <p>
-          <strong>Note:</strong> Higher statistical power and confidence levels require larger sample sizes 
-          but provide more reliable results. For {testType === "multivariate" ? "multivariate tests" : "A/B tests"}, 
-          we recommend 80% power and 95% confidence.
+          <strong>Note:</strong> Higher statistical power and confidence levels
+          require larger sample sizes but provide more reliable results. For{" "}
+          {testType === "multivariate" ? "multivariate tests" : "A/B tests"}, we
+          recommend 80% power and 95% confidence.
         </p>
       </div>
     </div>
@@ -7144,7 +7175,7 @@ Would you like me to help refine this further with more specific recommendations
             <h3 className="font-medium text-green-800 mb-2">
               Experiment Categories
             </h3>
-            <div className="h-44">
+            {/* <div className="h-44">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -7170,6 +7201,68 @@ Would you like me to help refine this further with more specific recommendations
                     label={({ name, percent }) =>
                       `${name} ${(percent * 100).toFixed(0)}%`
                     }
+                  >
+                    <Cell fill="#10B981" />
+                    <Cell fill="#3B82F6" />
+                    <Cell fill="#6366F1" />
+                  </Pie>
+                  <Tooltip
+                    formatter={(value) => [`${value} experiments`, ""]}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div> */}
+            <div className="h-44">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={[
+                      {
+                        name: "Monetization",
+                        value: planningStats.categoryCounts.monetization,
+                      },
+                      {
+                        name: "Engagement",
+                        value: planningStats.categoryCounts.engagement,
+                      },
+                      {
+                        name: "Satisfaction",
+                        value: planningStats.categoryCounts.satisfaction,
+                      },
+                    ]}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={70}
+                    fill="#8884d8"
+                    dataKey="value"
+                    labelLine={false}
+                    label={({
+                      name,
+                      percent,
+                      cx,
+                      cy,
+                      midAngle,
+                      innerRadius,
+                      outerRadius,
+                    }) => {
+                      const RADIAN = Math.PI / 180;
+                      const radius = outerRadius + 15;
+                      const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                      const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+                      return (
+                        <text
+                          x={x}
+                          y={y}
+                          fill="#000000"
+                          textAnchor={x > cx ? "start" : "end"}
+                          dominantBaseline="central"
+                          fontSize={10}
+                        >
+                          {`${name} ${(percent * 100).toFixed(0)}%`}
+                        </text>
+                      );
+                    }}
                   >
                     <Cell fill="#10B981" />
                     <Cell fill="#3B82F6" />
@@ -10050,6 +10143,75 @@ Generated by E2E Experiment Platform`;
                     View Details →
                   </button>
                 </div>
+                {/* Role-specific content for experiment cards */}
+                {selectedRole === "data-scientist" && (
+                  <div className="mt-3 p-2 bg-indigo-50 rounded border border-indigo-100">
+                    <div className="text-xs text-indigo-700 flex justify-between">
+                      <span>
+                        Sample: {Math.floor(Math.random() * 2000) + 1000}
+                        /variant
+                      </span>
+                      <span>
+                        Power:{" "}
+                        {exp.status ===
+                        LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase()
+                          ? `${Math.floor(Math.random() * 15) + 80}%`
+                          : "Target 80%"}
+                      </span>
+                    </div>
+                    {exp.status ===
+                      LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase() && (
+                      <div className="mt-1 text-xs text-indigo-700 flex justify-between">
+                        <span>
+                          Test:{" "}
+                          {exp.category === "causal"
+                            ? "Diff-in-Diff"
+                            : "t-test"}
+                        </span>
+                        <span>
+                          CI: [{(exp.improvement - 5).toFixed(1)}%,{" "}
+                          {(exp.improvement + 5).toFixed(1)}%]
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {selectedRole === "exec" && (
+                  <div className="mt-3 p-2 bg-amber-50 rounded border border-amber-100">
+                    <div className="text-xs text-amber-700 flex justify-between">
+                      <span>
+                        Business Impact:{" "}
+                        {exp.status ===
+                        LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase()
+                          ? exp.improvement > 10
+                            ? "High"
+                            : exp.improvement > 0
+                            ? "Medium"
+                            : "Low"
+                          : "Pending"}
+                      </span>
+                      <span>
+                        ROI:{" "}
+                        {exp.status ===
+                        LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase()
+                          ? exp.improvement > 5
+                            ? "Positive"
+                            : "Negative"
+                          : "Pending"}
+                      </span>
+                    </div>
+                    <div className="mt-1 text-xs text-amber-700">
+                      <span>
+                        Est. Annual Value:{" "}
+                        {exp.status ===
+                        LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase()
+                          ? `$${Math.abs(Math.floor(exp.improvement * 5000))}K`
+                          : "To be determined"}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </Card>
             ))}
           </div>
@@ -10248,6 +10410,167 @@ Generated by E2E Experiment Platform`;
             </p>
           </div>
         </div>
+
+        {/* Executive Summary for Executives */}
+        {selectedRole === "exec" && (
+          <Card className="bg-amber-50 border-amber-200">
+            <h3 className="font-medium text-amber-800 mb-2">
+              Executive Summary
+            </h3>
+            <p className="text-amber-700">
+              This{" "}
+              {exp.status ===
+              LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase()
+                ? "completed"
+                : exp.status ===
+                  LIFECYCLE_STAGES.EXECUTION.PAUSED.label.toLowerCase()
+                ? "paused"
+                : "in-progress"}{" "}
+              experiment in the {exp.category} category
+              {exp.improvement !== null && exp.improvement !== undefined
+                ? ` showed a ${
+                    exp.improvement > 0 ? "positive" : "negative"
+                  } impact of ${Math.abs(exp.improvement)}% on ${
+                    exp.primaryMetric
+                  }.`
+                : ` is testing the impact on ${exp.primaryMetric}.`}
+            </p>
+
+            <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <h4 className="text-sm font-medium text-amber-700">
+                  Business Impact
+                </h4>
+                <p className="text-lg font-bold text-amber-800">
+                  {exp.status ===
+                    LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase() &&
+                  exp.improvement !== null
+                    ? `${exp.improvement > 0 ? "+" : ""}$${Math.abs(
+                        Math.floor(exp.improvement * 5000)
+                      )}K`
+                    : "Pending"}
+                </p>
+                <p className="text-xs text-amber-600">
+                  Projected Annual Revenue
+                </p>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-amber-700">
+                  Strategic Alignment
+                </h4>
+                <p className="text-lg font-bold text-amber-800">
+                  {exp.okrs && exp.okrs.length > 0
+                    ? `${exp.okrs.length} OKRs`
+                    : "None"}
+                </p>
+                <p className="text-xs text-amber-600">
+                  {exp.okrs && exp.okrs.length > 0
+                    ? `Supporting ${exp.okrs.length} strategic objectives`
+                    : "Not aligned with strategic objectives"}
+                </p>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-amber-700">
+                  Decision Status
+                </h4>
+                <p className="text-lg font-bold text-amber-800">
+                  {exp.status ===
+                  LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase()
+                    ? exp.improvement > 0
+                      ? "Implement"
+                      : "Revert"
+                    : "Pending"}
+                </p>
+                <p className="text-xs text-amber-600">
+                  {exp.status ===
+                  LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase()
+                    ? exp.improvement > 0
+                      ? "Recommended for implementation"
+                      : "Recommend reverting to control"
+                    : "Awaiting completion"}
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Technical Overview for Data Scientists */}
+        {selectedRole === "data-scientist" && (
+          <Card className="bg-indigo-50 border-indigo-200">
+            <h3 className="font-medium text-indigo-800 mb-2">
+              Technical Overview
+            </h3>
+            <p className="text-indigo-700">
+              {exp.status ===
+              LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase()
+                ? `Analysis shows ${
+                    exp.significance < 0.05
+                      ? "statistically significant"
+                      : "non-significant"
+                  } results 
+        (p=${exp.significance}, confidence=${exp.confidence}%)`
+                : `Experiment in progress with ${exp.progress}% completion.`}
+            </p>
+
+            <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <h4 className="text-sm font-medium text-indigo-700">
+                  Sample Size
+                </h4>
+                <p className="text-lg font-bold text-indigo-800">
+                  {Math.floor(Math.random() * 2000) + 1000}/variant
+                </p>
+                <p className="text-xs text-indigo-600">
+                  {exp.status ===
+                  LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase()
+                    ? "Final sample collected"
+                    : "Accumulating samples"}
+                </p>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-indigo-700">
+                  Statistical Method
+                </h4>
+                <p className="text-lg font-bold text-indigo-800">
+                  {exp.category === "causal"
+                    ? "Diff-in-Diff"
+                    : exp.id === "multi-001"
+                    ? "ANOVA"
+                    : "t-test"}
+                </p>
+                <p className="text-xs text-indigo-600">
+                  {exp.id === "multi-001"
+                    ? "With Bonferroni correction"
+                    : exp.category === "causal"
+                    ? "Controlling for time effects"
+                    : "Two-tailed hypothesis test"}
+                </p>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-indigo-700">
+                  Effect Size
+                </h4>
+                <p className="text-lg font-bold text-indigo-800">
+                  {exp.status ===
+                    LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase() &&
+                  exp.improvement !== null
+                    ? `${exp.improvement > 0 ? "+" : ""}${exp.improvement}%`
+                    : "Pending"}
+                </p>
+                <p className="text-xs text-indigo-600">
+                  {exp.status ===
+                    LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase() &&
+                  exp.improvement !== null
+                    ? `95% CI: [${(exp.improvement - 5).toFixed(1)}%, ${(
+                        exp.improvement + 5
+                      ).toFixed(1)}%]`
+                    : "Awaiting results"}
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* Progress and timeline section */}
         <Card>
           <div className="flex justify-between items-center">
@@ -10319,6 +10642,132 @@ Generated by E2E Experiment Platform`;
                 </p>
               </div>
             </div>
+            {/* Role-specific content for experiment design */}
+            {selectedRole === "data-scientist" && (
+              <div className="mt-4 pt-3 border-t">
+                <h4 className="text-gray-600 font-medium">
+                  Technical Specifications
+                </h4>
+                <div className="space-y-2 mt-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-2 bg-indigo-50 rounded">
+                      <p className="text-xs text-indigo-700 font-medium">
+                        Randomization Method
+                      </p>
+                      <p className="text-sm text-indigo-800">
+                        {exp.id === "multi-001"
+                          ? "Stratified"
+                          : "Session-based"}
+                      </p>
+                    </div>
+                    <div className="p-2 bg-indigo-50 rounded">
+                      <p className="text-xs text-indigo-700 font-medium">
+                        Assignment Ratio
+                      </p>
+                      <p className="text-sm text-indigo-800">
+                        {exp.id === "multi-001"
+                          ? "Multi-variant (1:1:1:1:1)"
+                          : Object.values(exp.allocation || {}).join(":")}
+                      </p>
+                    </div>
+                    <div className="p-2 bg-indigo-50 rounded">
+                      <p className="text-xs text-indigo-700 font-medium">
+                        Statistical Test
+                      </p>
+                      <p className="text-sm text-indigo-800">
+                        {exp.category === "causal"
+                          ? "Difference-in-Differences"
+                          : exp.id === "multi-001"
+                          ? "ANOVA with Bonferroni"
+                          : "Student's t-test"}
+                      </p>
+                    </div>
+                    <div className="p-2 bg-indigo-50 rounded">
+                      <p className="text-xs text-indigo-700 font-medium">
+                        Minimum Detectable Effect
+                      </p>
+                      <p className="text-sm text-indigo-800">
+                        ±{Math.floor(Math.random() * 5) + 5}%
+                      </p>
+                    </div>
+                  </div>
+                  <div className="p-2 bg-indigo-50 rounded">
+                    <p className="text-xs text-indigo-700 font-medium">
+                      Technical Note
+                    </p>
+                    <p className="text-sm text-indigo-800">
+                      {exp.id === "causal-001"
+                        ? "Causal inference using time-based intervention; comparing pre/post periods with DID."
+                        : exp.id === "multi-001"
+                        ? "Multivariate test with Bonferroni correction for multiple comparisons."
+                        : "Running standard A/B experiment with bucketing by user ID hash."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {selectedRole === "exec" && (
+              <div className="mt-4 pt-3 border-t">
+                <h4 className="text-gray-600 font-medium">Business Context</h4>
+                <div className="space-y-2 mt-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-2 bg-amber-50 rounded">
+                      <p className="text-xs text-amber-700 font-medium">
+                        Business Priority
+                      </p>
+                      <p className="text-sm text-amber-800">
+                        {exp.category === "monetization" ? "High" : "Medium"}
+                      </p>
+                    </div>
+                    <div className="p-2 bg-amber-50 rounded">
+                      <p className="text-xs text-amber-700 font-medium">
+                        Expected ROI
+                      </p>
+                      <p className="text-sm text-amber-800">
+                        {exp.category === "monetization"
+                          ? "High (>3x)"
+                          : exp.category === "engagement"
+                          ? "Medium (1.5-3x)"
+                          : "Low-Medium (1-1.5x)"}
+                      </p>
+                    </div>
+                    <div className="p-2 bg-amber-50 rounded">
+                      <p className="text-xs text-amber-700 font-medium">
+                        Strategic Initiative
+                      </p>
+                      <p className="text-sm text-amber-800">
+                        {exp.okrs && exp.okrs.length > 0
+                          ? okrData
+                              .find((o) => exp.okrs.includes(o.id))
+                              ?.title.substring(0, 20) + "..."
+                          : "Not directly aligned"}
+                      </p>
+                    </div>
+                    <div className="p-2 bg-amber-50 rounded">
+                      <p className="text-xs text-amber-700 font-medium">
+                        Implementation Cost
+                      </p>
+                      <p className="text-sm text-amber-800">
+                        ${Math.floor(Math.random() * 50) + 10}K
+                      </p>
+                    </div>
+                  </div>
+                  <div className="p-2 bg-amber-50 rounded">
+                    <p className="text-xs text-amber-700 font-medium">
+                      Business Case
+                    </p>
+                    <p className="text-sm text-amber-800">
+                      {exp.category === "monetization"
+                        ? `This experiment directly targets revenue through ${exp.primaryMetric}. Each 1% improvement translates to approximately $50K in annual revenue.`
+                        : exp.category === "engagement"
+                        ? `This experiment targets user engagement metrics which indirectly support revenue. We estimate a 10% improvement in ${exp.primaryMetric} translates to a 2-3% revenue lift.`
+                        : `This experiment aims to improve user satisfaction, which supports long-term retention and growth.`}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </Card>
 
           <Card>
@@ -10445,50 +10894,127 @@ Generated by E2E Experiment Platform`;
               confidence={exp.confidence || 0}
             />
 
+            {/* Role-specific results content */}
             {selectedRole === "data-scientist" && (
               <div className="mt-4 p-3 bg-indigo-50 border border-indigo-200 rounded">
                 <h4 className="text-sm font-medium text-indigo-800 mb-2">
                   Statistical Analysis Notes
                 </h4>
-                <p className="text-sm text-indigo-700">
-                  Test performed using two-tailed hypothesis testing with
-                  Bonferroni correction for multiple comparisons. Sample size
-                  was determined to achieve 80% power at α=0.05 for detecting a
-                  minimum effect size of 10%.
-                </p>
-                <div className="grid grid-cols-2 gap-4 mt-3">
-                  <div className="text-sm">
-                    <div className="font-medium text-indigo-800">
-                      Test Details
-                    </div>
-                    <ul className="list-disc list-inside text-indigo-700 text-xs space-y-1 mt-1">
-                      <li>Method: Chi-square test</li>
-                      <li>
-                        Degrees of freedom: {Math.round(Math.random() * 5) + 1}
-                      </li>
-                      <li>
-                        Critical value: {(Math.random() * 3 + 1).toFixed(2)}
-                      </li>
-                    </ul>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1 text-sm text-indigo-700">
+                    <p>
+                      <strong>Test Method:</strong>{" "}
+                      {exp.category === "causal"
+                        ? "Difference-in-Differences"
+                        : exp.id === "multi-001"
+                        ? "ANOVA with Bonferroni correction"
+                        : "Two-tailed t-test"}
+                    </p>
+                    <p>
+                      <strong>Degrees of Freedom:</strong>{" "}
+                      {Math.floor(Math.random() * 1000) + 100}
+                    </p>
+                    <p>
+                      <strong>Effect Size (Cohen's d):</strong>{" "}
+                      {(Math.random() * 0.5 + 0.1).toFixed(2)}
+                    </p>
+                    <p>
+                      <strong>Standard Error:</strong>{" "}
+                      {(Math.random() * 2 + 0.5).toFixed(2)}%
+                    </p>
                   </div>
-                  <div className="text-sm">
-                    <div className="font-medium text-indigo-800">
-                      Power Analysis
-                    </div>
-                    <ul className="list-disc list-inside text-indigo-700 text-xs space-y-1 mt-1">
-                      <li>
-                        Required sample:{" "}
-                        {Math.floor(Math.random() * 1000) + 1000}
-                      </li>
-                      <li>
-                        Actual sample: {Math.floor(Math.random() * 2000) + 1000}
-                      </li>
-                      <li>
-                        Effect size observed:{" "}
-                        {(Math.random() * 0.5 + 0.1).toFixed(2)}
-                      </li>
-                    </ul>
+                  <div className="space-y-1 text-sm text-indigo-700">
+                    <p>
+                      <strong>Confidence Interval (95%):</strong> [
+                      {(exp.improvement - 5).toFixed(1)}%,{" "}
+                      {(exp.improvement + 5).toFixed(1)}%]
+                    </p>
+                    <p>
+                      <strong>Power Analysis:</strong>{" "}
+                      {exp.significance < 0.05
+                        ? `Achieved ${
+                            Math.floor(Math.random() * 15) + 80
+                          }% power`
+                        : "Insufficient power to detect effect"}
+                    </p>
+                    <p>
+                      <strong>A/A Test Result:</strong> p=
+                      {(Math.random() * 0.4 + 0.2).toFixed(2)} (non-significant)
+                    </p>
+                    <p>
+                      <strong>Segmented Analysis:</strong>{" "}
+                      {Math.random() > 0.5
+                        ? "No significant heterogeneous effects"
+                        : "Significant variance between segments"}
+                    </p>
                   </div>
+                </div>
+                <div className="mt-3 pt-2 border-t border-indigo-200 text-sm text-indigo-700">
+                  <p>
+                    <strong>Technical Conclusion:</strong>{" "}
+                    {exp.significance < 0.05
+                      ? `We can reject the null hypothesis with high confidence (p=${exp.significance}). The observed effect of ${exp.improvement}% appears to be causally related to our intervention.`
+                      : `We cannot reject the null hypothesis (p=${exp.significance}). While we observed a ${exp.improvement}% difference, this could be due to random chance.`}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {selectedRole === "exec" && (
+              <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded">
+                <h4 className="text-sm font-medium text-amber-800 mb-2">
+                  Business Impact Analysis
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h5 className="text-xs font-medium text-amber-700">
+                      Financial Impact
+                    </h5>
+                    <div className="mt-1 p-2 bg-white rounded">
+                      <p className="text-lg font-bold text-amber-800">
+                        {exp.improvement >= 0 ? "+" : "-"}$
+                        {Math.abs(Math.floor(exp.improvement * 5000))}K
+                      </p>
+                      <p className="text-xs text-amber-600">
+                        Projected Annual Impact
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-medium text-amber-700">
+                      ROI Assessment
+                    </h5>
+                    <div className="mt-1 p-2 bg-white rounded">
+                      <p className="text-lg font-bold text-amber-800">
+                        {exp.improvement > 10
+                          ? "High"
+                          : exp.improvement > 0
+                          ? "Medium"
+                          : "Negative"}
+                      </p>
+                      <p className="text-xs text-amber-600">
+                        {exp.improvement > 0
+                          ? `${(exp.improvement / 2).toFixed(
+                              1
+                            )}x return on investment`
+                          : "Investment not recovered"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 pt-2 border-t border-amber-200">
+                  <h5 className="text-xs font-medium text-amber-700 mb-1">
+                    Executive Recommendation
+                  </h5>
+                  <p className="text-sm text-amber-700">
+                    {exp.improvement > 10
+                      ? "Strongly recommend full implementation based on significant positive results and high projected ROI."
+                      : exp.improvement > 5
+                      ? "Recommend implementation with continued monitoring to ensure sustained performance."
+                      : exp.improvement > 0
+                      ? "Consider limited implementation while further optimizing the approach."
+                      : "Do not implement. Revert to control version and explore alternative approaches."}
+                  </p>
                 </div>
               </div>
             )}
@@ -11836,6 +12362,93 @@ Generated by E2E Experiment Platform`;
                       </ul>
                     </div>
 
+                    {/* Role-specific content for knowledge items */}
+                    {selectedRole === "data-scientist" && (
+                      <div className="mt-3 p-2 bg-indigo-50 rounded border border-indigo-100">
+                        <div className="flex items-center mb-1">
+                          <span className="mr-2 text-indigo-700">📊</span>
+                          <h4 className="text-xs font-medium text-indigo-700">
+                            Statistical Summary
+                          </h4>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          <div className="flex flex-col">
+                            <span className="text-indigo-600">Effect</span>
+                            <span className="text-indigo-800 font-medium">
+                              {item.improvement}%
+                            </span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-indigo-600">p-value</span>
+                            <span className="text-indigo-800 font-medium">
+                              {item.significance}
+                            </span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-indigo-600">Confidence</span>
+                            <span className="text-indigo-800 font-medium">
+                              {item.confidence}%
+                            </span>
+                          </div>
+                        </div>
+                        <div className="mt-1 text-xs text-indigo-600">
+                          <span className="font-medium">Technical Note:</span>{" "}
+                          {item.significance < 0.05
+                            ? `Statistically significant results with ${Math.floor(
+                                item.confidence
+                              )}% confidence. CI: [${(
+                                item.improvement - 5
+                              ).toFixed(1)}%, ${(item.improvement + 5).toFixed(
+                                1
+                              )}%]`
+                            : "Results not statistically significant at the p<0.05 level. Consider running a follow-up with larger sample."}
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedRole === "exec" && (
+                      <div className="mt-3 p-2 bg-amber-50 rounded border border-amber-100">
+                        <div className="flex items-center mb-1">
+                          <span className="mr-2 text-amber-700">💰</span>
+                          <h4 className="text-xs font-medium text-amber-700">
+                            Business Impact
+                          </h4>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div className="flex flex-col">
+                            <span className="text-amber-600">
+                              Est. Annual Value
+                            </span>
+                            <span className="text-amber-800 font-medium">
+                              ${Math.abs(Math.floor(item.improvement * 5000))}K
+                            </span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-amber-600">ROI Rating</span>
+                            <span className="text-amber-800 font-medium">
+                              {item.improvement > 15
+                                ? "High"
+                                : item.improvement > 5
+                                ? "Medium"
+                                : item.improvement > 0
+                                ? "Low"
+                                : "Negative"}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="mt-1 text-xs text-amber-600">
+                          <span className="font-medium">
+                            Executive Summary:
+                          </span>{" "}
+                          {item.improvement > 10
+                            ? `High-value insight with significant positive impact on ${item.category} metrics. Strong candidate for broader implementation.`
+                            : item.improvement > 0
+                            ? `Moderate positive impact on ${item.category} metrics. May benefit from further optimization before full implementation.`
+                            : `Negative impact on ${item.category} metrics. Valuable learning on what not to implement.`}
+                        </div>
+                      </div>
+                    )}
+
                     {item.aiRecommendations && (
                       <div className="mt-3 bg-purple-50 p-2 rounded border border-purple-100">
                         <div className="flex items-center mb-1">
@@ -12522,6 +13135,50 @@ Generated by E2E Experiment Platform`;
                           {item.goal}
                         </p>
                         <LifecycleIndicator currentStage="planning" />
+                        {/* Role-specific content for planning items */}
+                        {selectedRole === "data-scientist" && (
+                          <div className="mt-2 border-t pt-2">
+                            <div className="text-xs text-indigo-600 flex justify-between">
+                              <span>
+                                Est. Sample Size:{" "}
+                                {Math.floor(Math.random() * 1000) + 500}/variant
+                              </span>
+                              <span>Power: 80%</span>
+                            </div>
+                            <div className="mt-1 text-xs text-indigo-600">
+                              <span>
+                                Metrics:{" "}
+                                {item.metrics
+                                  ? item.metrics.join(", ")
+                                  : "Not specified"}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        {selectedRole === "exec" && (
+                          <div className="mt-2 border-t pt-2">
+                            <div className="text-xs text-amber-600 flex justify-between">
+                              <span>
+                                Priority:{" "}
+                                <span className="font-medium">
+                                  {item.priority}
+                                </span>
+                              </span>
+                              <span>
+                                Est. ROI:{" "}
+                                {item.category === "monetization"
+                                  ? "High"
+                                  : "Medium"}
+                              </span>
+                            </div>
+                            <div className="mt-1 text-xs text-amber-600">
+                              <span>
+                                Est. Impact: $
+                                {Math.floor(Math.random() * 300) + 100}K
+                              </span>
+                            </div>
+                          </div>
+                        )}
                       </Card>
                     ))}
                 </div>
@@ -12675,6 +13332,62 @@ Generated by E2E Experiment Platform`;
                         {item.priority} priority
                       </span>
                     </div>
+                    {/* Role-specific content for timeline view */}
+                    {selectedRole === "data-scientist" && (
+                      <div className="mt-3 p-2 bg-indigo-50 rounded border border-indigo-100">
+                        <div className="text-xs text-indigo-700">
+                          <div className="font-medium mb-1">
+                            Technical Considerations:
+                          </div>
+                          <div className="flex justify-between">
+                            <span>
+                              Implementation:{" "}
+                              {Math.random() > 0.5 ? "Medium" : "Simple"}{" "}
+                              complexity
+                            </span>
+                            <span>
+                              Measurement:{" "}
+                              {item.metrics?.length > 1
+                                ? "Multiple metrics"
+                                : "Single metric"}
+                            </span>
+                          </div>
+                          <div className="mt-1">
+                            <span>
+                              Est. duration to implement:{" "}
+                              {Math.floor(Math.random() * 10) + 3} days
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {selectedRole === "exec" && (
+                      <div className="mt-3 p-2 bg-amber-50 rounded border border-amber-100">
+                        <div className="text-xs text-amber-700">
+                          <div className="font-medium mb-1">
+                            Business Impact:
+                          </div>
+                          <div className="flex justify-between">
+                            <span>
+                              Strategic alignment:{" "}
+                              {item.okrs?.length > 0 ? "High" : "Medium"}
+                            </span>
+                            <span>
+                              Expected ROI:{" "}
+                              {item.category === "monetization"
+                                ? "High"
+                                : "Medium"}
+                            </span>
+                          </div>
+                          <div className="mt-1">
+                            <span>
+                              Projected Annual Value: $
+                              {Math.floor(Math.random() * 300) + 100}K
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </Card>
                 ))}
               </div>
@@ -12898,6 +13611,86 @@ Generated by E2E Experiment Platform`;
             </p>
           </div>
 
+          {/* Role-specific modal content */}
+          {selectedRole === "data-scientist" && (
+            <div className="mb-4 p-3 bg-indigo-50 rounded border border-indigo-200">
+              <label className="block text-sm font-medium text-indigo-800 mb-1">
+                Technical Assessment
+              </label>
+              <div className="space-y-2 text-sm text-indigo-700">
+                <div className="flex justify-between">
+                  <span>Implementation Complexity:</span>
+                  <span>{Math.random() > 0.5 ? "Medium" : "Low"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Estimated Sample Size:</span>
+                  <span>
+                    {Math.floor(Math.random() * 2000) + 1000} users per variant
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Statistical Power:</span>
+                  <span>80% at 95% confidence</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Estimated Run Duration:</span>
+                  <span>{Math.floor(Math.random() * 14) + 7} days</span>
+                </div>
+                <div className="mt-2 pt-2 border-t border-indigo-200">
+                  <p className="text-xs text-indigo-600">
+                    <strong>Technical Notes:</strong>{" "}
+                    {Math.random() > 0.5
+                      ? "Implementation will require front-end changes only. No backend dependencies."
+                      : "Will require coordination with backend team for data collection."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {selectedRole === "exec" && (
+            <div className="mb-4 p-3 bg-amber-50 rounded border border-amber-200">
+              <label className="block text-sm font-medium text-amber-800 mb-1">
+                Business Assessment
+              </label>
+              <div className="space-y-2 text-sm text-amber-700">
+                <div className="flex justify-between">
+                  <span>Strategic Alignment:</span>
+                  <span>
+                    {planItemModalItem.okrs?.length > 0 ? "High" : "Medium"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Resource Requirement:</span>
+                  <span>{Math.random() > 0.5 ? "Medium" : "Low"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Estimated Business Impact:</span>
+                  <span>
+                    ${Math.floor(Math.random() * 500) + 100}K annually
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Launch Readiness:</span>
+                  <span>
+                    {planItemModalItem.status ===
+                    LIFECYCLE_STAGES.PLANNING.PLANNED.label.toLowerCase()
+                      ? "Ready for Review"
+                      : "In Development"}
+                  </span>
+                </div>
+                <div className="mt-2 pt-2 border-t border-amber-200">
+                  <p className="text-xs text-amber-600">
+                    <strong>Executive Summary:</strong> This experiment{" "}
+                    {planItemModalItem.category === "monetization"
+                      ? "directly targets revenue growth through improved conversion rates."
+                      : "focuses on improving user engagement metrics which indirectly support revenue growth."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-end space-x-3 mt-6">
             <button
               className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-50"
@@ -13104,6 +13897,143 @@ Generated by E2E Experiment Platform`;
 
                     <LifecycleIndicator currentStage="review" />
 
+                    {/* Role-specific content for brief reviews */}
+                    {selectedRole === "data-scientist" && (
+                      <div className="mt-3 p-3 bg-indigo-50 rounded border border-indigo-200">
+                        <h4 className="text-sm font-medium text-indigo-800">
+                          Statistical Design Assessment
+                        </h4>
+                        <div className="grid grid-cols-2 gap-3 mt-2">
+                          <div className="flex items-center text-sm text-indigo-700">
+                            <div
+                              className={`w-3 h-3 rounded-full ${
+                                brief.feedback?.some(
+                                  (f) =>
+                                    f.type === "statistical" &&
+                                    f.status === "error"
+                                )
+                                  ? "bg-red-500"
+                                  : brief.feedback?.some(
+                                      (f) =>
+                                        f.type === "statistical" &&
+                                        f.status === "warning"
+                                    )
+                                  ? "bg-amber-500"
+                                  : "bg-green-500"
+                              } mr-2`}
+                            ></div>
+                            <span>Statistical Design</span>
+                          </div>
+                          <div className="flex items-center text-sm text-indigo-700">
+                            <div
+                              className={`w-3 h-3 rounded-full ${
+                                Math.random() > 0.7
+                                  ? "bg-amber-500"
+                                  : "bg-green-500"
+                              } mr-2`}
+                            ></div>
+                            <span>Sample Size</span>
+                          </div>
+                          <div className="flex items-center text-sm text-indigo-700">
+                            <div
+                              className={`w-3 h-3 rounded-full ${
+                                Math.random() > 0.8
+                                  ? "bg-red-500"
+                                  : "bg-green-500"
+                              } mr-2`}
+                            ></div>
+                            <span>Metric Selection</span>
+                          </div>
+                          <div className="flex items-center text-sm text-indigo-700">
+                            <div
+                              className={`w-3 h-3 rounded-full ${
+                                Math.random() > 0.6
+                                  ? "bg-amber-500"
+                                  : "bg-green-500"
+                              } mr-2`}
+                            ></div>
+                            <span>Analysis Plan</span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-indigo-600 mt-2">
+                          Est. sample size:{" "}
+                          {Math.floor(Math.random() * 2000) + 1000} users per
+                          variant
+                        </p>
+                      </div>
+                    )}
+
+                    {selectedRole === "exec" && (
+                      <div className="mt-3 p-3 bg-amber-50 rounded border border-amber-200">
+                        <h4 className="text-sm font-medium text-amber-800">
+                          Business Impact Assessment
+                        </h4>
+                        <div className="grid grid-cols-2 gap-3 mt-2">
+                          <div className="flex items-center text-sm text-amber-700">
+                            <div
+                              className={`w-3 h-3 rounded-full ${
+                                brief.feedback?.some(
+                                  (f) =>
+                                    f.type === "business" &&
+                                    f.status === "error"
+                                )
+                                  ? "bg-red-500"
+                                  : brief.feedback?.some(
+                                      (f) =>
+                                        f.type === "business" &&
+                                        f.status === "warning"
+                                    )
+                                  ? "bg-amber-500"
+                                  : "bg-green-500"
+                              } mr-2`}
+                            ></div>
+                            <span>Strategic Alignment</span>
+                          </div>
+                          <div className="flex items-center text-sm text-amber-700">
+                            <div
+                              className={`w-3 h-3 rounded-full ${
+                                Math.random() > 0.6
+                                  ? "bg-amber-500"
+                                  : "bg-green-500"
+                              } mr-2`}
+                            ></div>
+                            <span>Resource Requirements</span>
+                          </div>
+                          <div className="flex items-center text-sm text-amber-700">
+                            <div
+                              className={`w-3 h-3 rounded-full ${
+                                Math.random() > 0.7
+                                  ? "bg-amber-500"
+                                  : "bg-green-500"
+                              } mr-2`}
+                            ></div>
+                            <span>Expected ROI</span>
+                          </div>
+                          <div className="flex items-center text-sm text-amber-700">
+                            <div
+                              className={`w-3 h-3 rounded-full ${
+                                brief.feedback?.some(
+                                  (f) => f.type === "operational"
+                                )
+                                  ? "bg-green-500"
+                                  : "bg-amber-500"
+                              } mr-2`}
+                            ></div>
+                            <span>Implementation Plan</span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-amber-600 mt-2">
+                          Est. business impact:{" "}
+                          {brief.primaryMetric
+                            ?.toLowerCase()
+                            .includes("revenue") ||
+                          brief.category === "monetization"
+                            ? "High ($200K-500K)"
+                            : "Medium ($50K-200K)"}
+                        </p>
+                      </div>
+                    )}
+
                     {brief.feedback && brief.feedback.length > 0 && (
                       <div className="mt-3 space-y-2">
                         <h4 className="text-sm font-medium text-gray-700">
@@ -13294,6 +14224,112 @@ Generated by E2E Experiment Platform`;
               <h3 className="text-sm font-medium text-gray-700 mb-2">
                 Brief Summary
               </h3>
+              {/* Role-specific review information */}
+              {selectedRole === "data-scientist" && (
+                <div className="mb-4 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
+                  <h3 className="text-sm font-medium text-indigo-800 mb-2">
+                    Statistical Review Guidelines
+                  </h3>
+                  <div className="space-y-2 text-sm text-indigo-700">
+                    <p>
+                      <strong>Statistical Power:</strong> Does the experiment
+                      have sufficient sample size to detect the expected effect?
+                    </p>
+                    <p>
+                      <strong>Metric Selection:</strong> Are the primary and
+                      secondary metrics appropriate for measuring the
+                      hypothesis?
+                    </p>
+                    <p>
+                      <strong>Control Group:</strong> Is the control group
+                      properly defined and comparable to treatment?
+                    </p>
+                    <p>
+                      <strong>Analysis Plan:</strong> Is the analysis
+                      methodology appropriate for the experiment design?
+                    </p>
+
+                    <div className="mt-3 pt-2 border-t border-indigo-200">
+                      <p>
+                        <strong>Statistical Recommendation:</strong>{" "}
+                        {reviewModalItem.feedback?.some(
+                          (f) =>
+                            f.type === "statistical" && f.status === "error"
+                        )
+                          ? "Major statistical issues need to be addressed before approval."
+                          : reviewModalItem.feedback?.some(
+                              (f) =>
+                                f.type === "statistical" &&
+                                f.status === "warning"
+                            )
+                          ? "Minor statistical concerns that should be addressed before launch."
+                          : "The statistical design is sound and follows best practices."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedRole === "exec" && (
+                <div className="mb-4 p-4 bg-amber-50 rounded-lg border border-amber-200">
+                  <h3 className="text-sm font-medium text-amber-800 mb-2">
+                    Business Impact Assessment
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm text-amber-700">
+                    <div>
+                      <p className="font-medium mb-1">Strategic Priority</p>
+                      <p
+                        className={`px-2 py-1 rounded text-center ${
+                          reviewModalItem.okrs?.length > 0
+                            ? "bg-green-100 text-green-700"
+                            : "bg-amber-100"
+                        }`}
+                      >
+                        {reviewModalItem.okrs?.length > 0 ? "High" : "Medium"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium mb-1">Resource Requirement</p>
+                      <p className="px-2 py-1 rounded text-center bg-amber-100">
+                        {Math.random() > 0.6 ? "Medium" : "Low"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium mb-1">Estimated ROI</p>
+                      <p className="px-2 py-1 rounded text-center bg-green-100 text-green-700">
+                        {reviewModalItem.primaryMetric
+                          ?.toLowerCase()
+                          .includes("revenue") ||
+                        reviewModalItem.category === "monetization"
+                          ? "High"
+                          : "Medium"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium mb-1">Time to Value</p>
+                      <p className="px-2 py-1 rounded text-center bg-amber-100">
+                        {Math.random() > 0.5 ? "2-4 weeks" : "1-2 weeks"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 pt-2 border-t border-amber-200">
+                    <p className="text-sm text-amber-700">
+                      <strong>Executive Summary:</strong>{" "}
+                      {reviewModalItem.feedback?.some(
+                        (f) => f.type === "business" && f.status === "error"
+                      )
+                        ? "Major business alignment issues that need to be addressed."
+                        : reviewModalItem.feedback?.some(
+                            (f) =>
+                              f.type === "business" && f.status === "warning"
+                          )
+                        ? "Business case could be stronger but generally aligns with our objectives."
+                        : "Strong business case with clear alignment to strategic priorities."}
+                    </p>
+                  </div>
+                </div>
+              )}
               <div className="space-y-2 text-sm">
                 <p>
                   <span className="font-medium">Name:</span>{" "}
@@ -13547,6 +14583,239 @@ Generated by E2E Experiment Platform`;
           </div>
         </div>
 
+        {/* Role-specific content for knowledge details modal */}
+        {selectedRole === "data-scientist" && (
+          <div className="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+            <h3 className="font-medium text-indigo-800 mb-3">
+              Statistical Analysis
+            </h3>
+
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 bg-white rounded shadow-sm">
+                  <h4 className="text-xs font-medium text-indigo-600">
+                    Test Methodology
+                  </h4>
+                  <p className="text-sm font-medium text-indigo-800 mt-1">
+                    {selectedKnowledge.category === "causal"
+                      ? "Difference-in-Differences"
+                      : selectedKnowledge.name.includes("Multivariate")
+                      ? "ANOVA with Bonferroni"
+                      : "Two-sample t-test"}
+                  </p>
+                  <p className="text-xs text-indigo-500 mt-1">
+                    {selectedKnowledge.category === "causal"
+                      ? "Controls for time-based confounding"
+                      : selectedKnowledge.name.includes("Multivariate")
+                      ? "Corrects for multiple comparisons"
+                      : "Tests for difference between means"}
+                  </p>
+                </div>
+
+                <div className="p-3 bg-white rounded shadow-sm">
+                  <h4 className="text-xs font-medium text-indigo-600">
+                    Sample Size
+                  </h4>
+                  <p className="text-sm font-medium text-indigo-800 mt-1">
+                    {Math.floor(Math.random() * 2000) + 1000} per variant
+                  </p>
+                  <p className="text-xs text-indigo-500 mt-1">
+                    {selectedKnowledge.significance < 0.05
+                      ? "Sufficient power achieved"
+                      : "May have been underpowered"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-3 bg-white rounded shadow-sm">
+                <h4 className="text-xs font-medium text-indigo-600">
+                  Statistical Details
+                </h4>
+                <div className="grid grid-cols-2 gap-3 mt-2">
+                  <div className="text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-indigo-600">Effect Size:</span>
+                      <span className="text-indigo-800 font-medium">
+                        {selectedKnowledge.improvement}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-indigo-600">p-value:</span>
+                      <span className="text-indigo-800 font-medium">
+                        {selectedKnowledge.significance}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-indigo-600">Confidence:</span>
+                      <span className="text-indigo-800 font-medium">
+                        {selectedKnowledge.confidence}%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-indigo-600">95% CI:</span>
+                      <span className="text-indigo-800 font-medium">
+                        [{(selectedKnowledge.improvement - 5).toFixed(1)}%,{" "}
+                        {(selectedKnowledge.improvement + 5).toFixed(1)}%]
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-indigo-600">Standard Error:</span>
+                      <span className="text-indigo-800 font-medium">
+                        {(Math.random() * 2 + 0.2).toFixed(1)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-indigo-600">t-statistic:</span>
+                      <span className="text-indigo-800 font-medium">
+                        {(Math.random() * 3 + 0.5).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-3 pt-3 border-t border-indigo-200">
+              <h4 className="text-sm font-medium text-indigo-700 mb-1">
+                Statistical Conclusion
+              </h4>
+              <p className="text-sm text-indigo-700">
+                {selectedKnowledge.significance < 0.05
+                  ? `We can reject the null hypothesis with ${selectedKnowledge.confidence}% confidence. The observed effect of ${selectedKnowledge.improvement}% is statistically significant and unlikely to be due to random chance.`
+                  : `We cannot reject the null hypothesis at the conventional p<0.05 level. While we observed a ${selectedKnowledge.improvement}% effect, this could be due to random chance.`}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {selectedRole === "exec" && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <h3 className="font-medium text-amber-800 mb-3">
+              Business Impact Assessment
+            </h3>
+
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 bg-white rounded shadow-sm">
+                  <h4 className="text-xs font-medium text-amber-600">
+                    Financial Impact
+                  </h4>
+                  <p className="text-xl font-bold text-amber-800 mt-1">
+                    $
+                    {Math.abs(Math.floor(selectedKnowledge.improvement * 5000))}
+                    K
+                  </p>
+                  <p className="text-xs text-amber-500 mt-1">
+                    Projected Annual Value
+                  </p>
+                </div>
+
+                <div className="p-3 bg-white rounded shadow-sm">
+                  <h4 className="text-xs font-medium text-amber-600">
+                    ROI Assessment
+                  </h4>
+                  <p className="text-xl font-bold text-amber-800 mt-1">
+                    {selectedKnowledge.improvement > 15
+                      ? "High (>3x)"
+                      : selectedKnowledge.improvement > 5
+                      ? "Medium (1.5-3x)"
+                      : selectedKnowledge.improvement > 0
+                      ? "Low (1-1.5x)"
+                      : "Negative"}
+                  </p>
+                  <p className="text-xs text-amber-500 mt-1">
+                    Based on implementation costs
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-3 bg-white rounded shadow-sm">
+                <h4 className="text-xs font-medium text-amber-600">
+                  Strategic Alignment
+                </h4>
+                <div className="mt-2 space-y-2">
+                  {selectedKnowledge.relatedExperiments &&
+                    selectedKnowledge.relatedExperiments.length > 0 &&
+                    selectedKnowledge.relatedExperiments.map((expId) => {
+                      const exp = experiments.find((e) => e.id === expId);
+                      if (!exp || !exp.okrs || exp.okrs.length === 0)
+                        return null;
+
+                      return exp.okrs.map((okrId) => {
+                        const okr = okrData.find((o) => o.id === okrId);
+                        if (!okr) return null;
+
+                        return (
+                          <div
+                            key={okrId}
+                            className="flex items-center text-sm"
+                          >
+                            <div className="w-2 h-2 rounded-full bg-amber-500 mr-2"></div>
+                            <span className="text-amber-700">{okr.title}</span>
+                          </div>
+                        );
+                      });
+                    })}
+
+                  {(!selectedKnowledge.relatedExperiments ||
+                    !selectedKnowledge.relatedExperiments.some((expId) => {
+                      const exp = experiments.find((e) => e.id === expId);
+                      return exp && exp.okrs && exp.okrs.length > 0;
+                    })) && (
+                    <div className="text-sm text-amber-700">
+                      No direct alignment with current OKRs
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-3 pt-3 border-t border-amber-200">
+              <h4 className="text-sm font-medium text-amber-700 mb-1">
+                Executive Recommendation
+              </h4>
+              <p className="text-sm text-amber-700">
+                {selectedKnowledge.improvement > 15
+                  ? `High-priority implementation recommended. This insight demonstrates significant positive impact on ${selectedKnowledge.category} metrics with high confidence. Implementing across similar contexts could drive substantial business value.`
+                  : selectedKnowledge.improvement > 5
+                  ? `Implementation recommended with targeted approach. This insight shows moderate positive impact on ${selectedKnowledge.category} metrics. Consider implementing in high-value segments first, then expanding based on results.`
+                  : selectedKnowledge.improvement > 0
+                  ? `Consider limited implementation with further optimization. This insight shows small positive impact on ${selectedKnowledge.category} metrics. Additional testing or refinement may improve results.`
+                  : `Do not implement. While this provides valuable learning, the negative impact on ${selectedKnowledge.category} metrics suggests we should explore alternative approaches.`}
+              </p>
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 gap-4">
+              <div className="p-2 bg-white rounded border">
+                <h4 className="text-xs font-medium text-amber-700 mb-1">
+                  Resource Requirement
+                </h4>
+                <p className="text-sm text-amber-700">
+                  {selectedKnowledge.businessImpact === "High"
+                    ? "Low-Medium"
+                    : selectedKnowledge.businessImpact === "Medium"
+                    ? "Medium"
+                    : "Low"}
+                </p>
+              </div>
+              <div className="p-2 bg-white rounded border">
+                <h4 className="text-xs font-medium text-amber-700 mb-1">
+                  Time to Value
+                </h4>
+                <p className="text-sm text-amber-700">
+                  {selectedKnowledge.businessImpact === "High"
+                    ? "2-4 weeks"
+                    : selectedKnowledge.businessImpact === "Medium"
+                    ? "4-8 weeks"
+                    : "1-2 weeks"}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="mb-6">
           <h3 className="font-medium text-gray-800 mb-2">Summary</h3>
           <p className="text-gray-700 p-3 bg-blue-50 rounded">
@@ -13779,6 +15048,73 @@ Generated by E2E Experiment Platform`;
           </div>
         </div>
 
+        {/* Role-specific content for Apply Insights modal */}
+        {selectedRole === "data-scientist" && (
+          <div className="mb-4 p-4 bg-indigo-50 border border-indigo-200 rounded">
+            <h3 className="font-medium text-indigo-800 text-sm mb-2">
+              Statistical Considerations
+            </h3>
+            <div className="space-y-2 text-sm text-indigo-700">
+              <p>
+                <strong>Statistical Validation:</strong>{" "}
+                {insightsItem.significance < 0.05
+                  ? `This result was statistically significant (p=${insightsItem.significance}) with ${insightsItem.confidence}% confidence.`
+                  : `This result was not statistically significant (p=${insightsItem.significance}). Any follow-up should address sample size.`}
+              </p>
+              <p>
+                <strong>Sample Implications:</strong> Follow-up experiment
+                should target a minimum sample size of{" "}
+                {Math.floor(Math.random() * 1000) + 1000} per variant to achieve
+                adequate statistical power.
+              </p>
+              <p>
+                <strong>Segment Considerations:</strong> Pay special attention
+                to{" "}
+                {insightsItem.segmentedResults
+                  ? insightsItem.segmentedResults[0]?.name
+                  : "new user"}{" "}
+                segment, which showed the strongest response in the original
+                experiment.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {selectedRole === "exec" && (
+          <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded">
+            <h3 className="font-medium text-amber-800 text-sm mb-2">
+              Business Implications
+            </h3>
+            <div className="space-y-2 text-sm text-amber-700">
+              <p>
+                <strong>Business Opportunity:</strong>{" "}
+                {insightsItem.improvement > 0
+                  ? `Follow-up implementation could yield approximately $${Math.floor(
+                      insightsItem.improvement * 5000
+                    )}K in annual value based on current metrics.`
+                  : `While the original insight showed negative results, this creates an opportunity to explore alternative approaches.`}
+              </p>
+              <p>
+                <strong>Resource Assessment:</strong> Implementing a follow-up
+                experiment would require approximately{" "}
+                {Math.floor(Math.random() * 3) + 1} weeks of engineering effort
+                and minimal operational overhead.
+              </p>
+              <p>
+                <strong>Strategic Alignment:</strong> This follow-up directly
+                supports our Q2 {insightsItem.category} initiatives,
+                particularly around{" "}
+                {insightsItem.category === "monetization"
+                  ? "revenue optimization"
+                  : insightsItem.category === "engagement"
+                  ? "user engagement"
+                  : "user satisfaction"}
+                .
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="p-4 bg-green-50 rounded mb-4">
           <h3 className="font-medium text-green-800 text-sm mb-2">
             Your New Experiment Will Include
@@ -13868,6 +15204,74 @@ Generated by E2E Experiment Platform`;
                       <p className="text-sm mt-1">{step.recommendation}</p>
                     </div>
                   </div>
+
+                  {/* Role-specific learning path content */}
+                  {selectedRole === "data-scientist" && (
+                    <div className="mt-3 p-3 bg-indigo-50 rounded border border-indigo-200">
+                      <h4 className="text-xs font-medium text-indigo-700 mb-1">
+                        Statistical Learning Path
+                      </h4>
+                      <p className="text-sm text-indigo-700">
+                        {Math.random() > 0.5
+                          ? `Previous experiments related to this objective had ${
+                              step.nextExperiment !== "N/A"
+                                ? "promising but inconclusive results. Consider increasing sample size by 30-50% for the next iteration."
+                                : "insufficient data. Consider starting with a larger initial sample and an A/B test design."
+                            }`
+                          : `To build on ${
+                              step.nextExperiment !== "N/A"
+                                ? "previous findings, consider using multivariate testing to explore interaction effects between variables."
+                                : "this objective, start with controlled A/B testing focusing on a single primary metric."
+                            }`}
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs rounded">
+                          Target sample:{" "}
+                          {Math.floor(Math.random() * 2000) + 1000}/variant
+                        </span>
+                        <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs rounded">
+                          Power: 80%
+                        </span>
+                        <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs rounded">
+                          Test:{" "}
+                          {Math.random() > 0.5 ? "Two-tailed t-test" : "ANOVA"}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedRole === "exec" && (
+                    <div className="mt-3 p-3 bg-amber-50 rounded border border-amber-200">
+                      <h4 className="text-xs font-medium text-amber-700 mb-1">
+                        Business Learning Path
+                      </h4>
+                      <p className="text-sm text-amber-700">
+                        {Math.random() > 0.5
+                          ? `This ${
+                              step.nextExperiment !== "N/A"
+                                ? "experiment path shows high potential ROI with past experiments showing positive trends. Prioritize accordingly."
+                                : "objective has not been experimentally tested. Starting with low-cost, high-impact experiments would be optimal."
+                            }`
+                          : `Investments in this ${
+                              step.nextExperiment !== "N/A"
+                                ? "area have shown moderate returns. Consider balancing resources with other high-priority objectives."
+                                : "objective should focus on direct impact to key business metrics with clear success criteria."
+                            }`}
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs rounded">
+                          Est. Value: ${Math.floor(Math.random() * 300) + 100}K
+                        </span>
+                        <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs rounded">
+                          Priority: {Math.random() > 0.3 ? "High" : "Medium"}
+                        </span>
+                        <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs rounded">
+                          Timeline: {Math.floor(Math.random() * 3) + 1}-
+                          {Math.floor(Math.random() * 3) + 3} weeks
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="mt-4 flex justify-end">
                     <button
@@ -14153,6 +15557,89 @@ Generated by E2E Experiment Platform`;
             console.log("Power calculation result:", result);
           }}
         />
+        {/* Role-specific power analyzer additions */}
+        {selectedRole === "data-scientist" && (
+          <div className="mt-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+            <h3 className="text-sm font-medium text-indigo-800 mb-2">
+              Advanced Statistical Settings
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-indigo-700 mb-1">
+                  Analysis Method
+                </label>
+                <select className="w-full p-2 border border-indigo-200 rounded text-sm bg-white">
+                  <option>Frequentist (default)</option>
+                  <option>Bayesian</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-indigo-700 mb-1">
+                  Multiple Comparisons Correction
+                </label>
+                <select className="w-full p-2 border border-indigo-200 rounded text-sm bg-white">
+                  <option>None</option>
+                  <option>Bonferroni</option>
+                  <option>Benjamini-Hochberg</option>
+                </select>
+              </div>
+            </div>
+            <div className="mt-3">
+              <label className="block text-xs text-indigo-700 mb-1">
+                Statistical Notes
+              </label>
+              <textarea
+                className="w-full p-2 border border-indigo-200 rounded text-sm bg-white"
+                rows="2"
+                placeholder="Add statistical design notes..."
+              ></textarea>
+            </div>
+          </div>
+        )}
+
+        {selectedRole === "exec" && (
+          <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <h3 className="text-sm font-medium text-amber-800 mb-2">
+              Business Implications
+            </h3>
+            <div className="space-y-3">
+              <div className="p-3 bg-white rounded">
+                <p className="text-sm text-amber-800">
+                  <strong>Resource Tradeoff:</strong> Larger sample sizes
+                  provide higher confidence but require longer run times and
+                  more resources. The recommended sample size balances
+                  statistical rigor with practical constraints.
+                </p>
+              </div>
+              <div className="p-3 bg-white rounded">
+                <p className="text-sm text-amber-800">
+                  <strong>Business Decision:</strong> Determine the smallest
+                  effect size that would justify implementing the change.
+                  Smaller effect sizes require larger sample sizes to detect
+                  reliably.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-white rounded">
+                  <p className="text-xs text-amber-700 font-medium">
+                    Type I Error Risk:
+                  </p>
+                  <p className="text-sm text-amber-800">
+                    False positive - implementing a change with no real effect
+                  </p>
+                </div>
+                <div className="p-3 bg-white rounded">
+                  <p className="text-xs text-amber-700 font-medium">
+                    Type II Error Risk:
+                  </p>
+                  <p className="text-sm text-amber-800">
+                    False negative - missing a valuable opportunity
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </Modal>
     );
   };
