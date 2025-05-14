@@ -5743,7 +5743,14 @@ const SignificanceCalculator = ({
    --------------------------------------------------------------------------- */
 
 // Multi-step Wizard Component
-const Wizard = ({ steps, onComplete, initialStep = 0, initialData = {} }) => {
+const Wizard = ({
+  steps,
+  onComplete,
+  initialStep = 0,
+  initialData = {},
+  knowledgeData = [],
+  onToast = () => {},
+}) => {
   const [currentStep, setCurrentStep] = useState(initialStep);
 
   // Initialize stepData with initialData merged into each step's data
@@ -5853,8 +5860,8 @@ const Wizard = ({ steps, onComplete, initialStep = 0, initialData = {} }) => {
           data={stepData[currentStep]}
           onChange={handleStepDataChange}
           allData={stepData}
-          allKnowledge={[]} // Replace with actual knowledge array if needed
-          onToast={() => {}} // Replace with actual toast function if needed
+          allKnowledge={knowledgeData} // Replace with actual knowledge array if needed
+          onToast={onToast} // Replace with actual toast function if needed
         />
       </div>
 
@@ -6036,7 +6043,7 @@ const WizardBasicInfoStep = ({
         </div>
       </FormGroup>
 
-      <FormGroup
+      {/* <FormGroup
         title="Knowledge References"
         description="Link this experiment to existing knowledge"
       >
@@ -6091,6 +6098,105 @@ const WizardBasicInfoStep = ({
             >
               Browse more knowledge items...
             </button>
+          )}
+        </div>
+      </FormGroup> */}
+      <FormGroup
+        title="Knowledge References"
+        description="Link this experiment to existing knowledge"
+      >
+        <div className="space-y-3">
+          {allKnowledge && allKnowledge.length > 0 ? (
+            <>
+              {allKnowledge.slice(0, 3).map((k) => (
+                <div
+                  key={k.id}
+                  className="p-3 border rounded flex items-center"
+                >
+                  <input
+                    type="checkbox"
+                    id={`knowledge-${k.id}`}
+                    checked={data.knowledgeReference === k.id}
+                    onChange={() =>
+                      onChange({
+                        ...data,
+                        knowledgeReference:
+                          data.knowledgeReference === k.id ? null : k.id,
+                      })
+                    }
+                    className="mr-3"
+                  />
+                  <label
+                    htmlFor={`knowledge-${k.id}`}
+                    className="flex-grow cursor-pointer"
+                  >
+                    <div className="font-medium text-gray-800">{k.name}</div>
+                    <div className="text-xs text-gray-600 mt-1">
+                      {k.plainLanguageResult}
+                    </div>
+                    <div className="mt-1">
+                      <span
+                        className={`px-2 py-0.5 text-xs rounded ${
+                          k.improvement > 0
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {k.improvement > 0 ? "+" : ""}
+                        {k.improvement}%
+                      </span>
+                      <span className="text-xs text-gray-500 ml-2">
+                        {k.category}
+                      </span>
+                    </div>
+                  </label>
+                </div>
+              ))}
+
+              {allKnowledge.length > 3 && (
+                <button
+                  className="w-full text-center text-sm text-blue-600 hover:text-blue-800 py-2 border border-blue-100 rounded"
+                  onClick={() => {
+                    onToast(
+                      "This would open the knowledge browser in a real app",
+                      "info"
+                    );
+                  }}
+                >
+                  Browse more knowledge items...
+                </button>
+              )}
+
+              {data.knowledgeReference && (
+                <div className="mt-3 p-3 bg-blue-50 rounded border border-blue-200">
+                  <h4 className="text-sm font-medium text-blue-800">
+                    Selected Knowledge Reference
+                  </h4>
+                  <p className="text-sm text-blue-700 mt-1">
+                    This experiment will be linked to:{" "}
+                    <strong>
+                      {allKnowledge.find(
+                        (k) => k.id === data.knowledgeReference
+                      )?.name || "Selected Knowledge"}
+                    </strong>
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    Building on previous insights helps improve your
+                    experimentation strategy.
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="p-4 bg-gray-50 rounded text-center">
+              <p className="text-gray-600">
+                No knowledge items available to reference.
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Knowledge items are created from completed experiments and
+                stored in the Knowledge Hub.
+              </p>
+            </div>
           )}
         </div>
       </FormGroup>
@@ -6482,6 +6588,23 @@ export default function E2ExperimentPlatform() {
   const [showKnowledgeModal, setShowKnowledgeModal] = useState(false);
   const [showApplyInsightsModal, setShowApplyInsightsModal] = useState(false);
   const [showAdvancedSearchModal, setShowAdvancedSearchModal] = useState(false);
+  const [showNewIdeaModal, setShowNewIdeaModal] = useState(false);
+  const [newIdeaFormData, setNewIdeaFormData] = useState({
+    name: "",
+    category: "engagement",
+    priority: "medium",
+    goal: "",
+    hypothesis: "",
+    startDate: new Date(new Date().setDate(new Date().getDate() + 14))
+      .toISOString()
+      .split("T")[0],
+    endDate: new Date(new Date().setDate(new Date().getDate() + 42))
+      .toISOString()
+      .split("T")[0],
+    metrics: ["Engagement"],
+    learningAgenda: "",
+    okrs: [],
+  });
 
   // AI Modal States
   const [showAIPromptModal, setShowAIPromptModal] = useState(false);
@@ -13043,7 +13166,7 @@ Generated by E2E Experiment Platform`;
             </div>
           </div>
 
-          {/* AI Planning Assistant */}
+          {/* AI Planning Assistant
           <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
             <h3 className="text-lg font-medium text-blue-800 mb-2">
               <span className="mr-2">✨</span>
@@ -13088,6 +13211,112 @@ Generated by E2E Experiment Platform`;
                   </>
                 )}
               </button>
+            </div>
+          </div> */}
+
+          {/* Unified Experiment Idea Creation Section */}
+          <div className="bg-white p-6 rounded-lg border border-gray-200 mb-6 shadow-sm">
+            <h3 className="text-lg font-medium text-gray-800 mb-4">
+              Create Experiment Idea
+            </h3>
+
+            <div className="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
+              {/* Left side - Manual creation */}
+              <div className="flex-1 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">
+                  Create Manually
+                </h4>
+                <p className="text-sm text-gray-600 mb-3">
+                  Define your experiment idea with full customization.
+                </p>
+                <button
+                  className="w-full px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm flex items-center justify-center"
+                  onClick={() => setShowNewIdeaModal(true)}
+                >
+                  <span className="mr-1">+</span>
+                  Create New Idea
+                </button>
+              </div>
+
+              {/* Right side - AI Powered */}
+              <div className="flex-1 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 className="text-sm font-medium text-blue-700 mb-2">
+                  <span className="mr-1">✨</span>
+                  AI-Powered Generation
+                </h4>
+                <p className="text-sm text-blue-600 mb-3">
+                  Let AI help you generate experiment ideas based on your goals.
+                </p>
+
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    placeholder='Context (e.g. "landing page")'
+                    className="w-full p-2 border rounded"
+                    value={planningSearch}
+                    onChange={(e) => setPlanningSearch(e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    placeholder='Goal (e.g. "Increase signups by 20%")'
+                    className="w-full p-2 border rounded"
+                    value={planningGoal}
+                    onChange={(e) => setPlanningGoal(e.target.value)}
+                  />
+                  <button
+                    className={`w-full px-3 py-2 text-white rounded ${
+                      planningGenBusy
+                        ? "bg-gray-300"
+                        : "bg-blue-500 hover:bg-blue-600"
+                    } flex items-center justify-center space-x-1`}
+                    onClick={handleGenerateRoadmap}
+                    disabled={planningGenBusy}
+                  >
+                    {planningGenBusy ? (
+                      <>
+                        <span className="animate-spin h-4 w-4 border-2 border-t-transparent border-white rounded-full"></span>
+                        <span>Generating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="mr-1">✨</span>
+                        <span>Generate with AI</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 p-3 bg-gray-50 rounded border border-gray-200">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">
+                Recent Experiment Ideas
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {roadmap.slice(0, 2).map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-2 border rounded bg-white hover:bg-gray-50 cursor-pointer"
+                    onClick={() => openPlanItemModal(item)}
+                  >
+                    <p className="font-medium text-sm">{item.name}</p>
+                    <div className="flex items-center mt-1">
+                      <span
+                        className={`px-1.5 py-0.5 text-xs rounded ${
+                          item.category === "monetization"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-blue-100 text-blue-700"
+                        }`}
+                      >
+                        {item.category}
+                      </span>
+                      <span className="text-xs text-gray-500 ml-2">
+                        {item.createdDate}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -15013,6 +15242,309 @@ Generated by E2E Experiment Platform`;
     );
   };
 
+  // Add this near the other modal render functions around line 10860
+  const renderNewIdeaModal = () => {
+    if (!showNewIdeaModal) return null;
+
+    return (
+      <Modal
+        isOpen={showNewIdeaModal}
+        onClose={() => setShowNewIdeaModal(false)}
+        title="Create New Experiment Idea"
+        size="lg"
+      >
+        <div className="space-y-4">
+          <FormField
+            label="Experiment Name"
+            value={newIdeaFormData.name}
+            onChange={(e) =>
+              setNewIdeaFormData({ ...newIdeaFormData, name: e.target.value })
+            }
+            placeholder="Enter a descriptive name for your experiment"
+            required
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              label="Category"
+              type="select"
+              value={newIdeaFormData.category}
+              onChange={(e) =>
+                setNewIdeaFormData({
+                  ...newIdeaFormData,
+                  category: e.target.value,
+                })
+              }
+              options={[
+                { value: "monetization", label: "Monetization" },
+                { value: "engagement", label: "Engagement" },
+                { value: "satisfaction", label: "User Satisfaction" },
+              ]}
+              required
+            />
+
+            <FormField
+              label="Priority"
+              type="select"
+              value={newIdeaFormData.priority}
+              onChange={(e) =>
+                setNewIdeaFormData({
+                  ...newIdeaFormData,
+                  priority: e.target.value,
+                })
+              }
+              options={[
+                { value: "high", label: "High" },
+                { value: "medium", label: "Medium" },
+                { value: "low", label: "Low" },
+              ]}
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              label="Start Date"
+              type="date"
+              value={newIdeaFormData.startDate}
+              onChange={(e) =>
+                setNewIdeaFormData({
+                  ...newIdeaFormData,
+                  startDate: e.target.value,
+                })
+              }
+              required
+            />
+
+            <FormField
+              label="End Date"
+              type="date"
+              value={newIdeaFormData.endDate}
+              onChange={(e) =>
+                setNewIdeaFormData({
+                  ...newIdeaFormData,
+                  endDate: e.target.value,
+                })
+              }
+              required
+            />
+          </div>
+
+          <FormField
+            label="Business Goal"
+            type="textarea"
+            value={newIdeaFormData.goal}
+            onChange={(e) =>
+              setNewIdeaFormData({ ...newIdeaFormData, goal: e.target.value })
+            }
+            placeholder="What business objective does this experiment address?"
+            required
+          />
+
+          <FormField
+            label="Hypothesis"
+            type="textarea"
+            value={newIdeaFormData.hypothesis}
+            onChange={(e) =>
+              setNewIdeaFormData({
+                ...newIdeaFormData,
+                hypothesis: e.target.value,
+              })
+            }
+            placeholder="What do you expect will happen and why?"
+            required
+          />
+
+          <div className="border p-3 rounded-lg">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Metrics
+            </label>
+            <div className="space-y-2">
+              {["Conversion Rate", "Engagement", "Retention", "Revenue"].map(
+                (metric) => (
+                  <div key={metric} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`metric-${metric}`}
+                      checked={newIdeaFormData.metrics.includes(metric)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setNewIdeaFormData({
+                            ...newIdeaFormData,
+                            metrics: [...newIdeaFormData.metrics, metric],
+                          });
+                        } else {
+                          setNewIdeaFormData({
+                            ...newIdeaFormData,
+                            metrics: newIdeaFormData.metrics.filter(
+                              (m) => m !== metric
+                            ),
+                          });
+                        }
+                      }}
+                      className="mr-2"
+                    />
+                    <label htmlFor={`metric-${metric}`} className="text-sm">
+                      {metric}
+                    </label>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+
+          <FormField
+            label="Learning Agenda"
+            type="textarea"
+            value={newIdeaFormData.learningAgenda}
+            onChange={(e) =>
+              setNewIdeaFormData({
+                ...newIdeaFormData,
+                learningAgenda: e.target.value,
+              })
+            }
+            placeholder="What do you hope to learn from this experiment?"
+          />
+
+          <div className="border p-3 rounded-lg">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Link to OKRs
+            </label>
+            <div className="space-y-2">
+              {okrData.map((okr) => (
+                <div key={okr.id} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id={`okr-${okr.id}`}
+                    checked={newIdeaFormData.okrs.includes(okr.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setNewIdeaFormData({
+                          ...newIdeaFormData,
+                          okrs: [...newIdeaFormData.okrs, okr.id],
+                        });
+                      } else {
+                        setNewIdeaFormData({
+                          ...newIdeaFormData,
+                          okrs: newIdeaFormData.okrs.filter(
+                            (id) => id !== okr.id
+                          ),
+                        });
+                      }
+                    }}
+                    className="mr-2"
+                  />
+                  <label htmlFor={`okr-${okr.id}`} className="text-sm">
+                    {okr.title}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 mt-6">
+            <button
+              className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-50"
+              onClick={() => setShowNewIdeaModal(false)}
+            >
+              Cancel
+            </button>
+            <button
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              onClick={() => {
+                // Validate form
+                if (
+                  !newIdeaFormData.name ||
+                  !newIdeaFormData.goal ||
+                  !newIdeaFormData.hypothesis
+                ) {
+                  showToast("Please fill out all required fields", "warning");
+                  return;
+                }
+
+                // Calculate duration
+                const startDate = new Date(newIdeaFormData.startDate);
+                const endDate = new Date(newIdeaFormData.endDate);
+                const diffTime = Math.abs(endDate - startDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const weeks = Math.floor(diffDays / 7);
+                const days = diffDays % 7;
+                const duration =
+                  weeks > 0
+                    ? `${weeks} week${weeks > 1 ? "s" : ""}${
+                        days > 0 ? ` ${days} day${days > 1 ? "s" : ""}` : ""
+                      }`
+                    : `${days} day${days > 1 ? "s" : ""}`;
+
+                // Create new experiment idea
+                const newId = `roadmap-manual-${Math.floor(
+                  Math.random() * 10000
+                )}`;
+                const newItem = {
+                  id: newId,
+                  name: newIdeaFormData.name,
+                  category: newIdeaFormData.category,
+                  priority: newIdeaFormData.priority,
+                  status: LIFECYCLE_STAGES.PLANNING.BACKLOG.label.toLowerCase(),
+                  lifecycleStage: "planning",
+                  startDate: new Date(
+                    newIdeaFormData.startDate
+                  ).toLocaleDateString(),
+                  endDate: new Date(
+                    newIdeaFormData.endDate
+                  ).toLocaleDateString(),
+                  duration: duration,
+                  goal: newIdeaFormData.goal,
+                  hypothesis: newIdeaFormData.hypothesis,
+                  metrics: newIdeaFormData.metrics,
+                  progress: 0,
+                  owner: "You",
+                  createdDate: new Date().toLocaleDateString(),
+                  learningAgenda: newIdeaFormData.learningAgenda,
+                  okrs: newIdeaFormData.okrs,
+                };
+
+                // Add to roadmap
+                setRoadmap((prev) => [newItem, ...prev]);
+
+                // Close modal and show success message
+                setShowNewIdeaModal(false);
+                showToast(
+                  `Experiment idea "${newItem.name}" added to backlog`,
+                  "success"
+                );
+
+                // Reset form for next time
+                setNewIdeaFormData({
+                  name: "",
+                  category: "engagement",
+                  priority: "medium",
+                  goal: "",
+                  hypothesis: "",
+                  startDate: new Date(
+                    new Date().setDate(new Date().getDate() + 14)
+                  )
+                    .toISOString()
+                    .split("T")[0],
+                  endDate: new Date(
+                    new Date().setDate(new Date().getDate() + 42)
+                  )
+                    .toISOString()
+                    .split("T")[0],
+                  metrics: ["Engagement"],
+                  learningAgenda: "",
+                  okrs: [],
+                });
+              }}
+            >
+              Create Experiment Idea
+            </button>
+          </div>
+        </div>
+      </Modal>
+    );
+  };
+
   // Apply Insights Modal
   const renderApplyInsightsModal = () => {
     if (!showApplyInsightsModal || !insightsItem) return null;
@@ -16124,6 +16656,8 @@ Generated by E2E Experiment Platform`;
           onComplete={handleWizardFinalSubmit}
           initialStep={0}
           initialData={wizardData} // Pass the wizardData to the Wizard
+          knowledgeData={knowledge}
+          onToast={showToast}
         />
       </Modal>
     );
@@ -16156,6 +16690,7 @@ Generated by E2E Experiment Platform`;
       {renderReportModal()}
       {renderAdvancedSearchModal()}
       {renderAIPromptModal()}
+      {renderNewIdeaModal()}
 
       {/* Loading Indicator */}
       {isLoading && (
