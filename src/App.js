@@ -5794,13 +5794,48 @@ const Wizard = ({
   });
 
   // Rest of the component remains the same
+  //... inside the Wizard component
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      onComplete(stepData);
+      // --- AI GUARDIAN LOGIC ---
+      // Get the main E2ExperimentPlatform component's state via a prop if needed,
+      // but for this demo, we can assume agenticMode is a global concept.
+      // A simple way is to check for a global variable or pass it down.
+      // For this demo, let's simulate it by checking the toggle's state directly.
+      // This is not ideal React, but effective for a self-contained demo.
+      const agenticToggle = document.querySelector("#agentic-toggle-button"); // We will add an ID to the button
+      const isAgenticModeOn =
+        agenticToggle && agenticToggle.classList.contains("bg-purple-600");
+
+      let finalData = [...stepData];
+      if (isAgenticModeOn) {
+        // Find the review step data and add the AI feedback
+        const reviewStepIndex = steps.findIndex((s) => s.title === "Review");
+        if (reviewStepIndex !== -1) {
+          const agentFeedback = {
+            type: "AI Guardian",
+            status: "warning",
+            message:
+              "Audience may overlap with 'MEM-001'. Suggest adding 'user satisfaction' as a guardrail metric.",
+            suggestion: { type: "add_metric", metric: "User Satisfaction" },
+          };
+          // This part is tricky without changing the whole structure.
+          // Let's add the feedback to the final combined data instead.
+          const combinedData = finalData.reduce(
+            (acc, step) => ({ ...acc, ...step }),
+            {}
+          );
+          combinedData.agentFeedback = [agentFeedback];
+          onComplete(combinedData);
+          return;
+        }
+      }
+      onComplete(finalData.reduce((acc, step) => ({ ...acc, ...step }), {}));
     }
   };
+  //...
 
   const handleBack = () => {
     if (currentStep > 0) {
@@ -6579,6 +6614,19 @@ export default function E2ExperimentPlatform() {
   const [notifications, setNotifications] = useState([]);
   const [selectedRole, setSelectedRole] = useState("pm"); // Default role: product manager
 
+  const [agenticMode, setAgenticMode] = useState(false);
+
+  // <-- ADD THESE NEW STATE VARIABLES -->
+  const [agentActions, setAgentActions] = useState([]);
+  const [showJiraModal, setShowJiraModal] = useState(false);
+  const [originalStateSnapshot, setOriginalStateSnapshot] = useState(null);
+  // ... (after [showJiraModal, setShowJiraModal])
+  const [showAgentBriefModal, setShowAgentBriefModal] = useState(false);
+  const [showAgentOkrModal, setShowAgentOkrModal] = useState(false);
+  const [newlyCreatedOkrId, setNewlyCreatedOkrId] = useState(null);
+  // ...
+  // <-- END OF NEW STATE VARIABLES -->
+
   // Modal States
   const [showPowerModal, setShowPowerModal] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
@@ -6629,6 +6677,208 @@ export default function E2ExperimentPlatform() {
   // Loading States
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
+
+  // Agentic AI Simulation Effect
+
+  // PASTE THE FUNCTION DEFINITION HERE
+  const addAgentAction = (message) => {
+    setAgentActions((prev) => {
+      // Check if the message already exists to prevent duplicates
+      if (prev.includes(message)) {
+        return prev;
+      }
+      return [message, ...prev];
+    });
+  };
+
+  useEffect(() => {
+    if (agenticMode) {
+      // --- ACTIVATION LOGIC ---
+      setAgentActions([]); // Clear previous actions
+      showToast("Agentic AI Mode Activated!", "info");
+
+      // Save a snapshot of the current state to revert back to
+      setOriginalStateSnapshot({ roadmap, experiments, knowledge, reviews });
+
+      const addAgentAction = (message) => {
+        setAgentActions((prev) => {
+          // Check if the message already exists to prevent duplicates
+          if (prev.includes(message)) {
+            return prev;
+          }
+          return [message, ...prev];
+        });
+      };
+
+      // --- 1. AI Strategist (Planning) ---
+      setTimeout(() => {
+        const agenticIdeaExists = roadmap.some(
+          (r) => r.id === "agent-strat-001"
+        );
+        if (!agenticIdeaExists) {
+          const newAgentIdea = {
+            id: "agent-strat-001",
+            name: "AI-Generated: Apply Membership Learnings to New Users",
+            category: "engagement",
+            priority: "high",
+            status: LIFECYCLE_STAGES.PLANNING.PLANNED.label.toLowerCase(),
+            lifecycleStage: "planning",
+            startDate: "Sep 1, 2025",
+            endDate: "Sep 30, 2025",
+            duration: "4 weeks",
+            goal: "Improve new user retention by applying successful personalization tactics.",
+            hypothesis:
+              "Based on the success of 'Channel Membership Optimization', a personalized onboarding checklist will increase 30-day retention by guiding users to key 'aha' moments.",
+            metrics: ["Retention Rate", "Feature Adoption"],
+            progress: 0,
+            owner: "AI Strategist",
+            createdDate: new Date().toLocaleDateString(),
+            learningAgenda:
+              "Identify which personalization tactics from memberships are most effective for new user onboarding.",
+            okrs: ["okr-001"],
+            isAgentGenerated: true, // Flag for highlighting
+          };
+          setRoadmap((prev) => [newAgentIdea, ...prev]);
+          // Also highlight the source knowledge item
+          setKnowledge((prev) =>
+            prev.map((k) =>
+              k.id === "past-001" ? { ...k, isAgentSource: true } : k
+            )
+          );
+          addAgentAction(
+            "AI Strategist analyzed a past success and proposed a follow-up experiment to apply the learnings."
+          );
+        }
+      }, 1500);
+
+      // --- 2. Insight Detective (Analysis) ---
+      setTimeout(() => {
+        const targetExpId = "search-001";
+        setExperiments((prev) =>
+          prev.map((e) => {
+            if (e.id === targetExpId && !e.aiAnalysis) {
+              const newAnalysis =
+                "Insight Detective automatically analyzed this inconclusive experiment.\n\nThe negative result (-7% CTR) is driven entirely by iOS users (-18% CTR), while Android users showed a positive trend (+4% CTR). This suggests a platform-specific UI/UX issue with the treatment variant on iOS. \n\nRecommended next steps:\n1. Revert the change for iOS users immediately.\n2. Conduct a design review of the treatment variant on iOS devices.\n3. Consider launching the experiment for Android users only.";
+              addAgentAction(
+                `Insight Detective has automatically analyzed the '${e.name}' experiment.`
+              );
+              return { ...e, aiAnalysis: newAnalysis, isAgentModified: true };
+            }
+            return e;
+          })
+        );
+      }, 3000);
+
+      // --- 3. Knowledge Catalyst (Learning) ---
+      setTimeout(() => {
+        const targetExp = experiments.find((e) => e.id === "mem-001");
+        if (targetExp && targetExp.improvement > 20) {
+          addAgentAction(
+            "Knowledge Catalyst found a high-impact result and created a Jira ticket for implementation."
+          );
+          setShowJiraModal(true);
+        }
+      }, 4500);
+    } else if (originalStateSnapshot) {
+      // --- DEACTIVATION LOGIC ---
+      showToast("Agentic AI Mode Deactivated. Reverting changes.", "info");
+      setRoadmap(originalStateSnapshot.roadmap);
+      setExperiments(originalStateSnapshot.experiments);
+      setKnowledge(originalStateSnapshot.knowledge);
+      setReviews(originalStateSnapshot.reviews);
+      setAgentActions([]);
+      setShowJiraModal(false);
+      setOriginalStateSnapshot(null);
+    }
+  }, [agenticMode]);
+
+  const handleAgentCreateBrief = () => {
+    setShowAgentBriefModal(true);
+    addAgentAction(
+      "AI Strategist is analyzing business goals and past results to propose a new experiment..."
+    );
+
+    setTimeout(() => {
+      const newBrief = {
+        id: `agent-brief-${Math.floor(Math.random() * 1000)}`,
+        name: "AI-Generated: Video End Screen Optimization",
+        submittedBy: "AI Strategist",
+        submittedDate: new Date().toLocaleDateString(),
+        status: LIFECYCLE_STAGES.REVIEW.UNDER_REVIEW.label.toLowerCase(),
+        lifecycleStage: "review",
+        dueDate: new Date(
+          new Date().setDate(new Date().getDate() + 7)
+        ).toLocaleDateString(),
+        feedback: [
+          {
+            type: "AI Guardian",
+            status: "success",
+            message:
+              "This AI-generated brief has been pre-screened and meets all statistical and business alignment guidelines.",
+          },
+        ],
+        businessGoal: "Increase subscriber conversion from video end screens.",
+        primaryMetric: "Conversion Rate",
+        targetAudience: "Non-subscribed viewers on mobile devices",
+        hypothesis:
+          "A simplified end screen with a more prominent subscribe button will increase click-through rate by 25%.",
+        successCriteria:
+          "Achieve a 25% lift in subscriber conversion from end screens with 95% confidence.",
+        learningAgenda: "Determine the optimal layout for end-screen CTAs.",
+        owner: "AI Strategist",
+        reviewers: ["Growth PM", "Data Science"],
+        isAgentGenerated: true, // For highlighting
+      };
+      setReviews((prev) => [newBrief, ...prev]);
+      setShowAgentBriefModal(false);
+      addAgentAction(
+        "AI Strategist has created a new brief and submitted it for review."
+      );
+      handleTabChange("reviews"); // Switch to reviews tab to see the result
+    }, 3500);
+  };
+
+  const handleAgentProposeOkr = () => {
+    addAgentAction(
+      "AI Strategist is analyzing performance dashboards for strategic opportunities..."
+    );
+    setShowAgentOkrModal(true); // Show the "thinking" modal
+
+    setTimeout(() => {
+      const newOkrId = `okr-agent-${Math.floor(Math.random() * 1000)}`;
+      const newOKR = {
+        id: newOkrId,
+        title: "AI Proposal: Expand International Growth by 25%",
+        description:
+          "AI has detected a lag in international user engagement compared to domestic growth. This OKR aims to address that gap.",
+        key_results: [
+          "Increase international user base by 25%",
+          "Increase international revenue by 30%",
+          "Achieve 85% feature parity across key regions",
+        ],
+        progress: 0,
+        owner: "AI Strategist",
+        quarter: "Q3 2025",
+        aiRecommendations: [
+          "Focus on localized content experiments.",
+          "Test region-specific pricing tiers.",
+        ],
+        isAgentGenerated: true, // Flag for highlighting
+      };
+
+      setOkrData((prev) => [newOKR, ...prev]); // Add directly to the list
+      setNewlyCreatedOkrId(newOkrId); // Set the ID for highlighting
+
+      // Reset the form fields so they don't conflict
+      setNewOKRTitle("");
+      setNewOKRDesc("");
+      setNewKeyResults([]);
+
+      setShowAgentOkrModal(false); // Hide the "thinking" modal
+      addAgentAction("AI Strategist has proposed and created a new OKR.");
+      setShowOKRModal(true); // Open the main OKR modal to show the result
+    }, 3500);
+  };
 
   // Breadcrumb management
   const updateBreadcrumbs = (newPath, newLabel) => {
@@ -8228,6 +8478,33 @@ Would you like me to help refine this further with more specific recommendations
       );
       closeReviewModal();
     }, 500);
+  };
+
+  //... (after handleReviewAction)
+  const handleAcceptGuardianSuggestion = (briefId, suggestion) => {
+    setReviews((prev) =>
+      prev.map((brief) => {
+        if (brief.id === briefId) {
+          const newFeedback = brief.feedback.map((f) =>
+            f.type === "AI Guardian"
+              ? {
+                  ...f,
+                  suggestion: null,
+                  message: `${f.message} (Suggestion Accepted)`,
+                }
+              : f
+          );
+          // This is a simplified way to add the metric. A real app would be more robust.
+          const newMetrics = brief.primaryMetric + ", User Satisfaction";
+          showToast(
+            "AI Guardian's suggestion has been applied to the brief.",
+            "success"
+          );
+          return { ...brief, feedback: newFeedback, primaryMetric: newMetrics };
+        }
+        return brief;
+      })
+    );
   };
 
   const handleSaveBriefEdit = (updatedBrief) => {
@@ -9833,6 +10110,155 @@ Generated by E2E Experiment Platform`;
   /* ---------------------------------------------------------------------------
      RENDER FUNCTIONS
      --------------------------------------------------------------------------- */
+  // --- Agentic AI Demo Components ---
+
+  const AgenticAIFeed = () => {
+    if (!agenticMode || agentActions.length === 0) return null;
+
+    return (
+      <div className="fixed bottom-4 left-4 w-80 bg-white rounded-lg shadow-2xl p-4 z-50 border-2 border-purple-400">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="font-bold text-purple-800">Agentic AI Feed</h3>
+          <button
+            onClick={() => setAgentActions([])}
+            className="text-gray-400 hover:text-gray-600 text-xs"
+          >
+            Clear
+          </button>
+        </div>
+        <div className="space-y-3 max-h-60 overflow-y-auto">
+          {agentActions.map((action, index) => (
+            <div
+              key={index}
+              className="flex items-start text-sm animate-fadeIn"
+            >
+              <div className="w-5 h-5 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs mr-2 flex-shrink-0 mt-0.5">
+                ✨
+              </div>
+              <p className="text-gray-700">{action}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const JiraTicketModal = () => {
+    if (!showJiraModal) return null;
+
+    return (
+      <Modal
+        isOpen={showJiraModal}
+        onClose={() => setShowJiraModal(false)}
+        title="AI Action: Jira Ticket Created"
+        size="lg"
+      >
+        <div className="p-4 bg-gray-50 rounded-lg border">
+          <div className="flex items-center mb-4">
+            <img
+              src="https://cdn.worldvectorlogo.com/logos/jira-1.svg"
+              alt="Jira Logo"
+              className="w-8 h-8 mr-3"
+            />
+            <div>
+              <p className="text-sm text-gray-500">YT-NEXUS-101</p>
+              <h3 className="font-bold text-lg text-gray-800">
+                [Action Item] Implement Personalized Membership Prompts
+              </h3>
+            </div>
+          </div>
+          <div className="space-y-4 text-sm">
+            <div className="grid grid-cols-2 gap-4">
+              <p>
+                <strong>Reporter:</strong> Knowledge Catalyst (AI Agent)
+              </p>
+              <p>
+                <strong>Assignee:</strong> Growth Engineering Team
+              </p>
+            </div>
+
+            {/* --- ADDED THIS BLOCK --- */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-3 bg-green-100 border border-green-200 rounded">
+                <p className="text-xs font-bold text-green-800">
+                  TRIGGERING INSIGHT
+                </p>
+                <p className="text-green-700 font-medium mt-1">
+                  +40% on 'Membership Conversion Rate'
+                </p>
+              </div>
+              <div className="p-3 bg-blue-100 border border-blue-200 rounded">
+                <p className="text-xs font-bold text-blue-800">
+                  PROJECTED BUSINESS IMPACT
+                </p>
+                <p className="text-blue-700 font-medium mt-1">
+                  +$800K Annual Revenue
+                </p>
+              </div>
+            </div>
+            {/* --- END OF ADDED BLOCK --- */}
+
+            <div>
+              <p>
+                <strong>Description:</strong>
+              </p>
+              <div className="p-3 bg-white border rounded mt-1">
+                The experiment "Channel Membership Optimization" (mem-001) has
+                concluded with a statistically significant **+40% improvement**
+                in conversion rate.
+                <br />
+                <br />
+                This action item is to roll out the winning personalized prompt
+                variant to 100% of eligible users globally.
+                <br />
+                <br />
+                See attached experiment results for details.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-end mt-6">
+          <button
+            onClick={() => setShowJiraModal(false)}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Close
+          </button>
+        </div>
+      </Modal>
+    );
+  };
+
+  //... (after JiraTicketModal)
+  const InvestigationLog = () => {
+    const steps = [
+      "Querying by user tenure... no significant variance.",
+      "Querying by country... no significant variance.",
+      "Querying by device type... significant variance found!",
+      "Synthesizing final insight...",
+    ];
+    const [visibleSteps, setVisibleSteps] = useState([]);
+
+    useEffect(() => {
+      steps.forEach((step, index) => {
+        setTimeout(() => {
+          setVisibleSteps((prev) => [...prev, step]);
+        }, (index + 1) * 700);
+      });
+    }, []);
+
+    return (
+      <div className="p-3 bg-gray-800 text-white font-mono text-xs rounded-lg mb-4">
+        <p className="text-green-400">> Insight Detective investigation log:</p>
+        {visibleSteps.map((step, index) => (
+          <p key={index} className="animate-fadeIn">{`> ${step}`}</p>
+        ))}
+      </div>
+    );
+  };
+
+  // --- End of Agentic AI Components ---
+
   // Render Header and Navigation
   const renderHeader = () => (
     <header className="bg-white shadow">
@@ -9848,6 +10274,48 @@ Generated by E2E Experiment Platform`;
           </div>
 
           <div className="flex items-center space-x-3">
+            {/* AGENTIC AI TOGGLE -- ADD THIS BLOCK */}
+            <div className="flex items-center space-x-2 p-1 bg-gray-100 rounded-lg">
+              <span className="text-xs font-medium text-purple-700 ml-2">
+                Agentic AI
+              </span>
+              <button
+                id="agentic-toggle-button"
+                onClick={() => setAgenticMode(!agenticMode)}
+                className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${
+                  agenticMode ? "bg-purple-600" : "bg-gray-300"
+                }`}
+              >
+                <span
+                  className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${
+                    agenticMode ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
+            {/* END OF NEW BLOCK */}
+
+            {/* --- ADD THIS BLOCK for Agentic Action Buttons --- */}
+            {agenticMode && (
+              <div className="flex items-center space-x-2 border-l pl-3 ml-3">
+                <button
+                  onClick={handleAgentCreateBrief}
+                  className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded text-sm hover:bg-purple-200 flex items-center"
+                  title="Simulate AI Strategist creating a new brief"
+                >
+                  <span className="mr-1">✨</span> Agent: Create Brief
+                </button>
+                <button
+                  onClick={handleAgentProposeOkr}
+                  className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded text-sm hover:bg-purple-200 flex items-center"
+                  title="Simulate AI Strategist proposing a new OKR"
+                >
+                  <span className="mr-1">🎯</span> Agent: Propose OKR
+                </button>
+              </div>
+            )}
+            {/* --- END OF NEW BLOCK --- */}
+
             <button
               onClick={() => setShowOKRModal(true)}
               className="text-gray-600 hover:text-gray-800"
@@ -11262,13 +11730,25 @@ Generated by E2E Experiment Platform`;
         {/* AI Analysis Section */}
         {exp.status ===
           LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase() && (
-          <AIAnalysisComponent
-            experiment={exp}
-            isLoading={showAnalysisLoading}
-            onRequestAnalysis={(modelId) => generateAIAnalysis(exp, modelId)}
-          />
+          <div
+            className={
+              agenticMode && exp.isAgentModified
+                ? "p-1 border-2 border-purple-500 rounded-lg shadow-purple-300 shadow-lg"
+                : ""
+            }
+          >
+            {/* ADD THIS COMPONENT */}
+            {agenticMode && exp.isAgentModified && <InvestigationLog />}
+
+            <AIAnalysisComponent
+              experiment={exp}
+              isLoading={showAnalysisLoading}
+              onRequestAnalysis={(modelId) => generateAIAnalysis(exp, modelId)}
+            />
+          </div>
         )}
         {/* Trend chart */}
+
         <Card>
           <h3 className="font-medium text-gray-800 mb-3">Metrics Trend</h3>
           {data.length ? (
@@ -12416,6 +12896,11 @@ Generated by E2E Experiment Platform`;
                   <Card
                     key={item.id}
                     onClick={() => openKnowledgeDetails(item)}
+                    className={
+                      agenticMode && item.isAgentSource
+                        ? "ring-2 ring-offset-2 ring-purple-500 shadow-purple-300 shadow-lg"
+                        : ""
+                    }
                   >
                     <div className="flex justify-between items-start">
                       <div>
@@ -13478,6 +13963,11 @@ Generated by E2E Experiment Platform`;
                       <Card
                         key={item.id}
                         onClick={() => openPlanItemModal(item)}
+                        className={
+                          agenticMode && item.isAgentGenerated
+                            ? "ring-2 ring-offset-2 ring-purple-500 shadow-purple-300 shadow-lg"
+                            : ""
+                        }
                       >
                         <div className="flex justify-between">
                           <h4 className="font-medium text-gray-800 text-sm">
@@ -14055,7 +14545,14 @@ Generated by E2E Experiment Platform`;
             <div className="space-y-4">
               {reviewsFiltered.length > 0 ? (
                 reviewsFiltered.map((brief) => (
-                  <Card key={brief.id} className="hover:shadow-md transition">
+                  <Card
+                    key={brief.id}
+                    className={`hover:shadow-md transition ${
+                      agenticMode && brief.isAgentGenerated
+                        ? "ring-2 ring-offset-2 ring-purple-500 shadow-purple-300 shadow-lg"
+                        : ""
+                    }`}
+                  >
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="text-lg font-semibold text-gray-800">
@@ -14279,11 +14776,32 @@ Generated by E2E Experiment Platform`;
                                 : "bg-red-50 text-red-700"
                             }`}
                           >
-                            <span className="font-medium mr-1">
-                              {f.type.charAt(0).toUpperCase() + f.type.slice(1)}
-                              :
-                            </span>
-                            {f.message}
+                            <p>
+                              <span className="font-medium mr-1">
+                                {f.type.charAt(0).toUpperCase() +
+                                  f.type.slice(1)}
+                                :
+                              </span>
+                              {f.message}
+                            </p>
+                            {/* ADD THIS BUTTON LOGIC */}
+                            {agenticMode && f.suggestion && (
+                              <div className="text-right mt-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAcceptGuardianSuggestion(
+                                      brief.id,
+                                      f.suggestion
+                                    );
+                                  }}
+                                  className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded hover:bg-purple-200"
+                                >
+                                  Accept Suggestion
+                                </button>
+                              </div>
+                            )}
+                            {/* END OF BUTTON LOGIC */}
                           </div>
                         ))}
                       </div>
@@ -15867,6 +16385,17 @@ Generated by E2E Experiment Platform`;
   }) => {
     const [viewMode, setViewMode] = useState(true); // This is now valid
 
+    // ADD THIS useEffect
+    useEffect(() => {
+      // When the modal is closed, clear the highlight ID
+      return () => {
+        if (isOpen) {
+          setNewlyCreatedOkrId(null);
+        }
+      };
+    }, [isOpen]);
+    // END ADDITION
+
     if (!isOpen) return null;
 
     return (
@@ -15906,7 +16435,11 @@ Generated by E2E Experiment Platform`;
                 {okrData.map((okr) => (
                   <div
                     key={okr.id}
-                    className="p-4 border rounded-lg hover:shadow-sm transition"
+                    className={`p-4 border rounded-lg hover:shadow-sm transition ${
+                      okr.id === newlyCreatedOkrId
+                        ? "ring-2 ring-offset-2 ring-purple-500 shadow-purple-300 shadow-lg"
+                        : ""
+                    }`}
                   >
                     <div className="flex justify-between items-start">
                       <h4 className="font-medium text-gray-800 text-lg">
@@ -16653,7 +17186,11 @@ Generated by E2E Experiment Platform`;
       >
         <Wizard
           steps={wizardSteps}
-          onComplete={handleWizardFinalSubmit}
+          onComplete={(wizardFinalData) => {
+            // The combined data from all wizard steps is here
+            // Now we call the original submit logic, but pass this data
+            handleWizardFinalSubmit(wizardFinalData);
+          }}
           initialStep={0}
           initialData={wizardData} // Pass the wizardData to the Wizard
           knowledgeData={knowledge}
@@ -16681,6 +17218,41 @@ Generated by E2E Experiment Platform`;
       </main>
 
       {/* Modals */}
+      <AgenticAIFeed />
+      <JiraTicketModal />
+      {/* --- ADD THESE TWO MODALS --- */}
+      <Modal
+        isOpen={showAgentBriefModal}
+        onClose={() => {}}
+        title="AI Strategist at Work"
+        size="md"
+        showCloseButton={false}
+      >
+        <div className="text-center p-8">
+          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg text-gray-700">
+            Analyzing business goals and past results to generate a high-impact
+            experiment brief...
+          </p>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showAgentOkrModal}
+        onClose={() => {}}
+        title="AI Strategist at Work"
+        size="md"
+        showCloseButton={false}
+      >
+        <div className="text-center p-8">
+          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg text-gray-700">
+            Analyzing performance dashboards... A strategic opportunity has been
+            detected. Proposing a new OKR...
+          </p>
+        </div>
+      </Modal>
+      {/* --- END OF NEW MODALS --- */}
       {renderPowerAnalyzerModal()}
       {renderLearningPathModal()}
       {renderOKRModal()}
