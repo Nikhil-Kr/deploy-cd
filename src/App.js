@@ -2458,6 +2458,7 @@ const AIAnalysisComponent = ({
   experiment,
   isLoading = false,
   onRequestAnalysis,
+  selectedRole,
 }) => {
   const [showModelSelection, setShowModelSelection] = useState(false);
 
@@ -2467,6 +2468,39 @@ const AIAnalysisComponent = ({
       onRequestAnalysis(modelId);
     }
   };
+
+  // --- ADD THIS LOGIC BLOCK ---
+  const getDisplayAnalysis = () => {
+    if (!experiment.aiAnalysis) return null;
+
+    if (selectedRole === "exec") {
+      const execSummary = `**Executive Summary:** The change resulted in a significant **-7% drop in Search CTR**, primarily driven by a **-18% decline on iOS**. This indicates a negative business impact. **Recommendation: Revert immediately.**`;
+      return `${execSummary}\n\n--- \n\n**Full Analysis:**\n${experiment.aiAnalysis}`;
+    }
+    return experiment.aiAnalysis;
+  };
+
+  const displayAnalysis = getDisplayAnalysis();
+
+  const formatText = (text) => {
+    if (!text) return [];
+    return text.split("\n").map((paragraph, idx) => {
+      if (!paragraph.trim()) return <br key={idx} />;
+      const parts = paragraph.split(/(\*\*.*?\*\*)/g);
+      return (
+        <p key={idx} className="mb-2">
+          {parts.map((part, i) =>
+            part.startsWith("**") ? (
+              <strong key={i}>{part.slice(2, -2)}</strong>
+            ) : (
+              part
+            )
+          )}
+        </p>
+      );
+    });
+  };
+  // --- END OF LOGIC BLOCK ---
 
   return (
     <div className="border rounded-lg bg-gray-50 p-4">
@@ -5830,6 +5864,8 @@ const Wizard = ({
             message:
               "Audience may overlap with 'MEM-001'. Suggest adding 'user satisfaction' as a guardrail metric.",
             suggestion: { type: "add_metric", metric: "User Satisfaction" },
+            reasoning:
+              "The experiment 'MEM-001' also targeted returning users and showed a slight dip in satisfaction scores. Adding this guardrail will help monitor for unintended negative impacts.",
           };
           // This part is tricky without changing the whole structure.
           // Let's add the feedback to the final combined data instead.
@@ -6636,6 +6672,10 @@ export default function E2ExperimentPlatform() {
   const [highlightedItemId, setHighlightedItemId] = useState(null);
   const [agentBriefCreated, setAgentBriefCreated] = useState(false);
   const [agentOkrCreated, setAgentOkrCreated] = useState(false);
+  const [visibleReasoning, setVisibleReasoning] = useState(null);
+  // <-- ADD THIS NEW STATE VARIABLE -->
+  const [isAgentTyping, setIsAgentTyping] = useState(false);
+  // <-- END OF NEW STATE VARIABLE -->
   // <-- END OF NEW STATE VARIABLES -->
 
   // Modal States
@@ -6692,14 +6732,17 @@ export default function E2ExperimentPlatform() {
   // Agentic AI Simulation Effect
 
   // PASTE THE FUNCTION DEFINITION HERE
-  const addAgentAction = (message) => {
-    setAgentActions((prev) => {
-      // Check if the message already exists to prevent duplicates
-      if (prev.includes(message)) {
-        return prev;
-      }
-      return [message, ...prev];
-    });
+  const addAgentAction = (message, delay = 1000) => {
+    setIsAgentTyping(true);
+    setTimeout(() => {
+      setAgentActions((prev) => {
+        if (prev.includes(message)) {
+          return prev;
+        }
+        return [message, ...prev];
+      });
+      setIsAgentTyping(false);
+    }, delay);
   };
 
   useEffect(() => {
@@ -6862,6 +6905,7 @@ export default function E2ExperimentPlatform() {
         owner: "AI Strategist",
         reviewers: ["Growth PM", "Data Science"],
         isAgentGenerated: true, // For highlighting
+        nexusScore: 95,
       };
       setReviews((prev) => [newBrief, ...prev]);
       setShowAgentBriefModal(false);
@@ -6923,6 +6967,97 @@ export default function E2ExperimentPlatform() {
       setAgentOkrCreated(true);
     }, 3500);
   };
+
+  // ... (after handleAgentProposeOkr)
+  const handleAgentProposeFollowUp = (sourceKnowledge) => {
+    if (agentBriefCreated) {
+      showToast(
+        "AI Strategist has already created a brief in this session.",
+        "info"
+      );
+      return;
+    }
+
+    setShowAgentBriefModal(true);
+    addAgentAction(
+      `AI Strategist is analyzing insights from '${sourceKnowledge.name}' to propose a follow-up...`
+    );
+
+    setTimeout(() => {
+      const newBrief = {
+        id: `agent-brief-${Math.floor(Math.random() * 1000)}`,
+        name: `AI Follow-up: ${sourceKnowledge.name}`,
+        submittedBy: "AI Strategist",
+        submittedDate: new Date().toLocaleDateString(),
+        status: LIFECYCLE_STAGES.REVIEW.UNDER_REVIEW.label.toLowerCase(),
+        lifecycleStage: "review",
+        dueDate: new Date(
+          new Date().setDate(new Date().getDate() + 7)
+        ).toLocaleDateString(),
+        feedback: [
+          {
+            type: "AI Guardian",
+            status: "success",
+            message:
+              "This AI-generated brief has been pre-screened based on a successful prior experiment.",
+          },
+        ],
+        businessGoal: `Apply the successful learnings from '${sourceKnowledge.name}' to a new context.`,
+        primaryMetric: "Conversion Rate",
+        hypothesis: `Based on the ${
+          sourceKnowledge.improvement > 0 ? "positive" : "negative"
+        } results of '${
+          sourceKnowledge.name
+        }', we hypothesize that a similar approach will yield comparable results when applied to...`,
+        successCriteria: `Achieve a lift greater than the original ${sourceKnowledge.improvement}% with 95% confidence.`,
+        learningAgenda: `Validate if the learnings from '${sourceKnowledge.name}' are generalizable.`,
+        owner: "AI Strategist",
+        reviewers: ["Growth PM", "Data Science"],
+        isAgentGenerated: true,
+      };
+      setReviews((prev) => [newBrief, ...prev]);
+      setShowAgentBriefModal(false);
+      addAgentAction(
+        "AI Strategist has created a follow-up brief and submitted it for review."
+      );
+      handleTabChange("reviews");
+      setAgentBriefCreated(true);
+    }, 3500);
+  };
+  // ...
+
+  // ... (after handleAgentProposeFollowUp)
+  const handleAgentRegenerateOkr = (okrId) => {
+    addAgentAction(
+      "AI Strategist is re-evaluating the data to propose an alternative OKR..."
+    );
+
+    // Simulate a short thinking period
+    setTimeout(() => {
+      setOkrData((prev) =>
+        prev.map((okr) => {
+          if (okr.id === okrId) {
+            // Create a new, slightly different version
+            return {
+              ...okr,
+              title: "AI Alternative: Boost Creator Monetization by 20%",
+              description:
+                "AI analysis suggests a secondary opportunity in improving tools for existing creators to increase their revenue.",
+              key_results: [
+                "Increase Super Chat adoption by 30%",
+                "Grow Channel Memberships for small creators by 25%",
+                "Reduce creator support tickets related to monetization by 15%",
+              ],
+            };
+          }
+          return okr;
+        })
+      );
+      addAgentAction("An alternative OKR has been generated.");
+      showToast("AI has generated an alternative OKR proposal.", "success");
+    }, 1500);
+  };
+  // ...
 
   const handleFeedItemClick = (message) => {
     if (message.includes("proposed a new high-priority experiment")) {
@@ -8563,6 +8698,7 @@ Would you like me to help refine this further with more specific recommendations
             "AI Guardian's suggestion has been applied to the brief.",
             "success"
           );
+          const newScore = Math.min(100, (brief.nexusScore || 80) + 10);
           return { ...brief, feedback: newFeedback, primaryMetric: newMetrics };
         }
         return brief;
@@ -10132,6 +10268,7 @@ Generated by E2E Experiment Platform`;
         endDate: wizardData.endDate,
         category: wizardData.category,
         okrs: wizardData.okrs || [],
+        nexusScore: 95,
       };
 
       setReviews((prev) => [...prev, newBrief]);
@@ -10202,12 +10339,25 @@ Generated by E2E Experiment Platform`;
               <p className="text-gray-700">{action}</p>
             </button>
           ))}
+          {/* --- ADD THIS TYPING INDICATOR BLOCK --- */}
+          {isAgentTyping && (
+            <div className="flex items-center space-x-1 p-1">
+              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+            </div>
+          )}
+          {/* --- END OF ADDITION --- */}
         </div>
       </div>
     );
   };
 
   const JiraTicketModal = () => {
+    // <-- ADD THESE STATE VARIABLES -->
+    const [jiraPriority, setJiraPriority] = useState("Medium");
+    const [jiraNote, setJiraNote] = useState("");
+    // <-- END OF ADDITION -->
     if (!showJiraModal) return null;
 
     return (
@@ -10231,6 +10381,7 @@ Generated by E2E Experiment Platform`;
               </h3>
             </div>
           </div>
+          {/* --- REPLACE THIS BLOCK --- */}
           <div className="space-y-4 text-sm">
             <div className="grid grid-cols-2 gap-4">
               <p>
@@ -10241,7 +10392,6 @@ Generated by E2E Experiment Platform`;
               </p>
             </div>
 
-            {/* --- ADDED THIS BLOCK --- */}
             <div className="grid grid-cols-2 gap-4">
               <div className="p-3 bg-green-100 border border-green-200 rounded">
                 <p className="text-xs font-bold text-green-800">
@@ -10260,7 +10410,6 @@ Generated by E2E Experiment Platform`;
                 </p>
               </div>
             </div>
-            {/* --- END OF ADDED BLOCK --- */}
 
             <div>
               <p>
@@ -10274,12 +10423,42 @@ Generated by E2E Experiment Platform`;
                 <br />
                 This action item is to roll out the winning personalized prompt
                 variant to 100% of eligible users globally.
-                <br />
-                <br />
-                See attached experiment results for details.
               </div>
             </div>
+
+            {/* --- NEW INTERACTIVE ELEMENTS --- */}
+            <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Set Priority:
+                </label>
+                <select
+                  value={jiraPriority}
+                  onChange={(e) => setJiraPriority(e.target.value)}
+                  className="w-full p-2 border rounded"
+                >
+                  <option>Highest</option>
+                  <option>High</option>
+                  <option>Medium</option>
+                  <option>Low</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Add Note for Team:
+                </label>
+                <input
+                  type="text"
+                  value={jiraNote}
+                  onChange={(e) => setJiraNote(e.target.value)}
+                  className="w-full p-2 border rounded"
+                  placeholder="e.g., 'CC @product-lead'"
+                />
+              </div>
+            </div>
+            {/* --- END OF NEW ELEMENTS --- */}
           </div>
+          {/* --- END OF REPLACEMENT --- */}
         </div>
         <div className="flex justify-between items-center mt-6">
           <p className="text-xs text-gray-500">
@@ -10297,7 +10476,9 @@ Generated by E2E Experiment Platform`;
               onClick={() => {
                 setShowJiraModal(false);
                 showToast(
-                  "Jira ticket YT-NEXUS-101 approved and sent to engineering.",
+                  `Jira ticket approved with '${jiraPriority}' priority and sent to engineering. ${
+                    jiraNote ? `Note added: "${jiraNote}"` : ""
+                  }`,
                   "success"
                 );
               }}
@@ -10335,6 +10516,30 @@ Generated by E2E Experiment Platform`;
         {visibleSteps.map((step, index) => (
           <p key={index} className="animate-fadeIn">{`> ${step}`}</p>
         ))}
+      </div>
+    );
+  };
+
+  // ... (after JiraTicketModal component)
+
+  const AIThinkingAnimation = ({ steps }) => {
+    const [currentStep, setCurrentStep] = useState(0);
+
+    useEffect(() => {
+      if (steps.length > 1) {
+        const interval = setInterval(() => {
+          setCurrentStep((prev) => (prev + 1) % steps.length);
+        }, 1200);
+        return () => clearInterval(interval);
+      }
+    }, [steps]);
+
+    return (
+      <div className="text-center p-8">
+        <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+        <p className="text-lg text-gray-700 transition-opacity duration-300">
+          {steps[currentStep]}
+        </p>
       </div>
     );
   };
@@ -11848,6 +12053,7 @@ Generated by E2E Experiment Platform`;
               experiment={exp}
               isLoading={showAnalysisLoading}
               onRequestAnalysis={(modelId) => generateAIAnalysis(exp, modelId)}
+              selectedRole={selectedRole}
             />
           </div>
         )}
@@ -13197,6 +13403,20 @@ Generated by E2E Experiment Platform`;
                       </span>
 
                       <div className="flex space-x-2">
+                        {/* --- ADD THIS BUTTON --- */}
+                        {agenticMode && (
+                          <button
+                            className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded text-sm hover:bg-purple-200 flex items-center"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAgentProposeFollowUp(item);
+                            }}
+                          >
+                            <span className="mr-1">✨</span> Propose Follow-up
+                          </button>
+                        )}
+                        {/* --- END OF ADDITION --- */}
+
                         <button
                           className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200"
                           onClick={(e) => {
@@ -13402,128 +13622,84 @@ Generated by E2E Experiment Platform`;
               >
                 <ForceGraph2D
                   graphData={(() => {
-                    // Extract all experiment and OKR IDs from the data
+                    // --- REPLACE THIS ENTIRE LOGIC BLOCK ---
                     const completedExperiments = experiments.filter(
                       (e) =>
                         e.status ===
                         LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase()
                     );
 
-                    // Create node lists
-                    const knowledgeNodes = knowledge
-                      .filter((k) => {
-                        if (knowledgeSearch) {
-                          const matchName = k.name
-                            .toLowerCase()
-                            .includes(knowledgeSearch.toLowerCase());
-                          const matchTags = k.tags.some((tag) =>
-                            tag
-                              .toLowerCase()
-                              .includes(knowledgeSearch.toLowerCase())
-                          );
-                          const matchInsights = k.insights.some((insight) =>
-                            insight
-                              .toLowerCase()
-                              .includes(knowledgeSearch.toLowerCase())
-                          );
-                          return matchName || matchTags || matchInsights;
-                        }
-                        if (knowledgeCategory !== "all") {
-                          return k.category === knowledgeCategory;
-                        }
-                        return true;
-                      })
-                      .map((k) => ({
-                        id: k.id,
-                        name: `📚 ${k.name}`,
-                        group: k.category,
-                        type: "knowledge",
-                        val: 15, // size
-                      }));
+                    const knowledgeNodes = knowledge.map((k) => ({
+                      id: k.id,
+                      name: `📚 ${k.name}`,
+                      group: k.category,
+                      type: "knowledge",
+                      val: 15,
+                    }));
 
-                    const experimentNodes = completedExperiments
-                      .filter((e) => {
-                        if (knowledgeSearch) {
-                          return e.name
-                            .toLowerCase()
-                            .includes(knowledgeSearch.toLowerCase());
-                        }
-                        if (knowledgeCategory !== "all") {
-                          return e.category === knowledgeCategory;
-                        }
-                        return true;
-                      })
-                      .map((e) => ({
-                        id: e.id,
-                        name: `🧪 ${e.name}`,
-                        group: e.category,
-                        type: "experiment",
-                        val: 10, // size
-                      }));
+                    const experimentNodes = completedExperiments.map((e) => ({
+                      id: e.id,
+                      name: `🧪 ${e.name}`,
+                      group: e.category,
+                      type: "experiment",
+                      val: 10,
+                    }));
 
-                    const okrNodes = okrData
-                      .filter((o) => {
-                        if (knowledgeSearch) {
-                          return o.title
-                            .toLowerCase()
-                            .includes(knowledgeSearch.toLowerCase());
-                        }
-                        return true;
-                      })
-                      .map((o) => ({
-                        id: o.id,
-                        name: `🎯 ${o.title}`,
-                        group: "okr",
-                        type: "okr",
-                        val: 12, // size
-                      }));
+                    const okrNodes = okrData.map((o) => ({
+                      id: o.id,
+                      name: `🎯 ${o.title}`,
+                      group: "okr",
+                      type: "okr",
+                      val: 12,
+                    }));
 
-                    // Create a set of all node IDs for quick reference
-                    const nodeIds = new Set([
-                      ...knowledgeNodes.map((n) => n.id),
-                      ...experimentNodes.map((n) => n.id),
-                      ...okrNodes.map((n) => n.id),
-                    ]);
-
-                    // Create validated links that only connect existing nodes
+                    const allNodes = [
+                      ...knowledgeNodes,
+                      ...experimentNodes,
+                      ...okrNodes,
+                    ];
                     const links = [];
 
-                    // Knowledge to experiment links
                     knowledge.forEach((k) => {
                       if (k.relatedExperiments) {
                         k.relatedExperiments.forEach((expId) => {
-                          if (nodeIds.has(expId)) {
-                            links.push({
-                              source: k.id,
-                              target: expId,
-                            });
-                          }
+                          links.push({ source: k.id, target: expId });
                         });
                       }
                     });
 
-                    // Experiment to OKR links
                     completedExperiments.forEach((e) => {
                       if (e.okrs) {
                         e.okrs.forEach((okrId) => {
-                          if (nodeIds.has(okrId)) {
-                            links.push({
-                              source: e.id,
-                              target: okrId,
-                            });
-                          }
+                          links.push({ source: e.id, target: okrId });
                         });
                       }
                     });
 
-                    return {
-                      nodes: [
-                        ...knowledgeNodes,
-                        ...experimentNodes,
-                        ...okrNodes,
-                      ],
-                      links: links,
-                    };
+                    // AGENTIC AI ENHANCEMENT: Add the learning chain
+                    if (agenticMode) {
+                      const agentPlan = roadmap.find(
+                        (r) => r.id === "agent-strat-001"
+                      );
+                      if (agentPlan) {
+                        allNodes.push({
+                          id: agentPlan.id,
+                          name: `📝 ${agentPlan.name}`,
+                          group: agentPlan.category,
+                          type: "planning",
+                          val: 12,
+                        });
+                        // Create the special link
+                        links.push({
+                          source: "past-001", // The source knowledge item
+                          target: agentPlan.id,
+                          isAgentLink: true, // Custom flag for styling
+                        });
+                      }
+                    }
+
+                    return { nodes: allNodes, links: links };
+                    // --- END OF REPLACEMENT ---
                   })()}
                   nodeLabel={(node) => `${node.name} (${node.type})`}
                   nodeAutoColorBy="group"
@@ -14650,7 +14826,22 @@ Generated by E2E Experiment Platform`;
                   <Card
                     key={brief.id}
                     agentHighlight={agenticMode && brief.isAgentGenerated}
+                    className="relative" // <-- Add relative positioning
                   >
+                    {/* --- ADD THIS NEXUS SCORE BLOCK --- */}
+                    {brief.nexusScore && (
+                      <div className="absolute top-3 right-3 text-center">
+                        <div className="w-12 h-12 bg-purple-100 rounded-full flex flex-col items-center justify-center border-2 border-purple-200">
+                          <span className="text-purple-700 font-bold text-lg leading-tight">
+                            {brief.nexusScore}
+                          </span>
+                          <span className="text-purple-600 text-xs -mt-1">
+                            Score
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    {/* --- END OF ADDITION --- */}
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="text-lg font-semibold text-gray-800">
@@ -14863,45 +15054,72 @@ Generated by E2E Experiment Platform`;
                         <h4 className="text-sm font-medium text-gray-700">
                           Feedback
                         </h4>
-                        {brief.feedback.map((f, i) => (
-                          <div
-                            key={i}
-                            className={`p-2 text-sm rounded ${
-                              f.status === "success"
-                                ? "bg-green-50 text-green-700"
-                                : f.status === "warning"
-                                ? "bg-amber-50 text-amber-700"
-                                : "bg-red-50 text-red-700"
-                            }`}
-                          >
-                            <p>
-                              <span className="font-medium mr-1">
-                                {f.type.charAt(0).toUpperCase() +
-                                  f.type.slice(1)}
-                                :
-                              </span>
-                              {f.message}
-                            </p>
-                            {/* ADD THIS BUTTON LOGIC */}
-                            {agenticMode && f.suggestion && (
-                              <div className="text-right mt-2">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleAcceptGuardianSuggestion(
-                                      brief.id,
-                                      f.suggestion
-                                    );
-                                  }}
-                                  className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded hover:bg-purple-200"
-                                >
-                                  Accept Suggestion
-                                </button>
+                        {brief.feedback.map((f, i) => {
+                          const reasoningId = `${brief.id}-${i}`;
+                          return (
+                            <div
+                              key={i}
+                              className={`p-2 text-sm rounded ${
+                                f.status === "success"
+                                  ? "bg-green-50 text-green-700"
+                                  : f.status === "warning"
+                                  ? "bg-amber-50 text-amber-700"
+                                  : "bg-red-50 text-red-700"
+                              }`}
+                            >
+                              <div className="flex justify-between items-start">
+                                <p className="flex-grow">
+                                  <span className="font-medium mr-1">
+                                    {f.type.charAt(0).toUpperCase() +
+                                      f.type.slice(1)}
+                                    :
+                                  </span>
+                                  {f.message}
+                                </p>
+                                {/* --- ADD THIS "WHY?" BUTTON --- */}
+                                {agenticMode && f.reasoning && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setVisibleReasoning(
+                                        visibleReasoning === reasoningId
+                                          ? null
+                                          : reasoningId
+                                      );
+                                    }}
+                                    className="ml-2 text-xs font-bold text-purple-700 bg-purple-100 rounded-full w-5 h-5 flex-shrink-0 hover:bg-purple-200"
+                                  >
+                                    ?
+                                  </button>
+                                )}
                               </div>
-                            )}
-                            {/* END OF BUTTON LOGIC */}
-                          </div>
-                        ))}
+
+                              {/* --- ADD THIS TOOLTIP --- */}
+                              {visibleReasoning === reasoningId && (
+                                <div className="mt-2 p-2 bg-white border border-purple-200 rounded-lg text-xs text-purple-800">
+                                  <strong>Reasoning:</strong> {f.reasoning}
+                                </div>
+                              )}
+
+                              {agenticMode && f.suggestion && (
+                                <div className="text-right mt-2">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleAcceptGuardianSuggestion(
+                                        brief.id,
+                                        f.suggestion
+                                      );
+                                    }}
+                                    className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded hover:bg-purple-200"
+                                  >
+                                    Accept Suggestion
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
 
@@ -16532,13 +16750,13 @@ Generated by E2E Experiment Platform`;
               <div className="space-y-4">
                 {okrData.map((okr) => (
                   <div
-                  key={okr.id}
-                  className={`p-4 border rounded-lg hover:shadow-sm transition ${
-                    okr.id === newlyCreatedOkrId
-                      ? "ring-2 ring-offset-2 ring-purple-500 shadow-purple-300 shadow-lg"
-                      : ""
-                  }`}
-                >
+                    key={okr.id}
+                    className={`p-4 border rounded-lg hover:shadow-sm transition ${
+                      okr.id === newlyCreatedOkrId
+                        ? "ring-2 ring-offset-2 ring-purple-500 shadow-purple-300 shadow-lg"
+                        : ""
+                    }`}
+                  >
                     <div className="flex justify-between items-start">
                       <h4 className="font-medium text-gray-800 text-lg">
                         {okr.title}
@@ -16675,12 +16893,21 @@ Generated by E2E Experiment Platform`;
             </button>
             {/* --- ADD THIS NEW BUTTON --- */}
             {newlyCreatedOkrId && (
-              <button
-                className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
-                onClick={onClose}
-              >
-                Accept & Close
-              </button>
+              <>
+                {/* --- ADD THIS REGENERATE BUTTON --- */}
+                <button
+                  className="px-4 py-2 bg-purple-100 text-purple-700 rounded hover:bg-purple-200"
+                  onClick={() => handleAgentRegenerateOkr(newlyCreatedOkrId)}
+                >
+                  Regenerate
+                </button>
+                <button
+                  className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+                  onClick={onClose}
+                >
+                  Accept & Close
+                </button>
+              </>
             )}
             {/* --- END OF ADDITION --- */}
           </div>
@@ -17329,6 +17556,7 @@ Generated by E2E Experiment Platform`;
       <AgenticAIFeed />
       <JiraTicketModal />
       {/* --- ADD THESE TWO MODALS --- */}
+      {/* --- REPLACE THESE TWO MODALS --- */}
       <Modal
         isOpen={showAgentBriefModal}
         onClose={() => {}}
@@ -17336,13 +17564,14 @@ Generated by E2E Experiment Platform`;
         size="md"
         showCloseButton={false}
       >
-        <div className="text-center p-8">
-          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-lg text-gray-700">
-            Analyzing business goals and past results to generate a high-impact
-            experiment brief...
-          </p>
-        </div>
+        <AIThinkingAnimation
+          steps={[
+            "Analyzing business goals...",
+            "Cross-referencing past experiments...",
+            "Identifying knowledge gaps...",
+            "Generating high-impact hypothesis...",
+          ]}
+        />
       </Modal>
 
       <Modal
@@ -17352,13 +17581,14 @@ Generated by E2E Experiment Platform`;
         size="md"
         showCloseButton={false}
       >
-        <div className="text-center p-8">
-          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-lg text-gray-700">
-            Analyzing performance dashboards... A strategic opportunity has been
-            detected. Proposing a new OKR...
-          </p>
-        </div>
+        <AIThinkingAnimation
+          steps={[
+            "Scanning performance dashboards...",
+            "Detecting trend anomalies...",
+            "Identifying strategic opportunity...",
+            "Formulating new OKR proposal...",
+          ]}
+        />
       </Modal>
       {/* --- END OF NEW MODALS --- */}
       {renderPowerAnalyzerModal()}
