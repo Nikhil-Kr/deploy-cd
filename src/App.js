@@ -1312,10 +1312,20 @@ const FilterControls = ({ filters, onChange, showBorder = true }) => (
 );
 
 // Consistent Card Design Component
-const Card = ({ children, onClick, highlight, className = "" }) => (
+const Card = ({
+  children,
+  onClick,
+  highlight,
+  agentHighlight,
+  className = "",
+}) => (
   <div
     className={`border rounded-lg p-4 bg-white hover:shadow transition ${
-      highlight ? "border-blue-300 bg-blue-50" : "border-gray-200"
+      agentHighlight
+        ? "border-purple-500 border-2 shadow-purple-300 shadow-lg"
+        : highlight
+        ? "border-blue-300 bg-blue-50"
+        : "border-gray-200"
     } ${onClick ? "cursor-pointer" : ""} ${className}`}
     onClick={onClick}
   >
@@ -6620,11 +6630,12 @@ export default function E2ExperimentPlatform() {
   const [agentActions, setAgentActions] = useState([]);
   const [showJiraModal, setShowJiraModal] = useState(false);
   const [originalStateSnapshot, setOriginalStateSnapshot] = useState(null);
-  // ... (after [showJiraModal, setShowJiraModal])
   const [showAgentBriefModal, setShowAgentBriefModal] = useState(false);
   const [showAgentOkrModal, setShowAgentOkrModal] = useState(false);
   const [newlyCreatedOkrId, setNewlyCreatedOkrId] = useState(null);
-  // ...
+  const [highlightedItemId, setHighlightedItemId] = useState(null);
+  const [agentBriefCreated, setAgentBriefCreated] = useState(false);
+  const [agentOkrCreated, setAgentOkrCreated] = useState(false);
   // <-- END OF NEW STATE VARIABLES -->
 
   // Modal States
@@ -6696,6 +6707,10 @@ export default function E2ExperimentPlatform() {
       // --- ACTIVATION LOGIC ---
       setAgentActions([]); // Clear previous actions
       showToast("Agentic AI Mode Activated!", "info");
+
+      // ADD THESE TWO LINES TO RESET FLAGS ON ACTIVATION
+      setAgentBriefCreated(false);
+      setAgentOkrCreated(false);
 
       // Save a snapshot of the current state to revert back to
       setOriginalStateSnapshot({ roadmap, experiments, knowledge, reviews });
@@ -6774,9 +6789,19 @@ export default function E2ExperimentPlatform() {
         const targetExp = experiments.find((e) => e.id === "mem-001");
         if (targetExp && targetExp.improvement > 20) {
           addAgentAction(
-            "Knowledge Catalyst found a high-impact result and created a Jira ticket for implementation."
+            "Knowledge Catalyst is analyzing a high-impact result from a completed experiment..."
           );
-          setShowJiraModal(true);
+          setHighlightedItemId("mem-001"); // Start the glow
+          handleTabChange("experiments"); // Switch to the right tab
+
+          // Wait a moment so the user can see the glow, then show the modal
+          setTimeout(() => {
+            setHighlightedItemId(null); // Stop the glow
+            addAgentAction(
+              "Action proposed: Create Jira ticket for implementation."
+            );
+            setShowJiraModal(true);
+          }, 2500);
         }
       }, 4500);
     } else if (originalStateSnapshot) {
@@ -6789,10 +6814,19 @@ export default function E2ExperimentPlatform() {
       setAgentActions([]);
       setShowJiraModal(false);
       setOriginalStateSnapshot(null);
+      setAgentBriefCreated(false);
+      setAgentOkrCreated(false);
     }
   }, [agenticMode]);
 
   const handleAgentCreateBrief = () => {
+    if (agentBriefCreated) {
+      showToast(
+        "AI Strategist has already created a brief in this session.",
+        "info"
+      );
+      return;
+    }
     setShowAgentBriefModal(true);
     addAgentAction(
       "AI Strategist is analyzing business goals and past results to propose a new experiment..."
@@ -6835,10 +6869,19 @@ export default function E2ExperimentPlatform() {
         "AI Strategist has created a new brief and submitted it for review."
       );
       handleTabChange("reviews"); // Switch to reviews tab to see the result
+      setAgentBriefCreated(true);
     }, 3500);
   };
 
   const handleAgentProposeOkr = () => {
+    // ADD THIS CHECK AT THE TOP
+    if (agentOkrCreated) {
+      showToast(
+        "AI Strategist has already proposed an OKR in this session.",
+        "info"
+      );
+      return;
+    }
     addAgentAction(
       "AI Strategist is analyzing performance dashboards for strategic opportunities..."
     );
@@ -6877,7 +6920,27 @@ export default function E2ExperimentPlatform() {
       setShowAgentOkrModal(false); // Hide the "thinking" modal
       addAgentAction("AI Strategist has proposed and created a new OKR.");
       setShowOKRModal(true); // Open the main OKR modal to show the result
+      setAgentOkrCreated(true);
     }, 3500);
+  };
+
+  const handleFeedItemClick = (message) => {
+    if (message.includes("proposed a new high-priority experiment")) {
+      handleTabChange("planning");
+      // Highlight the new card briefly
+      setHighlightedItemId("agent-strat-001");
+      setTimeout(() => setHighlightedItemId(null), 2000);
+    } else if (message.includes("analyzed")) {
+      const exp = experiments.find((e) => e.id === "search-001");
+      if (exp) {
+        handleTabChange("experiments");
+        selectExperiment(exp);
+      }
+    } else if (message.includes("Jira ticket")) {
+      setShowJiraModal(true);
+    } else if (message.includes("proposed and created a new OKR")) {
+      setShowOKRModal(true);
+    }
   };
 
   // Breadcrumb management
@@ -10128,15 +10191,16 @@ Generated by E2E Experiment Platform`;
         </div>
         <div className="space-y-3 max-h-60 overflow-y-auto">
           {agentActions.map((action, index) => (
-            <div
+            <button
               key={index}
-              className="flex items-start text-sm animate-fadeIn"
+              onClick={() => handleFeedItemClick(action)}
+              className="flex items-start text-sm animate-fadeIn w-full text-left p-1 rounded hover:bg-gray-100"
             >
               <div className="w-5 h-5 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs mr-2 flex-shrink-0 mt-0.5">
                 ✨
               </div>
               <p className="text-gray-700">{action}</p>
-            </div>
+            </button>
           ))}
         </div>
       </div>
@@ -10217,13 +10281,31 @@ Generated by E2E Experiment Platform`;
             </div>
           </div>
         </div>
-        <div className="flex justify-end mt-6">
-          <button
-            onClick={() => setShowJiraModal(false)}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Close
-          </button>
+        <div className="flex justify-between items-center mt-6">
+          <p className="text-xs text-gray-500">
+            The AI has drafted this ticket. Your approval is required to send
+            it.
+          </p>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => setShowJiraModal(false)}
+              className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-50"
+            >
+              Close
+            </button>
+            <button
+              onClick={() => {
+                setShowJiraModal(false);
+                showToast(
+                  "Jira ticket YT-NEXUS-101 approved and sent to engineering.",
+                  "success"
+                );
+              }}
+              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+            >
+              Approve & Send
+            </button>
+          </div>
         </div>
       </Modal>
     );
@@ -10300,15 +10382,33 @@ Generated by E2E Experiment Platform`;
               <div className="flex items-center space-x-2 border-l pl-3 ml-3">
                 <button
                   onClick={handleAgentCreateBrief}
-                  className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded text-sm hover:bg-purple-200 flex items-center"
-                  title="Simulate AI Strategist creating a new brief"
+                  disabled={agentBriefCreated}
+                  className={`px-3 py-1.5 rounded text-sm flex items-center transition-colors ${
+                    agentBriefCreated
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      : "bg-purple-100 text-purple-700 hover:bg-purple-200"
+                  }`}
+                  title={
+                    agentBriefCreated
+                      ? "Brief already created in this session"
+                      : "Simulate AI Strategist creating a new brief"
+                  }
                 >
                   <span className="mr-1">✨</span> Agent: Create Brief
                 </button>
                 <button
                   onClick={handleAgentProposeOkr}
-                  className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded text-sm hover:bg-purple-200 flex items-center"
-                  title="Simulate AI Strategist proposing a new OKR"
+                  disabled={agentOkrCreated}
+                  className={`px-3 py-1.5 rounded text-sm flex items-center transition-colors ${
+                    agentOkrCreated
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      : "bg-purple-100 text-purple-700 hover:bg-purple-200"
+                  }`}
+                  title={
+                    agentOkrCreated
+                      ? "OKR already proposed in this session"
+                      : "Simulate AI Strategist proposing a new OKR"
+                  }
                 >
                   <span className="mr-1">🎯</span> Agent: Propose OKR
                 </button>
@@ -10657,7 +10757,11 @@ Generated by E2E Experiment Platform`;
               <Card
                 key={exp.id}
                 onClick={() => selectExperiment(exp)}
-                className="hover:shadow-md transition"
+                className={`hover:shadow-md transition ${
+                  highlightedItemId === exp.id
+                    ? "ring-4 ring-offset-2 ring-purple-500 shadow-purple-400 shadow-lg"
+                    : ""
+                }`}
               >
                 <div className="flex justify-between items-start">
                   <h3 className="text-lg font-bold text-gray-800">
@@ -13827,6 +13931,7 @@ Generated by E2E Experiment Platform`;
                       <Card
                         key={item.id}
                         onClick={() => openPlanItemModal(item)}
+                        agentHighlight={agenticMode && item.isAgentGenerated}
                       >
                         <div className="flex justify-between">
                           <h4 className="font-medium text-gray-800 text-sm">
@@ -13917,6 +14022,7 @@ Generated by E2E Experiment Platform`;
                       <Card
                         key={item.id}
                         onClick={() => openPlanItemModal(item)}
+                        agentHighlight={agenticMode && item.isAgentGenerated}
                       >
                         <div className="flex justify-between">
                           <h4 className="font-medium text-gray-800 text-sm">
@@ -13963,11 +14069,7 @@ Generated by E2E Experiment Platform`;
                       <Card
                         key={item.id}
                         onClick={() => openPlanItemModal(item)}
-                        className={
-                          agenticMode && item.isAgentGenerated
-                            ? "ring-2 ring-offset-2 ring-purple-500 shadow-purple-300 shadow-lg"
-                            : ""
-                        }
+                        agentHighlight={agenticMode && item.isAgentGenerated}
                       >
                         <div className="flex justify-between">
                           <h4 className="font-medium text-gray-800 text-sm">
@@ -14547,11 +14649,7 @@ Generated by E2E Experiment Platform`;
                 reviewsFiltered.map((brief) => (
                   <Card
                     key={brief.id}
-                    className={`hover:shadow-md transition ${
-                      agenticMode && brief.isAgentGenerated
-                        ? "ring-2 ring-offset-2 ring-purple-500 shadow-purple-300 shadow-lg"
-                        : ""
-                    }`}
+                    agentHighlight={agenticMode && brief.isAgentGenerated}
                   >
                     <div className="flex justify-between items-start">
                       <div>
@@ -16434,13 +16532,13 @@ Generated by E2E Experiment Platform`;
               <div className="space-y-4">
                 {okrData.map((okr) => (
                   <div
-                    key={okr.id}
-                    className={`p-4 border rounded-lg hover:shadow-sm transition ${
-                      okr.id === newlyCreatedOkrId
-                        ? "ring-2 ring-offset-2 ring-purple-500 shadow-purple-300 shadow-lg"
-                        : ""
-                    }`}
-                  >
+                  key={okr.id}
+                  className={`p-4 border rounded-lg hover:shadow-sm transition ${
+                    okr.id === newlyCreatedOkrId
+                      ? "ring-2 ring-offset-2 ring-purple-500 shadow-purple-300 shadow-lg"
+                      : ""
+                  }`}
+                >
                     <div className="flex justify-between items-start">
                       <h4 className="font-medium text-gray-800 text-lg">
                         {okr.title}
@@ -16575,6 +16673,16 @@ Generated by E2E Experiment Platform`;
             >
               Save OKR
             </button>
+            {/* --- ADD THIS NEW BUTTON --- */}
+            {newlyCreatedOkrId && (
+              <button
+                className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+                onClick={onClose}
+              >
+                Accept & Close
+              </button>
+            )}
+            {/* --- END OF ADDITION --- */}
           </div>
         )}
       </Modal>
