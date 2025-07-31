@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom"; // <-- ADD THIS LINE
 import {
   LineChart as RechartsLineChart,
   Line,
@@ -1397,6 +1398,7 @@ const StatResultExplainer = ({ improvement, significance, confidence }) => {
 };
 
 // Modal Component
+// With this new version that accepts a zIndex prop:
 const Modal = ({
   isOpen,
   onClose,
@@ -1404,6 +1406,7 @@ const Modal = ({
   children,
   size = "md",
   showCloseButton = true,
+  zIndex = "z-50", // <-- Add this prop with a default value
 }) => {
   if (!isOpen) return null;
 
@@ -1416,7 +1419,9 @@ const Modal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+    <div
+      className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 ${zIndex} overflow-y-auto`}
+    >
       <div
         className={`bg-white rounded-lg w-full ${sizeClasses[size]} relative shadow-lg my-8 flex flex-col`}
         style={{ maxHeight: "85vh" }}
@@ -4264,7 +4269,12 @@ const PowerCalculator = ({
 };
 
 // Variant Designer Component (continued)
-const VariantDesigner = ({ control, treatment, onChange }) => {
+const VariantDesigner = ({
+  control,
+  treatment,
+  onChange,
+  onOpenImageStudio,
+}) => {
   const [controlPreview, setControlPreview] = useState(
     control.imagePreview || null
   );
@@ -4396,6 +4406,15 @@ const VariantDesigner = ({ control, treatment, onChange }) => {
                     onChange={handleControlFileChange}
                   />
                 </label>
+                {/* --- ADD THIS BUTTON --- */}
+                <button
+                  type="button"
+                  onClick={() => onOpenImageStudio("control")}
+                  className="mt-2 px-4 py-2 bg-purple-100 text-purple-700 rounded cursor-pointer hover:bg-purple-200 text-sm flex items-center"
+                >
+                  <span className="mr-1">✨</span> Generate with AI
+                </button>
+                {/* --- END OF ADDITION --- */}
               </div>
             )}
           </div>
@@ -4488,6 +4507,15 @@ const VariantDesigner = ({ control, treatment, onChange }) => {
                     onChange={handleTreatmentFileChange}
                   />
                 </label>
+                {/* --- ADD THIS BUTTON --- */}
+                <button
+                  type="button"
+                  onClick={() => onOpenImageStudio("control")}
+                  className="mt-2 px-4 py-2 bg-purple-100 text-purple-700 rounded cursor-pointer hover:bg-purple-200 text-sm flex items-center"
+                >
+                  <span className="mr-1">✨</span> Generate with AI
+                </button>
+                {/* --- END OF ADDITION --- */}
               </div>
             )}
           </div>
@@ -5794,6 +5822,10 @@ const Wizard = ({
   initialData = {},
   knowledgeData = [],
   onToast = () => {},
+  agenticMode,
+  addAgentAction,
+  setShowCollisionWarning,
+  onOpenImageStudio,
 }) => {
   const [currentStep, setCurrentStep] = useState(initialStep);
 
@@ -5941,8 +5973,14 @@ const Wizard = ({
           data={stepData[currentStep]}
           onChange={handleStepDataChange}
           allData={stepData}
-          allKnowledge={knowledgeData} // Replace with actual knowledge array if needed
-          onToast={onToast} // Replace with actual toast function if needed
+          allKnowledge={knowledgeData}
+          onToast={onToast}
+          // --- ADD THESE PROPS ---
+          agenticMode={agenticMode}
+          addAgentAction={addAgentAction}
+          setShowCollisionWarning={setShowCollisionWarning}
+          onOpenImageStudio={onOpenImageStudio}
+          // --- END OF ADDITION ---
         />
       </div>
 
@@ -6286,7 +6324,14 @@ const WizardBasicInfoStep = ({
 };
 
 // Goals and Metrics Step Component
-const WizardGoalsMetricsStep = ({ data, onChange, allData }) => {
+const WizardGoalsMetricsStep = ({
+  data,
+  onChange,
+  allData,
+  agenticMode,
+  addAgentAction,
+  setShowCollisionWarning,
+}) => {
   const handleChange = (field, value) => {
     onChange({ ...data, [field]: value });
   };
@@ -6324,9 +6369,23 @@ const WizardGoalsMetricsStep = ({ data, onChange, allData }) => {
       >
         <AudienceSelector
           selectedAudiences={data.audiences || []}
-          onChange={(audiences) => handleChange("audiences", audiences)}
+          onChange={(audiences) => {
+            handleChange("audiences", audiences);
+            // --- ADD THIS COLLISION CHECK LOGIC ---
+            if (agenticMode && audiences.includes("us-users")) {
+              addAgentAction(
+                "Air Traffic Controller is checking for potential experiment collisions..."
+              );
+              setTimeout(() => {
+                addAgentAction(
+                  "Collision detected! An existing experiment is targeting the same audience."
+                );
+                setShowCollisionWarning(true);
+              }, 1500);
+            }
+            // --- END OF ADDITION ---
+          }}
         />
-
         <div className="mt-4">
           <FormField
             label="Custom Audience Description (optional)"
@@ -6398,7 +6457,7 @@ const WizardGoalsMetricsStep = ({ data, onChange, allData }) => {
 };
 
 // Variants Step Component
-const WizardVariantsStep = ({ data, onChange, allData }) => {
+const WizardVariantsStep = ({ data, onChange, allData, onOpenImageStudio }) => {
   const handleChange = (field, value) => {
     onChange({ ...data, [field]: value });
   };
@@ -6432,6 +6491,7 @@ const WizardVariantsStep = ({ data, onChange, allData }) => {
               handleChange("control", control);
               handleChange("treatment", treatment);
             }}
+            onOpenImageStudio={onOpenImageStudio} // <-- ADD THIS PROP
           />
         )}
       </FormGroup>
@@ -6675,7 +6735,18 @@ export default function E2ExperimentPlatform() {
   const [visibleReasoning, setVisibleReasoning] = useState(null);
   // <-- ADD THIS NEW STATE VARIABLE -->
   const [isAgentTyping, setIsAgentTyping] = useState(false);
-  // <-- END OF NEW STATE VARIABLE -->
+  // <-- ADD THESE NEW STATE VARIABLES FOR ADVANCED DEMO -->
+  const [showMeetingModal, setShowMeetingModal] = useState(false);
+  const [meetingDetails, setMeetingDetails] = useState(null);
+  const [showScoreReasoning, setShowScoreReasoning] = useState(null);
+  const [showCollisionWarning, setShowCollisionWarning] = useState(false);
+  // <-- ADD THESE NEW STATE VARIABLES FOR IMAGE STUDIO -->
+  const [showImageStudio, setShowImageStudio] = useState(false);
+  const [imageStudioConfig, setImageStudioConfig] = useState({
+    variantType: null,
+  });
+  // <-- END OF NEW STATE VARIABLES -->
+
   // <-- END OF NEW STATE VARIABLES -->
 
   // Modal States
@@ -6745,27 +6816,142 @@ export default function E2ExperimentPlatform() {
     }, delay);
   };
 
+  // useEffect(() => {
+  //   if (agenticMode) {
+  //     // --- ACTIVATION LOGIC ---
+  //     setAgentActions([]); // Clear previous actions
+  //     showToast("Agentic AI Mode Activated!", "info");
+
+  //     // ADD THESE TWO LINES TO RESET FLAGS ON ACTIVATION
+  //     setAgentBriefCreated(false);
+  //     setAgentOkrCreated(false);
+
+  //     // Save a snapshot of the current state to revert back to
+  //     setOriginalStateSnapshot({ roadmap, experiments, knowledge, reviews });
+
+  //     const addAgentAction = (message) => {
+  //       setAgentActions((prev) => {
+  //         // Check if the message already exists to prevent duplicates
+  //         if (prev.includes(message)) {
+  //           return prev;
+  //         }
+  //         return [message, ...prev];
+  //       });
+  //     };
+
+  //     // --- 1. AI Strategist (Planning) ---
+  //     setTimeout(() => {
+  //       const agenticIdeaExists = roadmap.some(
+  //         (r) => r.id === "agent-strat-001"
+  //       );
+  //       if (!agenticIdeaExists) {
+  //         const newAgentIdea = {
+  //           id: "agent-strat-001",
+  //           name: "AI-Generated: Apply Membership Learnings to New Users",
+  //           category: "engagement",
+  //           priority: "high",
+  //           status: LIFECYCLE_STAGES.PLANNING.PLANNED.label.toLowerCase(),
+  //           lifecycleStage: "planning",
+  //           startDate: "Sep 1, 2025",
+  //           endDate: "Sep 30, 2025",
+  //           duration: "4 weeks",
+  //           goal: "Improve new user retention by applying successful personalization tactics.",
+  //           hypothesis:
+  //             "Based on the success of 'Channel Membership Optimization', a personalized onboarding checklist will increase 30-day retention by guiding users to key 'aha' moments.",
+  //           metrics: ["Retention Rate", "Feature Adoption"],
+  //           progress: 0,
+  //           owner: "AI Strategist",
+  //           createdDate: new Date().toLocaleDateString(),
+  //           learningAgenda:
+  //             "Identify which personalization tactics from memberships are most effective for new user onboarding.",
+  //           okrs: ["okr-001"],
+  //           isAgentGenerated: true, // Flag for highlighting
+  //         };
+  //         setRoadmap((prev) => [newAgentIdea, ...prev]);
+  //         // Also highlight the source knowledge item
+  //         setKnowledge((prev) =>
+  //           prev.map((k) =>
+  //             k.id === "past-001" ? { ...k, isAgentSource: true } : k
+  //           )
+  //         );
+  //         addAgentAction(
+  //           "AI Strategist analyzed a past success and proposed a follow-up experiment to apply the learnings."
+  //         );
+  //       }
+  //     }, 1500);
+
+  //     // --- 2. Insight Detective (Analysis) ---
+  //     setTimeout(() => {
+  //       const targetExpId = "search-001";
+  //       setExperiments((prev) =>
+  //         prev.map((e) => {
+  //           if (e.id === targetExpId && !e.aiAnalysis) {
+  //             const newAnalysis =
+  //               "Insight Detective automatically analyzed this inconclusive experiment.\n\nThe negative result (-7% CTR) is driven entirely by iOS users (-18% CTR), while Android users showed a positive trend (+4% CTR). This suggests a platform-specific UI/UX issue with the treatment variant on iOS. \n\nRecommended next steps:\n1. Revert the change for iOS users immediately.\n2. Conduct a design review of the treatment variant on iOS devices.\n3. Consider launching the experiment for Android users only.";
+  //             addAgentAction(
+  //               `Insight Detective has automatically analyzed the '${e.name}' experiment.`
+  //             );
+  //             return { ...e, aiAnalysis: newAnalysis, isAgentModified: true };
+  //           }
+  //           return e;
+  //         })
+  //       );
+  //     }, 3000);
+
+  //     // --- 3. Knowledge Catalyst (Learning) ---
+  //     setTimeout(() => {
+  //       const targetExp = experiments.find((e) => e.id === "mem-001");
+  //       if (targetExp && targetExp.improvement > 20) {
+  //         addAgentAction(
+  //           "Knowledge Catalyst is analyzing a high-impact result from a completed experiment..."
+  //         );
+  //         setHighlightedItemId("mem-001"); // Start the glow
+  //         handleTabChange("experiments"); // Switch to the right tab
+
+  //         // Wait a moment so the user can see the glow, then show the modal
+  //         setTimeout(() => {
+  //           setHighlightedItemId(null); // Stop the glow
+  //           addAgentAction(
+  //             "Action proposed: Create Jira ticket for implementation."
+  //           );
+  //           setShowJiraModal(true);
+  //         }, 2500);
+  //       }
+  //     }, 4500);
+  //   } else if (originalStateSnapshot) {
+  //     // --- DEACTIVATION LOGIC ---
+  //     showToast("Agentic AI Mode Deactivated. Reverting changes.", "info");
+  //     setRoadmap(originalStateSnapshot.roadmap);
+  //     setExperiments(originalStateSnapshot.experiments);
+  //     setKnowledge(originalStateSnapshot.knowledge);
+  //     setReviews(originalStateSnapshot.reviews);
+  //     setAgentActions([]);
+  //     setShowJiraModal(false);
+  //     setOriginalStateSnapshot(null);
+  //     setAgentBriefCreated(false);
+  //     setAgentOkrCreated(false);
+  //   }
+  // }, [agenticMode]);
+
+  // Agentic AI Simulation Effect
   useEffect(() => {
     if (agenticMode) {
       // --- ACTIVATION LOGIC ---
-      setAgentActions([]); // Clear previous actions
+      setAgentActions([]);
       showToast("Agentic AI Mode Activated!", "info");
-
-      // ADD THESE TWO LINES TO RESET FLAGS ON ACTIVATION
       setAgentBriefCreated(false);
       setAgentOkrCreated(false);
-
-      // Save a snapshot of the current state to revert back to
       setOriginalStateSnapshot({ roadmap, experiments, knowledge, reviews });
 
-      const addAgentAction = (message) => {
-        setAgentActions((prev) => {
-          // Check if the message already exists to prevent duplicates
-          if (prev.includes(message)) {
-            return prev;
-          }
-          return [message, ...prev];
-        });
+      const addAgentAction = (message, delay = 1000) => {
+        setIsAgentTyping(true);
+        setTimeout(() => {
+          setAgentActions((prev) => {
+            if (prev.includes(message)) return prev;
+            return [message, ...prev];
+          });
+          setIsAgentTyping(false);
+        }, delay);
       };
 
       // --- 1. AI Strategist (Planning) ---
@@ -6786,40 +6972,59 @@ export default function E2ExperimentPlatform() {
             duration: "4 weeks",
             goal: "Improve new user retention by applying successful personalization tactics.",
             hypothesis:
-              "Based on the success of 'Channel Membership Optimization', a personalized onboarding checklist will increase 30-day retention by guiding users to key 'aha' moments.",
+              "Based on the success of 'Channel Membership Optimization', a personalized onboarding checklist will increase 30-day retention.",
             metrics: ["Retention Rate", "Feature Adoption"],
             progress: 0,
             owner: "AI Strategist",
             createdDate: new Date().toLocaleDateString(),
             learningAgenda:
-              "Identify which personalization tactics from memberships are most effective for new user onboarding.",
+              "Validate if personalization tactics from memberships are effective for new user onboarding.",
             okrs: ["okr-001"],
-            isAgentGenerated: true, // Flag for highlighting
+            isAgentGenerated: true,
+            // opportunityScore: 8.5,
+            // opportunityReasoning:
+            //   "This idea scores high because it aligns with 2 active OKRs, builds on a past successful experiment (mem-001), and requires low engineering effort for a potentially high impact on a key business metric (retention).",
           };
           setRoadmap((prev) => [newAgentIdea, ...prev]);
-          // Also highlight the source knowledge item
           setKnowledge((prev) =>
             prev.map((k) =>
               k.id === "past-001" ? { ...k, isAgentSource: true } : k
             )
           );
           addAgentAction(
-            "AI Strategist analyzed a past success and proposed a follow-up experiment to apply the learnings."
+            "AI Strategist analyzed a past success and proposed a follow-up experiment."
           );
         }
       }, 1500);
 
-      // --- 2. Insight Detective (Analysis) ---
+      // --- 2. Insight Detective (Analysis & Meeting Scheduling) ---
       setTimeout(() => {
-        const targetExpId = "search-001";
         setExperiments((prev) =>
           prev.map((e) => {
-            if (e.id === targetExpId && !e.aiAnalysis) {
+            if (e.id === "search-001" && !e.aiAnalysis) {
               const newAnalysis =
-                "Insight Detective automatically analyzed this inconclusive experiment.\n\nThe negative result (-7% CTR) is driven entirely by iOS users (-18% CTR), while Android users showed a positive trend (+4% CTR). This suggests a platform-specific UI/UX issue with the treatment variant on iOS. \n\nRecommended next steps:\n1. Revert the change for iOS users immediately.\n2. Conduct a design review of the treatment variant on iOS devices.\n3. Consider launching the experiment for Android users only.";
+                "Insight Detective automatically analyzed this inconclusive experiment.\n\nThe negative result (-7% CTR) is driven entirely by iOS users (-18% CTR), while Android users showed a positive trend (+4% CTR). This suggests a platform-specific UI/UX issue with the treatment variant on iOS.";
               addAgentAction(
                 `Insight Detective has automatically analyzed the '${e.name}' experiment.`
               );
+
+              // NEW: Trigger meeting scheduler for surprising results
+              setTimeout(() => {
+                addAgentAction(
+                  "Insight Detective flagged this surprising result for strategic review and has scheduled a meeting."
+                );
+                setMeetingDetails({
+                  attendees: [
+                    "Lisa Park (Owner)",
+                    "Robert Chen (Team)",
+                    "Growth PM",
+                  ],
+                  title: `Strategy Review: Surprising Results for '${e.name}'`,
+                  agenda: `1. Review AI-generated analysis of the iOS vs. Android user segments.\n2. Discuss potential causes for the negative impact on iOS.\n3. Decide on next steps: revert, iterate, or launch platform-specific variant.`,
+                });
+                setShowMeetingModal(true);
+              }, 2000);
+
               return { ...e, aiAnalysis: newAnalysis, isAgentModified: true };
             }
             return e;
@@ -6832,21 +7037,44 @@ export default function E2ExperimentPlatform() {
         const targetExp = experiments.find((e) => e.id === "mem-001");
         if (targetExp && targetExp.improvement > 20) {
           addAgentAction(
-            "Knowledge Catalyst is analyzing a high-impact result from a completed experiment..."
+            "Knowledge Catalyst is analyzing a high-impact result...",
+            500
           );
-          setHighlightedItemId("mem-001"); // Start the glow
-          handleTabChange("experiments"); // Switch to the right tab
-
-          // Wait a moment so the user can see the glow, then show the modal
+          setHighlightedItemId("mem-001");
+          handleTabChange("experiments");
           setTimeout(() => {
-            setHighlightedItemId(null); // Stop the glow
+            setHighlightedItemId(null);
             addAgentAction(
-              "Action proposed: Create Jira ticket for implementation."
+              "Action proposed: Create Jira ticket for implementation.",
+              1000
             );
             setShowJiraModal(true);
           }, 2500);
         }
-      }, 4500);
+      }, 5500);
+
+      // --- 4. Adaptive Analyst (Live Monitoring) ---
+      setTimeout(() => {
+        setExperiments((prev) =>
+          prev.map((e) => {
+            if (
+              e.id === "eng-001" &&
+              e.status ===
+                LIFECYCLE_STAGES.EXECUTION.IN_PROGRESS.label.toLowerCase()
+            ) {
+              addAgentAction(
+                "Adaptive Analyst is monitoring in-progress experiments for early trends..."
+              );
+              return {
+                ...e,
+                agentStatus:
+                  "Early trend detected. Recommend extending test by 3 days to reach significance.",
+              };
+            }
+            return e;
+          })
+        );
+      }, 8000);
     } else if (originalStateSnapshot) {
       // --- DEACTIVATION LOGIC ---
       showToast("Agentic AI Mode Deactivated. Reverting changes.", "info");
@@ -6856,6 +7084,7 @@ export default function E2ExperimentPlatform() {
       setReviews(originalStateSnapshot.reviews);
       setAgentActions([]);
       setShowJiraModal(false);
+      setShowMeetingModal(false);
       setOriginalStateSnapshot(null);
       setAgentBriefCreated(false);
       setAgentOkrCreated(false);
@@ -7058,6 +7287,13 @@ export default function E2ExperimentPlatform() {
     }, 1500);
   };
   // ...
+
+  //... (after handleAgentRegenerateOkr)
+  const handleOpenImageStudio = (variantType) => {
+    setImageStudioConfig({ variantType });
+    setShowImageStudio(true);
+  };
+  //...
 
   const handleFeedItemClick = (message) => {
     if (message.includes("proposed a new high-priority experiment")) {
@@ -9520,6 +9756,37 @@ Generated by E2E Experiment Platform`;
         </div>
 
         <div className="p-4">
+          {/* --- ADD THIS NEW CASE --- */}
+          {results.type === "synthesized_report" && (
+            <div className="prose max-w-none">
+              <p className="text-gray-600 mb-4">
+                The Corporate Memory Agent analyzed all relevant past
+                experiments and synthesized the following report:
+              </p>
+              <div className="p-4 bg-gray-50 border rounded-lg">
+                {results.content.split("\n\n").map((paragraph, idx) => (
+                  <p key={idx} className="mb-2 last:mb-0">
+                    {paragraph
+                      .split(/(\*\*.*?\*\*)/g)
+                      .map((part, i) =>
+                        part.startsWith("**") ? (
+                          <strong key={i}>{part.slice(2, -2)}</strong>
+                        ) : (
+                          part
+                        )
+                      )}
+                  </p>
+                ))}
+              </div>
+              <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg text-purple-800">
+                <p>
+                  <span className="font-bold">AI Recommendation:</span>{" "}
+                  {results.recommendation}
+                </p>
+              </div>
+            </div>
+          )}
+          {/* --- END OF NEW CASE --- */}
           {results.type === "report" && (
             <div className="prose max-w-none">
               {results.content.split("\n\n").map((section, idx) => {
@@ -9701,7 +9968,19 @@ Generated by E2E Experiment Platform`;
       };
 
       // Determine the type of query and generate appropriate response
+      // --- NEW: ADVANCED SYNTHESIS LOGIC ---
       if (
+        query.toLowerCase().includes("most effective strategy") ||
+        query.toLowerCase().includes("what have we learned")
+      ) {
+        results.type = "synthesized_report";
+        results.title = `AI-Synthesized Report: Effective Mobile Conversion Strategies`;
+        results.content = `Based on analyzing 15 past experiments, the most effective strategies have been:\n\n1. **Simplifying Checkout Forms:** This approach has consistently shown an average lift of **+18%**.\n2. **Personalized Prompts:** Using user data to tailor messaging has driven an average lift of **+25%**.\n\nConversely, experiments focused on changing button colors have consistently shown no significant impact.`;
+        results.recommendation =
+          "Recommendation: Prioritize experiments that combine personalization with UI simplification for the highest potential impact.";
+      }
+      // --- END OF NEW LOGIC ---
+      else if (
         query.toLowerCase().includes("qbr") ||
         query.toLowerCase().includes("quarterly")
       ) {
@@ -10492,6 +10771,234 @@ Generated by E2E Experiment Platform`;
     );
   };
 
+  const OKRModal = ({
+    isOpen,
+    onClose,
+    okrData,
+    newOKRTitle,
+    setNewOKRTitle,
+    newOKRDesc,
+    setNewOKRDesc,
+    newKeyResult,
+    setNewKeyResult,
+    newKeyResults,
+    setNewKeyResults,
+    addKeyResult,
+    removeKeyResult,
+    addOKR,
+    newlyCreatedOkrId,
+    setNewlyCreatedOkrId,
+  }) => {
+    const [viewMode, setViewMode] = useState(true);
+
+    const handleClose = () => {
+      setNewlyCreatedOkrId(null);
+      onClose();
+    };
+
+    if (!isOpen) return null;
+
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        title={viewMode ? "OKR Dashboard" : "Add New OKR"}
+        size={viewMode ? "lg" : "md"}
+      >
+        {viewMode ? (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium">
+                Strategic Objectives & Key Results
+              </h3>
+              <button
+                onClick={() => setViewMode(false)}
+                className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 flex items-center"
+              >
+                <span className="mr-1">+</span>
+                Add New OKR
+              </button>
+            </div>
+
+            {okrData.length === 0 ? (
+              <div className="p-8 text-center bg-gray-50 rounded-lg">
+                <p className="text-gray-600">No OKRs defined yet</p>
+                <button
+                  onClick={() => setViewMode(false)}
+                  className="mt-3 px-3 py-1.5 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  Create Your First OKR
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {okrData.map((okr) => (
+                  <div
+                    key={okr.id}
+                    className={`p-4 rounded-lg hover:shadow-sm transition ${
+                      okr.id === newlyCreatedOkrId
+                        ? "border-2 border-purple-500 shadow-purple-300 shadow-lg"
+                        : "border border-gray-200"
+                    }`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-medium text-gray-800 text-lg">
+                        {okr.title}
+                      </h4>
+                      <span className="px-2 py-0.5 bg-amber-100 text-amber-800 text-xs rounded">
+                        {okr.quarter}
+                      </span>
+                    </div>
+                    <p className="text-gray-600 mt-1">{okr.description}</p>
+
+                    <div className="mt-3">
+                      <h5 className="text-sm font-medium text-gray-700">
+                        Key Results
+                      </h5>
+                      <ul className="space-y-1 mt-1">
+                        {okr.key_results.map((kr, idx) => (
+                          <li key={idx} className="flex items-center text-sm">
+                            <span className="mr-2">•</span>
+                            {kr}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="mt-3">
+                      <div className="flex justify-between items-center text-xs">
+                        <span>Progress</span>
+                        <span>{okr.progress}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 h-2 rounded-full mt-1">
+                        <div
+                          className="h-2 bg-amber-500 rounded-full"
+                          style={{ width: `${okr.progress}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-3 flex justify-between items-center text-xs text-gray-500">
+                      <span>Owner: {okr.owner}</span>
+                      <div>
+                        <button className="text-blue-600 hover:text-blue-800">
+                          {okr.relatedExperiments?.length || 0} experiments
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <button
+              onClick={() => setViewMode(true)}
+              className="text-blue-600 hover:text-blue-800 flex items-center"
+            >
+              <span className="mr-1">←</span>
+              Back to OKR Dashboard
+            </button>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Title *
+              </label>
+              <input
+                type="text"
+                value={newOKRTitle}
+                onChange={(e) => setNewOKRTitle(e.target.value)}
+                className="w-full p-2 border rounded"
+                placeholder="e.g. Increase Engagement by 20%"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Description
+              </label>
+              <textarea
+                value={newOKRDesc}
+                onChange={(e) => setNewOKRDesc(e.target.value)}
+                className="w-full p-2 border rounded"
+                rows={3}
+                placeholder="Describe the objective..."
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Key Results
+              </label>
+              <div className="space-y-2">
+                {newKeyResults.map((kr, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <div className="flex-grow p-2 border rounded bg-gray-50">
+                      {kr}
+                    </div>
+                    <button
+                      className="p-2 bg-red-100 text-red-700 rounded hover:bg-red-200"
+                      onClick={() => removeKeyResult(index)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    value={newKeyResult}
+                    onChange={(e) => setNewKeyResult(e.target.value)}
+                    className="flex-grow p-2 border rounded"
+                    placeholder="e.g. Achieve 15% increase in daily active users"
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter" && newKeyResult.trim()) {
+                        addKeyResult();
+                        e.preventDefault();
+                      }
+                    }}
+                  />
+                  <button
+                    className="p-2 bg-gray-100 rounded hover:bg-gray-200"
+                    onClick={addKeyResult}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Add measurable results to track progress
+              </p>
+            </div>
+            <div className="flex justify-end space-x-3">
+              <button
+                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                onClick={addOKR}
+              >
+                Save OKR
+              </button>
+              {newlyCreatedOkrId && (
+                <>
+                  <button
+                    className="px-4 py-2 bg-purple-100 text-purple-700 rounded hover:bg-purple-200"
+                    onClick={() => handleAgentRegenerateOkr(newlyCreatedOkrId)}
+                  >
+                    Regenerate
+                  </button>
+                  <button
+                    className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+                    onClick={handleClose}
+                  >
+                    Accept & Close
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </Modal>
+    );
+  };
+
   //... (after JiraTicketModal)
   const InvestigationLog = () => {
     const steps = [
@@ -10543,6 +11050,252 @@ Generated by E2E Experiment Platform`;
       </div>
     );
   };
+
+  // ... (after AIThinkingAnimation component)
+
+  const MeetingSchedulerModal = () => {
+    if (!showMeetingModal || !meetingDetails) return null;
+
+    return (
+      <Modal
+        isOpen={showMeetingModal}
+        onClose={() => setShowMeetingModal(false)}
+        title="AI Action: Schedule Strategy Review"
+        size="lg"
+      >
+        <div className="p-4 bg-gray-50 rounded-lg border">
+          <h3 className="font-bold text-lg text-gray-800 mb-4">
+            Calendar Invite
+          </h3>
+          <div className="space-y-3 text-sm">
+            <p>
+              <strong>To:</strong> {meetingDetails.attendees.join(", ")}
+            </p>
+            <p>
+              <strong>Title:</strong> {meetingDetails.title}
+            </p>
+            <div className="p-3 bg-white border rounded">
+              <p className="font-medium">Agenda:</p>
+              <p className="whitespace-pre-wrap">{meetingDetails.agenda}</p>
+            </div>
+            <div>
+              <p className="font-medium">
+                Suggested Times (AI has checked calendars):
+              </p>
+              <div className="flex space-x-2 mt-2">
+                <button className="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">
+                  Tomorrow, 10:00 AM
+                </button>
+                <button className="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">
+                  Tomorrow, 2:30 PM
+                </button>
+                <button className="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">
+                  Friday, 11:00 AM
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-between items-center mt-6">
+          <p className="text-xs text-gray-500">
+            The AI has drafted this invite based on the surprising experiment
+            results.
+          </p>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => setShowMeetingModal(false)}
+              className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                setShowMeetingModal(false);
+                showToast(
+                  "Meeting scheduled and invites sent to attendees.",
+                  "success"
+                );
+              }}
+              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+            >
+              Schedule & Send Invite
+            </button>
+          </div>
+        </div>
+      </Modal>
+    );
+  };
+
+  const ScoreReasoningModal = ({ reasoning, onClose }) => {
+    if (!reasoning) return null;
+    return (
+      <Modal
+        isOpen={true}
+        onClose={onClose}
+        title="AI Opportunity Score Reasoning"
+        size="md"
+      >
+        <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+          <h3 className="font-bold text-lg text-purple-800 mb-2">
+            Opportunity Score: {reasoning.score}/10
+          </h3>
+          <p className="text-sm text-purple-700">{reasoning.text}</p>
+        </div>
+        <div className="flex justify-end mt-4">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Close
+          </button>
+        </div>
+      </Modal>
+    );
+  };
+
+  // ...
+
+  // ... (after ScoreReasoningModal component)
+
+  const AIImageStudioModal = () => {
+    const [prompt, setPrompt] = useState(
+      "A thumbnail for a video about space exploration"
+    );
+    const [style, setStyle] = useState("Photorealistic");
+    const [locale, setLocale] = useState("Global");
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [generatedImageUrl, setGeneratedImageUrl] = useState(null);
+
+    const handleGenerate = () => {
+      setIsGenerating(true);
+      setGeneratedImageUrl(null);
+
+      setTimeout(() => {
+        const localeText = locale === "Global" ? "" : `\\n(${locale})`;
+        const fullPrompt = `${prompt}${localeText}`.replace(/\s/g, "+");
+        const newUrl = `https://placehold.co/600x400/1f2937/ffffff?text=${fullPrompt}`;
+        setGeneratedImageUrl(newUrl);
+        setIsGenerating(false);
+      }, 2000);
+    };
+
+    const handleApply = () => {
+      if (!generatedImageUrl) return;
+
+      const { variantType } = imageStudioConfig;
+      const newVariants = { ...wizardData };
+
+      if (variantType === "control") {
+        newVariants.control.imagePreview = generatedImageUrl;
+      } else {
+        newVariants.treatment.imagePreview = generatedImageUrl;
+      }
+
+      setWizardData(newVariants);
+      showToast(
+        `AI-generated image applied to ${variantType} variant.`,
+        "success"
+      );
+      setShowImageStudio(false);
+    };
+
+    if (!showImageStudio) return null;
+
+    // --- REPLACE THE ENTIRE RETURN STATEMENT WITH THIS ---
+    return createPortal(
+      <Modal
+        isOpen={showImageStudio}
+        onClose={() => setShowImageStudio(false)}
+        title="AI Image Studio"
+        size="lg"
+        zIndex="z-60"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Left side: Controls */}
+          <div className="space-y-4">
+            <FormField
+              label="Prompt"
+              type="textarea"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Describe the image you want to create..."
+            />
+            <FormField
+              label="Style"
+              type="select"
+              value={style}
+              onChange={(e) => setStyle(e.target.value)}
+              options={[
+                { value: "Photorealistic", label: "Photorealistic" },
+                { value: "Illustration", label: "Illustration" },
+                { value: "Abstract", label: "Abstract" },
+              ]}
+            />
+            <FormField
+              label="Region / Locale"
+              type="select"
+              value={locale}
+              onChange={(e) => setLocale(e.target.value)}
+              options={[
+                { value: "Global", label: "Global (Default)" },
+                { value: "Japan", label: "Japan" },
+                { value: "Brazil", label: "Brazil" },
+                { value: "Germany", label: "Germany" },
+              ]}
+            />
+            <button
+              onClick={handleGenerate}
+              disabled={isGenerating}
+              className="w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 flex items-center justify-center"
+            >
+              {isGenerating ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <span className="mr-2">✨</span> Generate Image
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Right side: Preview */}
+          <div className="bg-gray-100 rounded-lg flex items-center justify-center p-4 min-h-[250px]">
+            {isGenerating ? (
+              <div className="text-center">
+                <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-gray-600">AI is creating your image...</p>
+              </div>
+            ) : generatedImageUrl ? (
+              <img
+                src={generatedImageUrl}
+                alt="AI Generated"
+                className="max-w-full max-h-full object-contain rounded"
+              />
+            ) : (
+              <p className="text-gray-500">
+                Your generated image will appear here.
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="flex justify-end mt-6">
+          <button
+            onClick={handleApply}
+            disabled={!generatedImageUrl}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300"
+          >
+            Use This Image
+          </button>
+        </div>
+      </Modal>,
+      document.body // This tells React to render the modal at the end of the <body> tag
+    );
+    // --- END OF REPLACEMENT ---
+  };
+  // ...
 
   // --- End of Agentic AI Components ---
 
@@ -11030,6 +11783,15 @@ Generated by E2E Experiment Platform`;
                 />
 
                 <LifecycleIndicator currentStage="execution" />
+
+                {/* --- ADD THIS ADAPTIVE ANALYST BLOCK --- */}
+                {agenticMode && exp.agentStatus && (
+                  <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800 animate-fadeIn">
+                    <span className="font-bold">Adaptive Analyst:</span>{" "}
+                    {exp.agentStatus}
+                  </div>
+                )}
+                {/* --- END OF ADDITION --- */}
 
                 <div className="flex justify-between items-center mt-3 text-xs text-gray-500">
                   <span>Owner: {exp.owner}</span>
@@ -14108,6 +14870,7 @@ Generated by E2E Experiment Platform`;
                         key={item.id}
                         onClick={() => openPlanItemModal(item)}
                         agentHighlight={agenticMode && item.isAgentGenerated}
+                        className="relative"
                       >
                         <div className="flex justify-between">
                           <h4 className="font-medium text-gray-800 text-sm">
@@ -16683,238 +17446,240 @@ Generated by E2E Experiment Platform`;
     );
   };
 
-  const OKRModal = ({
-    isOpen,
-    onClose,
-    okrData,
-    newOKRTitle,
-    setNewOKRTitle,
-    newOKRDesc,
-    setNewOKRDesc,
-    newKeyResult,
-    setNewKeyResult,
-    newKeyResults,
-    setNewKeyResults,
-    addKeyResult,
-    removeKeyResult,
-    addOKR,
-  }) => {
-    const [viewMode, setViewMode] = useState(true); // This is now valid
+  // const OKRModal = ({
+  //   isOpen,
+  //   onClose,
+  //   okrData,
+  //   newOKRTitle,
+  //   setNewOKRTitle,
+  //   newOKRDesc,
+  //   setNewOKRDesc,
+  //   newKeyResult,
+  //   setNewKeyResult,
+  //   newKeyResults,
+  //   setNewKeyResults,
+  //   addKeyResult,
+  //   removeKeyResult,
+  //   addOKR,
+  //   newlyCreatedOkrId,     // <-- ADD THIS PROP
+  //   setNewlyCreatedOkrId,  // <-- ADD THIS PROP
+  // }) => {
+  //   const [viewMode, setViewMode] = useState(true); // This is now valid
 
-    // ADD THIS useEffect
-    useEffect(() => {
-      // When the modal is closed, clear the highlight ID
-      return () => {
-        if (isOpen) {
-          setNewlyCreatedOkrId(null);
-        }
-      };
-    }, [isOpen]);
-    // END ADDITION
+  //   // ADD THIS useEffect
+  //   useEffect(() => {
+  //     // When the modal is closed, clear the highlight ID
+  //     return () => {
+  //       if (isOpen) {
+  //         setNewlyCreatedOkrId(null);
+  //       }
+  //     };
+  //   }, [isOpen]);
+  //   // END ADDITION
 
-    if (!isOpen) return null;
+  //   if (!isOpen) return null;
 
-    return (
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        title={viewMode ? "OKR Dashboard" : "Add New OKR"}
-        size={viewMode ? "lg" : "md"}
-      >
-        {viewMode ? (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium">
-                Strategic Objectives & Key Results
-              </h3>
-              <button
-                onClick={() => setViewMode(false)}
-                className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 flex items-center"
-              >
-                <span className="mr-1">+</span>
-                Add New OKR
-              </button>
-            </div>
+  //   return (
+  //     <Modal
+  //       isOpen={isOpen}
+  //       onClose={onClose}
+  //       title={viewMode ? "OKR Dashboard" : "Add New OKR"}
+  //       size={viewMode ? "lg" : "md"}
+  //     >
+  //       {viewMode ? (
+  //         <div className="space-y-6">
+  //           <div className="flex justify-between items-center">
+  //             <h3 className="text-lg font-medium">
+  //               Strategic Objectives & Key Results
+  //             </h3>
+  //             <button
+  //               onClick={() => setViewMode(false)}
+  //               className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 flex items-center"
+  //             >
+  //               <span className="mr-1">+</span>
+  //               Add New OKR
+  //             </button>
+  //           </div>
 
-            {okrData.length === 0 ? (
-              <div className="p-8 text-center bg-gray-50 rounded-lg">
-                <p className="text-gray-600">No OKRs defined yet</p>
-                <button
-                  onClick={() => setViewMode(false)}
-                  className="mt-3 px-3 py-1.5 bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
-                  Create Your First OKR
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {okrData.map((okr) => (
-                  <div
-                    key={okr.id}
-                    className={`p-4 border rounded-lg hover:shadow-sm transition ${
-                      okr.id === newlyCreatedOkrId
-                        ? "ring-2 ring-offset-2 ring-purple-500 shadow-purple-300 shadow-lg"
-                        : ""
-                    }`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <h4 className="font-medium text-gray-800 text-lg">
-                        {okr.title}
-                      </h4>
-                      <span className="px-2 py-0.5 bg-amber-100 text-amber-800 text-xs rounded">
-                        {okr.quarter}
-                      </span>
-                    </div>
-                    <p className="text-gray-600 mt-1">{okr.description}</p>
+  //           {okrData.length === 0 ? (
+  //             <div className="p-8 text-center bg-gray-50 rounded-lg">
+  //               <p className="text-gray-600">No OKRs defined yet</p>
+  //               <button
+  //                 onClick={() => setViewMode(false)}
+  //                 className="mt-3 px-3 py-1.5 bg-blue-500 text-white rounded hover:bg-blue-600"
+  //               >
+  //                 Create Your First OKR
+  //               </button>
+  //             </div>
+  //           ) : (
+  //             <div className="space-y-4">
+  //               {okrData.map((okr) => (
+  //                 <div
+  //                   key={okr.id}
+  //                   className={`p-4 border rounded-lg hover:shadow-sm transition ${
+  //                     okr.id === newlyCreatedOkrId
+  //                       ? "ring-2 ring-offset-2 ring-purple-500 shadow-purple-300 shadow-lg"
+  //                       : ""
+  //                   }`}
+  //                 >
+  //                   <div className="flex justify-between items-start">
+  //                     <h4 className="font-medium text-gray-800 text-lg">
+  //                       {okr.title}
+  //                     </h4>
+  //                     <span className="px-2 py-0.5 bg-amber-100 text-amber-800 text-xs rounded">
+  //                       {okr.quarter}
+  //                     </span>
+  //                   </div>
+  //                   <p className="text-gray-600 mt-1">{okr.description}</p>
 
-                    <div className="mt-3">
-                      <h5 className="text-sm font-medium text-gray-700">
-                        Key Results
-                      </h5>
-                      <ul className="space-y-1 mt-1">
-                        {okr.key_results.map((kr, idx) => (
-                          <li key={idx} className="flex items-center text-sm">
-                            <span className="mr-2">•</span>
-                            {kr}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+  //                   <div className="mt-3">
+  //                     <h5 className="text-sm font-medium text-gray-700">
+  //                       Key Results
+  //                     </h5>
+  //                     <ul className="space-y-1 mt-1">
+  //                       {okr.key_results.map((kr, idx) => (
+  //                         <li key={idx} className="flex items-center text-sm">
+  //                           <span className="mr-2">•</span>
+  //                           {kr}
+  //                         </li>
+  //                       ))}
+  //                     </ul>
+  //                   </div>
 
-                    <div className="mt-3">
-                      <div className="flex justify-between items-center text-xs">
-                        <span>Progress</span>
-                        <span>{okr.progress}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 h-2 rounded-full mt-1">
-                        <div
-                          className="h-2 bg-amber-500 rounded-full"
-                          style={{ width: `${okr.progress}%` }}
-                        />
-                      </div>
-                    </div>
+  //                   <div className="mt-3">
+  //                     <div className="flex justify-between items-center text-xs">
+  //                       <span>Progress</span>
+  //                       <span>{okr.progress}%</span>
+  //                     </div>
+  //                     <div className="w-full bg-gray-200 h-2 rounded-full mt-1">
+  //                       <div
+  //                         className="h-2 bg-amber-500 rounded-full"
+  //                         style={{ width: `${okr.progress}%` }}
+  //                       />
+  //                     </div>
+  //                   </div>
 
-                    <div className="mt-3 flex justify-between items-center text-xs text-gray-500">
-                      <span>Owner: {okr.owner}</span>
-                      <div>
-                        <button className="text-blue-600 hover:text-blue-800">
-                          {okr.relatedExperiments?.length || 0} experiments
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <button
-              onClick={() => setViewMode(true)}
-              className="text-blue-600 hover:text-blue-800 flex items-center"
-            >
-              <span className="mr-1">←</span>
-              Back to OKR Dashboard
-            </button>
+  //                   <div className="mt-3 flex justify-between items-center text-xs text-gray-500">
+  //                     <span>Owner: {okr.owner}</span>
+  //                     <div>
+  //                       <button className="text-blue-600 hover:text-blue-800">
+  //                         {okr.relatedExperiments?.length || 0} experiments
+  //                       </button>
+  //                     </div>
+  //                   </div>
+  //                 </div>
+  //               ))}
+  //             </div>
+  //           )}
+  //         </div>
+  //       ) : (
+  //         <div className="space-y-4">
+  //           <button
+  //             onClick={() => setViewMode(true)}
+  //             className="text-blue-600 hover:text-blue-800 flex items-center"
+  //           >
+  //             <span className="mr-1">←</span>
+  //             Back to OKR Dashboard
+  //           </button>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Title *
-              </label>
-              <input
-                type="text"
-                value={newOKRTitle}
-                onChange={(e) => setNewOKRTitle(e.target.value)}
-                className="w-full p-2 border rounded"
-                placeholder="e.g. Increase Engagement by 20%"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description
-              </label>
-              <textarea
-                value={newOKRDesc}
-                onChange={(e) => setNewOKRDesc(e.target.value)}
-                className="w-full p-2 border rounded"
-                rows={3}
-                placeholder="Describe the objective..."
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Key Results
-              </label>
-              <div className="space-y-2">
-                {newKeyResults.map((kr, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <div className="flex-grow p-2 border rounded bg-gray-50">
-                      {kr}
-                    </div>
-                    <button
-                      className="p-2 bg-red-100 text-red-700 rounded hover:bg-red-200"
-                      onClick={() => removeKeyResult(index)}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="text"
-                    value={newKeyResult}
-                    onChange={(e) => setNewKeyResult(e.target.value)}
-                    className="flex-grow p-2 border rounded"
-                    placeholder="e.g. Achieve 15% increase in daily active users"
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter" && newKeyResult.trim()) {
-                        addKeyResult();
-                        e.preventDefault();
-                      }
-                    }}
-                  />
-                  <button
-                    className="p-2 bg-gray-100 rounded hover:bg-gray-200"
-                    onClick={addKeyResult}
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Add measurable results to track progress
-              </p>
-            </div>
-            <button
-              onClick={addOKR}
-              className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-            >
-              Save OKR
-            </button>
-            {/* --- ADD THIS NEW BUTTON --- */}
-            {newlyCreatedOkrId && (
-              <>
-                {/* --- ADD THIS REGENERATE BUTTON --- */}
-                <button
-                  className="px-4 py-2 bg-purple-100 text-purple-700 rounded hover:bg-purple-200"
-                  onClick={() => handleAgentRegenerateOkr(newlyCreatedOkrId)}
-                >
-                  Regenerate
-                </button>
-                <button
-                  className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
-                  onClick={onClose}
-                >
-                  Accept & Close
-                </button>
-              </>
-            )}
-            {/* --- END OF ADDITION --- */}
-          </div>
-        )}
-      </Modal>
-    );
-  };
+  //           <div>
+  //             <label className="block text-sm font-medium text-gray-700 mb-1">
+  //               Title *
+  //             </label>
+  //             <input
+  //               type="text"
+  //               value={newOKRTitle}
+  //               onChange={(e) => setNewOKRTitle(e.target.value)}
+  //               className="w-full p-2 border rounded"
+  //               placeholder="e.g. Increase Engagement by 20%"
+  //             />
+  //           </div>
+  //           <div>
+  //             <label className="block text-sm font-medium text-gray-700 mb-1">
+  //               Description
+  //             </label>
+  //             <textarea
+  //               value={newOKRDesc}
+  //               onChange={(e) => setNewOKRDesc(e.target.value)}
+  //               className="w-full p-2 border rounded"
+  //               rows={3}
+  //               placeholder="Describe the objective..."
+  //             />
+  //           </div>
+  //           <div>
+  //             <label className="block text-sm font-medium text-gray-700 mb-1">
+  //               Key Results
+  //             </label>
+  //             <div className="space-y-2">
+  //               {newKeyResults.map((kr, index) => (
+  //                 <div key={index} className="flex items-center space-x-2">
+  //                   <div className="flex-grow p-2 border rounded bg-gray-50">
+  //                     {kr}
+  //                   </div>
+  //                   <button
+  //                     className="p-2 bg-red-100 text-red-700 rounded hover:bg-red-200"
+  //                     onClick={() => removeKeyResult(index)}
+  //                   >
+  //                     ✕
+  //                   </button>
+  //                 </div>
+  //               ))}
+  //               <div className="flex items-center space-x-2">
+  //                 <input
+  //                   type="text"
+  //                   value={newKeyResult}
+  //                   onChange={(e) => setNewKeyResult(e.target.value)}
+  //                   className="flex-grow p-2 border rounded"
+  //                   placeholder="e.g. Achieve 15% increase in daily active users"
+  //                   onKeyPress={(e) => {
+  //                     if (e.key === "Enter" && newKeyResult.trim()) {
+  //                       addKeyResult();
+  //                       e.preventDefault();
+  //                     }
+  //                   }}
+  //                 />
+  //                 <button
+  //                   className="p-2 bg-gray-100 rounded hover:bg-gray-200"
+  //                   onClick={addKeyResult}
+  //                 >
+  //                   +
+  //                 </button>
+  //               </div>
+  //             </div>
+  //             <p className="text-xs text-gray-500 mt-1">
+  //               Add measurable results to track progress
+  //             </p>
+  //           </div>
+  //           <button
+  //             onClick={addOKR}
+  //             className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+  //           >
+  //             Save OKR
+  //           </button>
+  //           {/* --- ADD THIS NEW BUTTON --- */}
+  //           {newlyCreatedOkrId && (
+  //             <>
+  //               {/* --- ADD THIS REGENERATE BUTTON --- */}
+  //               <button
+  //                 className="px-4 py-2 bg-purple-100 text-purple-700 rounded hover:bg-purple-200"
+  //                 onClick={() => handleAgentRegenerateOkr(newlyCreatedOkrId)}
+  //               >
+  //                 Regenerate
+  //               </button>
+  //               <button
+  //                 className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+  //                 onClick={onClose}
+  //               >
+  //                 Accept & Close
+  //               </button>
+  //             </>
+  //           )}
+  //           {/* --- END OF ADDITION --- */}
+  //         </div>
+  //       )}
+  //     </Modal>
+  //   );
+  // };
 
   // Then modify the renderOKRModal function
   const renderOKRModal = () => {
@@ -16936,6 +17701,8 @@ Generated by E2E Experiment Platform`;
         addKeyResult={addKeyResult}
         removeKeyResult={removeKeyResult}
         addOKR={addOKR}
+        newlyCreatedOkrId={newlyCreatedOkrId} // <-- ADD THIS PROP
+        setNewlyCreatedOkrId={setNewlyCreatedOkrId} // <-- ADD THIS PROP
       />
     );
   };
@@ -17530,6 +18297,12 @@ Generated by E2E Experiment Platform`;
           initialData={wizardData} // Pass the wizardData to the Wizard
           knowledgeData={knowledge}
           onToast={showToast}
+          // --- ADD THESE PROPS ---
+          agenticMode={agenticMode}
+          addAgentAction={addAgentAction}
+          setShowCollisionWarning={setShowCollisionWarning}
+          onOpenImageStudio={handleOpenImageStudio} // <-- ADD THIS PROP
+          // --- END OF ADDITION ---
         />
       </Modal>
     );
@@ -17557,6 +18330,17 @@ Generated by E2E Experiment Platform`;
       <JiraTicketModal />
       {/* --- ADD THESE TWO MODALS --- */}
       {/* --- REPLACE THESE TWO MODALS --- */}
+      {/* --- ADD THESE RENDER CALLS --- */}
+      <MeetingSchedulerModal />
+      {showScoreReasoning && (
+        <ScoreReasoningModal
+          reasoning={showScoreReasoning}
+          onClose={() => setShowScoreReasoning(null)}
+        />
+      )}
+      <AIImageStudioModal />
+      {/* Note: CollisionWarningModal is not needed as a top-level modal yet, it's part of the wizard flow */}
+      {/* --- END OF ADDITION --- */}
       <Modal
         isOpen={showAgentBriefModal}
         onClose={() => {}}
