@@ -6700,6 +6700,170 @@ const TemplateSelector = ({ templates, selectedTemplate, onChange }) => {
   );
 };
 
+const AIImageStudioModal = ({
+  showImageStudio,
+  setShowImageStudio,
+  imageStudioConfig,
+  wizardData,
+  setWizardData,
+  showToast,
+}) => {
+  const [prompt, setPrompt] = useState(
+    "A thumbnail for a video about space exploration"
+  );
+  const [style, setStyle] = useState("Photorealistic");
+  const [locale, setLocale] = useState("Global");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedImageUrl, setGeneratedImageUrl] = useState(null);
+
+  const handleGenerate = () => {
+    setIsGenerating(true);
+    setGeneratedImageUrl(null);
+
+    setTimeout(() => {
+      const localeText = locale === "Global" ? "" : `\\n(${locale})`;
+      const fullPrompt = `${prompt}${localeText}`.replace(/\s/g, "+");
+      const newUrl = `https://placehold.co/600x400/1f2937/ffffff?text=${fullPrompt}`;
+      setGeneratedImageUrl(newUrl);
+      setIsGenerating(false);
+    }, 2000);
+  };
+
+  const handleApply = () => {
+    if (!generatedImageUrl) return;
+
+    const { variantType } = imageStudioConfig;
+    const newVariants = { ...wizardData };
+
+    if (variantType === "control") {
+      newVariants.control.imagePreview = generatedImageUrl;
+    } else {
+      newVariants.treatment.imagePreview = generatedImageUrl;
+    }
+
+    setWizardData(newVariants);
+    showToast(
+      `AI-generated image applied to ${variantType} variant.`,
+      "success"
+    );
+    setShowImageStudio(false);
+  };
+
+  if (!showImageStudio) return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 overflow-y-auto"
+      style={{ zIndex: 99999 }}
+    >
+      <div
+        className="bg-white rounded-lg w-full max-w-4xl relative shadow-lg my-8 flex flex-col"
+        style={{ maxHeight: "85vh" }}
+      >
+        {/* Close button */}
+        <button
+          onClick={() => setShowImageStudio(false)}
+          className="absolute top-4 right-4 text-gray-600 hover:text-gray-800 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 z-10"
+        >
+          ✕
+        </button>
+
+        {/* Modal header */}
+        <div className="p-6 border-b">
+          <h2 className="text-xl font-bold">AI Image Studio</h2>
+        </div>
+
+        {/* Modal content */}
+        <div
+          className="overflow-y-auto p-6"
+          style={{ maxHeight: "calc(85vh - 80px)" }}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left side: Controls */}
+            <div className="space-y-4">
+              <FormField
+                label="Prompt"
+                type="textarea"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Describe the image you want to create..."
+              />
+              <FormField
+                label="Style"
+                type="select"
+                value={style}
+                onChange={(e) => setStyle(e.target.value)}
+                options={[
+                  { value: "Photorealistic", label: "Photorealistic" },
+                  { value: "Illustration", label: "Illustration" },
+                  { value: "Abstract", label: "Abstract" },
+                ]}
+              />
+              <FormField
+                label="Region / Locale"
+                type="select"
+                value={locale}
+                onChange={(e) => setLocale(e.target.value)}
+                options={[
+                  { value: "Global", label: "Global (Default)" },
+                  { value: "Japan", label: "Japan" },
+                  { value: "Brazil", label: "Brazil" },
+                  { value: "Germany", label: "Germany" },
+                ]}
+              />
+              <button
+                onClick={handleGenerate}
+                disabled={isGenerating}
+                className="w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 flex items-center justify-center"
+              >
+                {isGenerating ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <span className="mr-2">✨</span> Generate Image
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Right side: Preview */}
+            <div className="bg-gray-100 rounded-lg flex items-center justify-center p-4 min-h-[250px]">
+              {isGenerating ? (
+                <div className="text-center">
+                  <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                  <p className="text-gray-600">AI is creating your image...</p>
+                </div>
+              ) : generatedImageUrl ? (
+                <img
+                  src={generatedImageUrl}
+                  alt="AI Generated"
+                  className="max-w-full max-h-full object-contain rounded"
+                />
+              ) : (
+                <p className="text-gray-500">
+                  Your generated image will appear here.
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="flex justify-end mt-6">
+            <button
+              onClick={handleApply}
+              disabled={!generatedImageUrl}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300"
+            >
+              Use This Image
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+};
 /* ---------------------------------------------------------------------------
    11) MAIN EXPERIMENT PLATFORM COMPONENT
    --------------------------------------------------------------------------- */
@@ -6745,6 +6909,8 @@ export default function E2ExperimentPlatform() {
   const [imageStudioConfig, setImageStudioConfig] = useState({
     variantType: null,
   });
+  const [proposedOKR, setProposedOKR] = useState(null);
+  const [showOKRProposalModal, setShowOKRProposalModal] = useState(false);
   // <-- END OF NEW STATE VARIABLES -->
 
   // <-- END OF NEW STATE VARIABLES -->
@@ -7147,7 +7313,6 @@ export default function E2ExperimentPlatform() {
   };
 
   const handleAgentProposeOkr = () => {
-    // ADD THIS CHECK AT THE TOP
     if (agentOkrCreated) {
       showToast(
         "AI Strategist has already proposed an OKR in this session.",
@@ -7179,21 +7344,14 @@ export default function E2ExperimentPlatform() {
           "Focus on localized content experiments.",
           "Test region-specific pricing tiers.",
         ],
-        isAgentGenerated: true, // Flag for highlighting
+        isAgentGenerated: true,
       };
 
-      setOkrData((prev) => [newOKR, ...prev]); // Add directly to the list
-      setNewlyCreatedOkrId(newOkrId); // Set the ID for highlighting
-
-      // Reset the form fields so they don't conflict
-      setNewOKRTitle("");
-      setNewOKRDesc("");
-      setNewKeyResults([]);
-
+      // Store the proposed OKR in temporary state instead of adding directly
+      setProposedOKR(newOKR);
       setShowAgentOkrModal(false); // Hide the "thinking" modal
-      addAgentAction("AI Strategist has proposed and created a new OKR.");
-      setShowOKRModal(true); // Open the main OKR modal to show the result
-      setAgentOkrCreated(true);
+      setShowOKRProposalModal(true); // Show the proposal review modal
+      addAgentAction("AI Strategist has proposed a new OKR for your review.");
     }, 3500);
   };
 
@@ -7294,6 +7452,47 @@ export default function E2ExperimentPlatform() {
     setShowImageStudio(true);
   };
   //...
+
+  const handleAcceptProposedOKR = () => {
+    if (proposedOKR) {
+      setOkrData((prev) => [proposedOKR, ...prev]);
+      setNewlyCreatedOkrId(proposedOKR.id);
+      setProposedOKR(null);
+      setShowOKRProposalModal(false);
+      setAgentOkrCreated(true);
+      showToast("AI-proposed OKR accepted and added to your OKRs.", "success");
+      addAgentAction("User accepted the AI-proposed OKR.");
+    }
+  };
+
+  const handleRejectProposedOKR = () => {
+    setProposedOKR(null);
+    setShowOKRProposalModal(false);
+    showToast("AI-proposed OKR rejected.", "info");
+    addAgentAction("User rejected the AI-proposed OKR.");
+  };
+
+  const handleRegenerateProposedOKR = () => {
+    addAgentAction(
+      "AI Strategist is generating an alternative OKR proposal..."
+    );
+
+    setTimeout(() => {
+      const alternativeOKR = {
+        ...proposedOKR,
+        title: "AI Alternative: Boost Creator Monetization by 20%",
+        description:
+          "AI analysis suggests a secondary opportunity in improving tools for existing creators to increase their revenue.",
+        key_results: [
+          "Increase Super Chat adoption by 30%",
+          "Grow Channel Memberships for small creators by 25%",
+          "Reduce creator support tickets related to monetization by 15%",
+        ],
+      };
+      setProposedOKR(alternativeOKR);
+      showToast("AI has generated an alternative OKR proposal.", "success");
+    }, 1500);
+  };
 
   const handleFeedItemClick = (message) => {
     if (message.includes("proposed a new high-priority experiment")) {
@@ -11019,7 +11218,7 @@ Generated by E2E Experiment Platform`;
 
     return (
       <div className="p-3 bg-gray-800 text-white font-mono text-xs rounded-lg mb-4">
-        <p className="text-green-400">> Insight Detective investigation log:</p>
+        <p className="text-green-400"> Insight Detective investigation log:</p>
         {visibleSteps.map((step, index) => (
           <p key={index} className="animate-fadeIn">{`> ${step}`}</p>
         ))}
@@ -11153,148 +11352,6 @@ Generated by E2E Experiment Platform`;
     );
   };
 
-  // ...
-
-  // ... (after ScoreReasoningModal component)
-
-  const AIImageStudioModal = () => {
-    const [prompt, setPrompt] = useState(
-      "A thumbnail for a video about space exploration"
-    );
-    const [style, setStyle] = useState("Photorealistic");
-    const [locale, setLocale] = useState("Global");
-    const [isGenerating, setIsGenerating] = useState(false);
-    const [generatedImageUrl, setGeneratedImageUrl] = useState(null);
-
-    const handleGenerate = () => {
-      setIsGenerating(true);
-      setGeneratedImageUrl(null);
-
-      setTimeout(() => {
-        const localeText = locale === "Global" ? "" : `\\n(${locale})`;
-        const fullPrompt = `${prompt}${localeText}`.replace(/\s/g, "+");
-        const newUrl = `https://placehold.co/600x400/1f2937/ffffff?text=${fullPrompt}`;
-        setGeneratedImageUrl(newUrl);
-        setIsGenerating(false);
-      }, 2000);
-    };
-
-    const handleApply = () => {
-      if (!generatedImageUrl) return;
-
-      const { variantType } = imageStudioConfig;
-      const newVariants = { ...wizardData };
-
-      if (variantType === "control") {
-        newVariants.control.imagePreview = generatedImageUrl;
-      } else {
-        newVariants.treatment.imagePreview = generatedImageUrl;
-      }
-
-      setWizardData(newVariants);
-      showToast(
-        `AI-generated image applied to ${variantType} variant.`,
-        "success"
-      );
-      setShowImageStudio(false);
-    };
-
-    if (!showImageStudio) return null;
-
-    // --- REPLACE THE ENTIRE RETURN STATEMENT WITH THIS ---
-    return createPortal(
-      <Modal
-        isOpen={showImageStudio}
-        onClose={() => setShowImageStudio(false)}
-        title="AI Image Studio"
-        size="lg"
-        zIndex="z-80" // This ensures it's on a higher layer
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Left side: Controls */}
-          <div className="space-y-4">
-            <FormField
-              label="Prompt"
-              type="textarea"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Describe the image you want to create..."
-            />
-            <FormField
-              label="Style"
-              type="select"
-              value={style}
-              onChange={(e) => setStyle(e.target.value)}
-              options={[
-                { value: "Photorealistic", label: "Photorealistic" },
-                { value: "Illustration", label: "Illustration" },
-                { value: "Abstract", label: "Abstract" },
-              ]}
-            />
-            <FormField
-              label="Region / Locale"
-              type="select"
-              value={locale}
-              onChange={(e) => setLocale(e.target.value)}
-              options={[
-                { value: "Global", label: "Global (Default)" },
-                { value: "Japan", label: "Japan" },
-                { value: "Brazil", label: "Brazil" },
-                { value: "Germany", label: "Germany" },
-              ]}
-            />
-            <button
-              onClick={handleGenerate}
-              disabled={isGenerating}
-              className="w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 flex items-center justify-center"
-            >
-              {isGenerating ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <span className="mr-2">✨</span> Generate Image
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Right side: Preview */}
-          <div className="bg-gray-100 rounded-lg flex items-center justify-center p-4 min-h-[250px]">
-            {isGenerating ? (
-              <div className="text-center">
-                <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-gray-600">AI is creating your image...</p>
-              </div>
-            ) : generatedImageUrl ? (
-              <img
-                src={generatedImageUrl}
-                alt="AI Generated"
-                className="max-w-full max-h-full object-contain rounded"
-              />
-            ) : (
-              <p className="text-gray-500">
-                Your generated image will appear here.
-              </p>
-            )}
-          </div>
-        </div>
-        <div className="flex justify-end mt-6">
-          <button
-            onClick={handleApply}
-            disabled={!generatedImageUrl}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300"
-          >
-            Use This Image
-          </button>
-        </div>
-      </Modal>,
-      document.body // This tells React to render the modal at the end of the <body> tag
-    );
-    // --- END OF REPLACEMENT ---
-  };
   // Render Header and Navigation
   const renderHeader = () => (
     <header className="bg-white shadow">
@@ -14384,7 +14441,9 @@ Generated by E2E Experiment Platform`;
                     const completedExperiments = experiments.filter(
                       (e) =>
                         e.status ===
-                        LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase()
+                          LIFECYCLE_STAGES.EXECUTION.COMPLETED.label.toLowerCase() ||
+                        e.status ===
+                          LIFECYCLE_STAGES.EXECUTION.IN_PROGRESS.label.toLowerCase()
                     );
 
                     const knowledgeNodes = knowledge.map((k) => ({
@@ -14418,10 +14477,16 @@ Generated by E2E Experiment Platform`;
                     ];
                     const links = [];
 
+                    // Create a Set of all node IDs for validation
+                    const allNodeIds = new Set(allNodes.map((node) => node.id));
+
                     knowledge.forEach((k) => {
                       if (k.relatedExperiments) {
                         k.relatedExperiments.forEach((expId) => {
-                          links.push({ source: k.id, target: expId });
+                          // Only create link if target node exists
+                          if (allNodeIds.has(expId)) {
+                            links.push({ source: k.id, target: expId });
+                          }
                         });
                       }
                     });
@@ -14429,7 +14494,10 @@ Generated by E2E Experiment Platform`;
                     completedExperiments.forEach((e) => {
                       if (e.okrs) {
                         e.okrs.forEach((okrId) => {
-                          links.push({ source: e.id, target: okrId });
+                          // Only create link if target node exists
+                          if (allNodeIds.has(okrId)) {
+                            links.push({ source: e.id, target: okrId });
+                          }
                         });
                       }
                     });
@@ -14465,6 +14533,23 @@ Generated by E2E Experiment Platform`;
                   linkColor={() => "#999"}
                   cooldownTicks={100}
                   nodeRelSize={6}
+                  // ADD THESE PHYSICS PROPS:
+                  linkDistance={50}
+                  linkStrength={0.2}
+                  chargeStrength={-100}
+                  d3ReheatSimulation={true}
+                  d3AlphaDecay={0.02}
+                  d3VelocityDecay={0.3}
+                  warmupTicks={100}
+                  // END OF PHYSICS PROPS
+                  // ADD THESE ARROW PROPS:
+                  linkDirectionalArrowLength={6}
+                  linkDirectionalArrowColor={() => "#666"}
+                  linkDirectionalArrowRelPos={1}
+                  linkDirectionalParticles={0}
+                  // OPTIONAL: Make links curved for better visibility
+                  linkCurvature={0.1}
+                  // END OF ARROW PROPS
                   onNodeClick={(node) => {
                     // Handle node click based on type
                     if (node.type === "knowledge") {
@@ -18069,6 +18154,86 @@ Generated by E2E Experiment Platform`;
     );
   };
 
+  const renderOKRProposalModal = () => {
+    if (!showOKRProposalModal || !proposedOKR) return null;
+
+    return (
+      <Modal
+        isOpen={showOKRProposalModal}
+        onClose={() => {}} // Prevent closing without decision
+        title="AI OKR Proposal - Review Required"
+        size="lg"
+        showCloseButton={false}
+      >
+        <div className="space-y-6">
+          <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+            <div className="flex items-center mb-2">
+              <span className="text-2xl mr-2">🤖</span>
+              <h3 className="font-medium text-purple-800">
+                AI Strategist has proposed a new OKR
+              </h3>
+            </div>
+            <p className="text-sm text-purple-700">
+              Please review the proposed OKR below and decide whether to accept,
+              regenerate, or reject it.
+            </p>
+          </div>
+
+          <div className="border rounded-lg p-4 bg-blue-50">
+            <h3 className="font-medium text-gray-800 mb-2">
+              {proposedOKR.title}
+            </h3>
+            <p className="text-sm text-gray-600 mb-3">
+              {proposedOKR.description}
+            </p>
+
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-gray-700">
+                Key Results:
+              </h4>
+              {proposedOKR.key_results.map((kr, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center text-sm text-gray-600"
+                >
+                  <span className="w-5 h-5 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center mr-2 text-xs">
+                    {idx + 1}
+                  </span>
+                  {kr}
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-3 text-xs text-gray-500">
+              Owner: {proposedOKR.owner} | Quarter: {proposedOKR.quarter}
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={handleRejectProposedOKR}
+              className="px-4 py-2 border border-gray-300 rounded text-gray-600 hover:bg-gray-50"
+            >
+              Reject
+            </button>
+            <button
+              onClick={handleRegenerateProposedOKR}
+              className="px-4 py-2 bg-purple-100 text-purple-700 rounded hover:bg-purple-200"
+            >
+              Regenerate
+            </button>
+            <button
+              onClick={handleAcceptProposedOKR}
+              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+            >
+              Accept & Add to OKRs
+            </button>
+          </div>
+        </div>
+      </Modal>
+    );
+  };
+
   // Main Application Render
   return (
     <div className="bg-gray-100 min-h-screen">
@@ -18089,9 +18254,6 @@ Generated by E2E Experiment Platform`;
       {/* Modals */}
       <AgenticAIFeed />
       <JiraTicketModal />
-      {/* --- ADD THESE TWO MODALS --- */}
-      {/* --- REPLACE THESE TWO MODALS --- */}
-      {/* --- ADD THESE RENDER CALLS --- */}
       <MeetingSchedulerModal />
       {showScoreReasoning && (
         <ScoreReasoningModal
@@ -18099,7 +18261,15 @@ Generated by E2E Experiment Platform`;
           onClose={() => setShowScoreReasoning(null)}
         />
       )}
-      <AIImageStudioModal />
+
+      <AIImageStudioModal
+        showImageStudio={showImageStudio}
+        setShowImageStudio={setShowImageStudio}
+        imageStudioConfig={imageStudioConfig}
+        wizardData={wizardData}
+        setWizardData={setWizardData}
+        showToast={showToast}
+      />
       {/* Note: CollisionWarningModal is not needed as a top-level modal yet, it's part of the wizard flow */}
       {/* --- END OF ADDITION --- */}
       <Modal
@@ -18135,6 +18305,7 @@ Generated by E2E Experiment Platform`;
           ]}
         />
       </Modal>
+
       {/* --- END OF NEW MODALS --- */}
       {renderPowerAnalyzerModal()}
       {renderLearningPathModal()}
@@ -18146,6 +18317,7 @@ Generated by E2E Experiment Platform`;
       {renderAdvancedSearchModal()}
       {renderAIPromptModal()}
       {renderNewIdeaModal()}
+      {renderOKRProposalModal()}
 
       {/* Loading Indicator */}
       {isLoading && (
